@@ -1,0 +1,84 @@
+substitutions:
+  box_num: "51"
+  box_name: "esptest"
+  type: "esp32"
+  board: "esp32dev"
+  run_time: "4s"
+  sleep_time: "2min"
+  update_interval: "${sleep_time}"
+  led_pin: "33"
+
+esphome:
+  name: "${box_name}${box_num}"
+  comment: "esp32 38-pin esp32dev"
+  on_boot:
+    priority: -100.0
+    then:
+      - script.execute: deep_sleep_evaluation
+
+<<: !include .common.yaml
+
+button: !include include/button.yaml
+light: !include include/light.yaml
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  domain: !secret local_domain
+  fast_connect: true
+  power_save_mode: high
+  output_power: 8.5dB
+  use_address: 192.168.1.2${box_num}
+  manual_ip:
+    static_ip: 192.168.1.2${box_num}
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+
+logger:
+  level: WARN
+  baud_rate: 0
+
+deep_sleep:
+  sleep_duration: "${sleep_time}"
+  id: deep_sleep_enabled
+
+script:
+  - id: deep_sleep_evaluation
+    mode: queued
+    then:
+      - delay: "${run_time}"
+      - if:
+          condition:
+            binary_sensor.is_on: disable_deep_sleep
+          then:
+            - logger.log: 'Deep Sleep Disabled'
+          else:
+            - deep_sleep.enter: deep_sleep_enabled
+      - script.execute: deep_sleep_evaluation
+
+binary_sensor:
+  - platform: homeassistant
+    id: disable_deep_sleep
+    entity_id: input_boolean.disable_deep_sleep
+
+sensor:
+  - platform: wifi_signal
+    name: "WiFi Signal ${box_num}"
+    update_interval: "${update_interval}"
+
+  - platform: dht
+    model: DHT22
+    pin:
+      number: 32
+      mode: INPUT_PULLUP
+    update_interval: "${update_interval}"
+    temperature:
+      name: "TestTemp${box_num}-22"
+      filters:
+        - filter_out: 80
+        - filter_out: -40
+    humidity:
+      name: "TestHumi${box_num}-22"
+      accuracy_decimals: 1
+      filters:
+        - filter_out: 0

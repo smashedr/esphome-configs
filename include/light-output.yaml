@@ -1,0 +1,13 @@
+light:
+  - platform: binary
+    name: "Power LED ${box_num}"
+    id: main_led
+    icon: mdi:alarm-light-outline
+    entity_category: config
+    restore_mode: RESTORE_DEFAULT_ON
+    output: led_output
+
+output:
+  - platform: gpio
+    id: led_output
+    pin: ${led_pin}

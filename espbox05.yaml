@@ -1,0 +1,105 @@
+substitutions:
+  box_num: "05"
+  pms_num: "01"
+  box_name: "espbox"
+  type: "esp32"
+  board: "nodemcu-32s"
+  comment: "38-pin narrow"
+  update_interval: "1min"
+  force_update: "true"
+
+<<: !include .common.yaml
+
+esphome:
+  name: "${box_name}${box_num}"
+  comment: "${type}: ${board} (${comment})"
+
+web_server: !include include/web_server.yaml
+button: !include include/button.yaml
+captive_portal:
+
+uart:
+  rx_pin: 16
+  tx_pin: 17
+  baud_rate: 9600
+  # debug:
+    # direction: BOTH
+    # dummy_receiver: false
+    # after:
+      # delimiter: "\n"
+    # sequence:
+      # - lambda: UARTDebug::log_string(direction, bytes);
+
+light:
+  - platform: status_led
+    id: green_led
+    pin: 25
+
+  - platform: binary
+    id: red_led
+    output: red_o
+
+  - platform: binary
+    id: yellow_led
+    output: yellow_o
+
+output:
+  - platform: gpio
+    id: red_o
+    pin: 32
+
+  - platform: gpio
+    id: yellow_o
+    pin: 33
+
+binary_sensor:
+  - platform: status
+    name: "Status ${box_num}"
+
+sensor:
+  - platform: uptime
+    name: "Uptime ${box_num}"
+    update_interval: 5min
+
+  - platform: internal_temperature
+    name: "Core Temp ${box_num}"
+    update_interval: 5min
+    force_update: ${force_update}
+
+  - platform: wifi_signal
+    name: "WiFi Signal ${box_num}"
+    update_interval: 1min
+    force_update: true
+    filters:
+      - filter_out: 0
+      - median:
+
+  - platform: pmsx003
+    type: PMSX003
+    update_interval: 2.5min
+    pm_1_0:
+      name: "PM 1.0 ${pms_num}"
+      force_update: ${force_update}
+    pm_2_5:
+      name: "PM 2.5 ${pms_num}"
+      force_update: ${force_update}
+      on_value_range:
+        - below: 150
+          then:
+            - light.turn_on: green_led
+            - light.turn_off: yellow_led
+            - light.turn_off: red_led
+        - above: 150
+          below: 300
+          then:
+            - light.turn_on: yellow_led
+            - light.turn_off: green_led
+            - light.turn_off: red_led
+        - above: 300
+          then:
+            - light.turn_on: red_led
+            - light.turn_off: green_led
+            - light.turn_off: yellow_led
+    pm_10_0:
+      name: "PM 10.0 ${pms_num}"
+      force_update: ${force_update}

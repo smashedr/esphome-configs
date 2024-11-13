@@ -1,0 +1,15 @@
+deep_sleep:
+  sleep_duration: "${sleep_time}"
+  id: deep_sleep_enter
+
+script:
+  - id: deep_sleep_evaluation
+    mode: queued
+    then:
+      - delay: "${run_time}"
+      - if:
+          condition:
+            binary_sensor.is_on: deep_sleep_binary
+          then:
+            - deep_sleep.enter: deep_sleep_enter
+      - script.execute: deep_sleep_evaluation

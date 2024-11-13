@@ -1,0 +1,73 @@
+substitutions:
+  box_num: "10"
+  box_name: "espbat"
+  type: "esp32"
+  board: "esp32dev"
+  comment: "38-pin"
+  run_time: "5s"
+  sleep_time: "15min"
+  update_interval: "${sleep_time}"
+  force_update: "true"
+
+<<: !include .common.yaml
+<<: !include include/deep-sleep.yaml
+
+esphome:
+  name: "${box_name}${box_num}"
+  comment: "${type}: ${board} (${comment})"
+  on_boot: !include include/on_boot-sleep.yaml
+
+button: !include include/button.yaml
+
+logger:
+  level: WARN
+  baud_rate: 0
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  domain: !secret local_domain
+  fast_connect: true
+  power_save_mode: high
+  # output_power: 8.5dB
+  use_address: 192.168.1.2${box_num}
+  manual_ip:
+    static_ip: 192.168.1.2${box_num}
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+
+binary_sensor:
+  - platform: status
+    name: "Status ${box_num}"
+
+  - platform: homeassistant
+    id: deep_sleep_binary
+    entity_id: input_boolean.deep_sleep_${box_num}
+
+sensor:
+  - platform: wifi_signal
+    name: "WiFi Signal ${box_num}"
+    update_interval: "${update_interval}"
+    force_update: true
+
+  - platform: dht
+    model: DHT22
+    pin:
+      number: 33
+      mode: INPUT_PULLUP
+    update_interval: "${update_interval}"
+    temperature:
+      name: "Temp${box_num}-22"
+      force_update: ${force_update}
+      filters:
+        - lambda: |-
+            float MIN = -39.0;
+            float MAX = 79.0;
+            if (MIN <= x && x <= MAX) return x;
+            else return {};
+    humidity:
+      name: "Humi${box_num}-22"
+      accuracy_decimals: 1
+      force_update: ${force_update}
+      filters:
+        - filter_out: 0

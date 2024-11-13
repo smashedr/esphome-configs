@@ -1,0 +1,91 @@
+substitutions:
+  box_num: "04"
+  box_name: "espbox"
+  type: "esp32"
+  board: "esp32dev"
+  comment: "38-pin"
+  update_interval: "1min"
+  led_pin: "23"
+
+<<: !include .common.yaml
+<<: !include include/light-status_led.yaml
+
+esphome:
+  name: "${box_name}${box_num}"
+  comment: "${type}: ${board} (${comment})"
+
+web_server: !include include/web_server.yaml
+button: !include include/button.yaml
+captive_portal:
+
+binary_sensor:
+  - platform: status
+    name: "Status ${box_num}"
+
+  - platform: homeassistant
+    id: deep_sleep_binary
+    entity_id: input_boolean.deep_sleep_${box_num}
+
+  - platform: gpio
+    pin:
+      number: 19
+      mode: INPUT_PULLUP
+    name: "Physical Button ${box_num}"
+    entity_category: diagnostic
+    icon: mdi:radiobox-marked
+    filters:
+      - invert:
+    on_multi_click:
+    - timing:
+        - ON for at least 3s
+      then:
+        - logger.log: "3 Second Reset"
+        - button.press: reboot_device
+    - timing:
+        - ON for at most 2.9s
+        - OFF for at least 0.1s
+      then:
+        - logger.log: "Single Click"
+        - light.toggle: main_led
+
+sensor:
+  - platform: uptime
+    name: "Uptime ${box_num}"
+    update_interval: 5min
+
+  - platform: wifi_signal
+    name: "WiFi Signal ${box_num}"
+    update_interval: "${update_interval}"
+    filters:
+      - filter_out: 0
+      - median:
+
+  - platform: custom
+    lambda: |-
+      auto my_sensor = new SystemStatsSensor();
+      App.register_component(my_sensor);
+      return {my_sensor->heap_free_sensor};
+
+    sensors:
+    - name: "Heap Free ${box_num}"
+      unit_of_measurement: "%"
+      accuracy_decimals: 1
+      entity_category: diagnostic
+      icon: mdi:memory
+
+  - platform: dht
+    model: DHT22
+    pin:
+      number: 33
+      mode: INPUT_PULLUP
+    update_interval: "${update_interval}"
+    temperature:
+      name: "Temp${box_num}-22"
+      filters:
+        - filter_out: 80
+        - filter_out: -40
+    humidity:
+      name: "Humi${box_num}-22"
+      accuracy_decimals: 1
+      filters:
+        - filter_out: 0

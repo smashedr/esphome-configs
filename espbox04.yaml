@@ -1,0 +1,94 @@
+substitutions:
+  box_num: "04"
+  box_name: "espbox"
+  type: "esp32"
+  board: "esp32dev"
+  comment: "38-pin"
+  update_interval: "1min"
+  force_update: "true"
+  led_pin: "23"
+
+<<: !include .common.yaml
+<<: !include include/light-status_led.yaml
+
+esphome:
+  name: "${box_name}${box_num}"
+  comment: "${type}: ${board} (${comment})"
+
+web_server: !include include/web_server.yaml
+button: !include include/button.yaml
+captive_portal:
+
+binary_sensor:
+  - platform: status
+    name: "Status ${box_num}"
+
+  - platform: gpio
+    pin:
+      number: 19
+      mode: INPUT_PULLUP
+    name: "Physical Button ${box_num}"
+    entity_category: diagnostic
+    icon: mdi:radiobox-marked
+    filters:
+      - invert:
+    on_multi_click:
+    - timing:
+        - ON for at least 3s
+      then:
+        - logger.log: "3 Second Reset"
+        - button.press: reboot_device
+    - timing:
+        - ON for at most 2.9s
+        - OFF for at least 0.1s
+      then:
+        - logger.log: "Single Click"
+        - light.toggle: main_led
+
+sensor:
+  - platform: uptime
+    name: "Uptime ${box_num}"
+    update_interval: 5min
+
+  - platform: internal_temperature
+    name: "Core Temp ${box_num}"
+    update_interval: 5min
+    force_update: ${force_update}
+
+  - platform: wifi_signal
+    name: "WiFi Signal ${box_num}"
+    update_interval: 1min
+    force_update: true
+    filters:
+      - filter_out: 0
+      - median:
+
+  - platform: dht
+    model: DHT22
+    pin:
+      number: 33
+      mode: INPUT_PULLUP
+    update_interval: "${update_interval}"
+    temperature:
+      name: "Temp${box_num}-22"
+      id: "temp_${box_num}"
+      force_update: ${force_update}
+      filters:
+        - lambda: |-
+            float MIN = -39.0;
+            float MAX = 79.0;
+            if (MIN <= x && x <= MAX) return x;
+            else return {};
+    humidity:
+      name: "Humi${box_num}-22"
+      id: "humi_${box_num}"
+      force_update: ${force_update}
+      accuracy_decimals: 1
+      filters:
+        - filter_out: 0
+
+  - platform: absolute_humidity
+    name: "AbsHumi${box_num}"
+    temperature: "temp_${box_num}"
+    humidity: "humi_${box_num}"
+    force_update: ${force_update}

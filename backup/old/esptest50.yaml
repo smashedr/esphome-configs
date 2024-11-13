@@ -1,0 +1,194 @@
+substitutions:
+  base_name: "esptest"
+  box_num: "50"
+  sleep_time: "2min"
+  run_time: "20s"
+  update_interval: "${sleep_time}"
+
+esphome:
+  name: ${base_name}${box_num}
+  # on_boot:
+    # priority: -100.0
+    # then:
+      # - output.turn_on: wake_pin
+      # - script.execute: deep_sleep_evaluation
+
+esp8266:
+  board: nodemcuv2
+  # framework:
+    # version: recommended
+
+logger:
+  level: DEBUG
+
+api:
+  encryption:
+    key: !secret enc_key
+
+ota:
+  password: !secret ota_pass
+  id: my_ota
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+  # ap:
+    # ssid: ${base_name}${box_num}
+    # password: !secret host_pass
+  manual_ip:
+    static_ip: 192.168.1.2${box_num}
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+
+# captive_portal:
+
+# web_server:
+  # port: 80
+
+i2c:
+  # sda: 04
+  # scl: 05
+  # scan: true
+  # id: bus_01
+
+button:
+  - platform: restart
+    name: "Reboot Device ${box_num}"
+    id: reboot_device
+    
+  - platform: safe_mode
+    name: "Reboot Safe Mode ${box_num}"
+
+light:
+  - platform: status_led
+    name: "Status LED ${box_num}"
+    icon: mdi:alarm-light-outline
+    id: status_light
+    entity_category: config
+    pin: D7
+    restore_mode: RESTORE_DEFAULT_ON
+
+# output:
+  # - platform: ledc
+    # pin: D8
+    # id: rtttl_out
+
+# rtttl:
+  # output: rtttl_out
+
+# output:
+  # - platform: gpio
+    # pin: D0
+    # id: wake_pin
+
+deep_sleep:
+  id: deep_sleep_enabled
+  sleep_duration: $sleep_time
+  run_duration: $run_time
+
+# script:
+  # - id: deep_sleep_evaluation
+    # mode: queued
+    # then:
+      # - delay: 20s
+      # - if:
+          # condition:
+            # binary_sensor.is_on: disable_deep_sleep
+          # then:
+            # - logger.log: 'Deep Sleep Disabled'
+          # else:
+            # - deep_sleep.enter: deep_sleep_enabled
+      # - script.execute: deep_sleep_evaluation
+
+binary_sensor:
+  # - platform: homeassistant
+    # id: disable_deep_sleep
+    # entity_id: input_boolean.disable_deep_sleep
+
+  # - platform: status
+    # name: "Status ${box_num}"
+
+  - platform: gpio
+    pin:
+      number: D5
+      mode: INPUT_PULLUP
+    name: "Physical Button ${box_num}"
+    entity_category: diagnostic
+    icon: mdi:radiobox-marked
+    filters:
+      - invert:
+    on_multi_click:
+    - timing:
+        - ON for at least 3s
+      then:
+        - logger.log: "3 Second Reset"
+        - button.press: reboot_device
+    - timing:
+        - ON for at most 2.9s
+        - OFF for at least 0.1s
+      then:
+        - logger.log: "Single Click"
+        - light.toggle: status_light
+    # - timing:
+        # - ON for at most 1s
+        # - OFF for at most 1s
+        # - ON for at most 1s
+        # - OFF for at least 0.2s
+      # then:
+        # - logger.log: "Double Click Stop Sound"
+        # - rtttl.stop:
+        
+    # - timing:
+        # - ON for at least 1s
+        # - OFF for at least 0.2s
+      # then:
+        # - logger.log: "1 Second Play Sound"
+        # - rtttl.play: 'smb:d=4,o=5,b=100:16e6,16e6,32p,8e6,16c6,8e6,8g6,8p,8g,8p,8c6,16p,8g,16p,8e,16p,8a,8b,16a#,8a,16g.,16e6,16g6,8a6,16f6,8g6,8e6,16c6,16d6,8b,16p,8c6,16p,8g,16p,8e,16p,8a,8b,16a#,8a,16g.,16e6,16g6,8a6,16f6,8g6,8e6,16c6,16d6,8b,8p,16g6,16f#6,16f6,16d#6,16p,16e6,16p,16g#,16a,16c6,16p,16a,16c6,16d6,8p,16g6,16f#6,16f6,16d#6,16p,16e6,16p,16c7,16p,16c7,16c7,p,16g6,16f#6,16f6,16d#6,16p,16e6,16p,16g#,16a,16c6,16p,16a,16c6,16d6,8p,16d#6,8p,16d6,8p,16c6'
+        
+    # - timing:
+        # - ON for at least 5s
+      # then:
+        # - logger.log: "5 Second Reset"
+        # - button.press: reboot_device
+        
+    # - timing:
+        # - ON for at most 0.9s
+        # - OFF for at least 0.5s
+      # then:
+        # - logger.log: "Single Click"
+        # - light.toggle: status_light
+
+sensor:
+  # - platform: uptime
+    # name: "Uptime ${box_num}"
+    # update_interval: 300s
+
+  # - platform: wifi_signal
+    # name: "WiFi Signal ${box_num}"
+    # filters:
+      # - filter_out: 0
+      # - median:
+
+  - platform: dht
+    model: DHT22
+    pin:
+      number: D6
+      mode: INPUT_PULLUP
+    temperature:
+      name: "TestTemp${box_num}-22"
+      filters:
+        - filter_out: 80
+        - filter_out: -40
+    humidity:
+      name: "TestHumi${box_num}-22"
+      filters:
+        - filter_out: 0
+    update_interval: "${sleep_time}"
+
+  - platform: bmp280
+    address: 0x76
+    temperature:
+      name: "TestTemp${box_num}-280"
+    pressure:
+      name: "TestPres${box_num}-280"

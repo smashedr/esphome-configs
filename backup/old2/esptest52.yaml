@@ -1,0 +1,52 @@
+substitutions:
+  box_num: "52"
+  box_name: "esptest"
+  type: "esp32"
+  board: "nodemcu-32s"
+  update_interval: "60s"
+
+esphome:
+  name: "${box_name}${box_num}"
+  comment: "${type}: ${board} (38-pin narrow)"
+  includes:
+    - system_stats_sensor.h
+
+<<: !include .common.yaml
+
+web_server: !include include/web.yaml
+button: !include include/button.yaml
+
+binary_sensor:
+  - platform: status
+    name: "Status ${box_num}"
+
+sensor:
+  - platform: uptime
+    name: "Uptime ${box_num}"
+    update_interval: 300s
+
+  - platform: wifi_signal
+    name: "WiFi Signal ${box_num}"
+    filters:
+      - filter_out: 0
+      - median:
+
+  - platform: custom
+    lambda: |-
+      auto my_sensor = new SystemStatsSensor();
+      App.register_component(my_sensor);
+      return {my_sensor->heap_free_sensor};
+
+    sensors:
+    # - name: "Core Temp ${box_num}"
+      # unit_of_measurement: "°C"
+      # accuracy_decimals: 1
+      # entity_category: diagnostic
+      # device_class: temperature
+      # icon: mdi:cpu-64-bit
+
+    - name: "Heap Free ${box_num}"
+      unit_of_measurement: "%"
+      accuracy_decimals: 1
+      entity_category: diagnostic
+      icon: mdi:memory

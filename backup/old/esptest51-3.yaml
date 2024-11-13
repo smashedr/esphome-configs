@@ -1,0 +1,77 @@
+substitutions:
+  box_num: "51"
+  box_name: "esptest"
+  update_interval: "60s"
+
+esphome:
+  name: "${box_name}${box_num}"
+  friendly_name: "${box_num} - Test LED"
+  comment: "esp32 38-pin"
+
+esp32:
+  board: esp32dev
+
+logger:
+
+api:
+  encryption:
+    key: !secret enc_key
+
+ota:
+  password: !secret ota_pass
+  reboot_timeout: 10min
+  id: ota_one
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  domain: !secret local_domain
+  fast_connect: true
+  use_address: 192.168.1.2${box_num}
+  manual_ip:
+    static_ip: 192.168.1.2${box_num}
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+
+button:
+  - platform: restart
+    name: "Reboot Device ${box_num}"
+    id: reboot_device
+    
+  - platform: safe_mode
+    name: "Reboot Safe Mode ${box_num}"
+
+light:
+  - platform: rgb
+    name: "Test LED ${box_num}"
+    red: red_${box_num}
+    green: green_${box_num}
+    blue: blue_${box_num}
+
+output:
+  - platform: ledc
+    id: red_${box_num}
+    pin: GPIO32
+    
+  - platform: ledc
+    id: green_${box_num}
+    pin: GPIO33
+
+  - platform: ledc
+    id: blue_${box_num}
+    pin: GPIO27
+
+binary_sensor:
+  - platform: status
+    name: "Status ${box_num}"
+
+sensor:
+  - platform: wifi_signal
+    name: "WiFi Signal ${box_num}"
+    update_interval: "20s"
+    force_update: true
+    filters:
+      - filter_out: 0
+      - median:
+          window_size: 3
+          send_every: 3

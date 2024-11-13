@@ -1,0 +1,96 @@
+substitutions:
+  box_num: "50"
+  box_name: "esptest"
+  type: "esp8266"
+  board: "nodemcuv2"
+  comment: "full"
+  run_time: "10s"
+  sleep_time: "1min"
+  update_interval: "${sleep_time}"
+  force_update: "true"
+  led_pin: "D6"
+
+<<: !include .common.yaml
+<<: !include include/light-status_led.yaml
+
+esphome:
+  name: "${box_name}${box_num}"
+  comment: "${type}: ${board} (${comment})"
+
+web_server: !include include/web_server.yaml
+button: !include include/button.yaml
+captive_portal:
+
+# logger:
+  # baud_rate: 0
+
+i2c:
+  scan: false
+
+binary_sensor:
+  - platform: status
+    name: "Status ${box_num}"
+
+  # - platform: gpio
+    # pin:
+      # number: D5
+      # mode: INPUT_PULLUP
+    # name: "Physical Button ${box_num}"
+    # entity_category: diagnostic
+    # icon: mdi:radiobox-marked
+    # filters:
+      # - invert:
+    # on_multi_click:
+    # - timing:
+        # - ON for at least 3s
+      # then:
+        # - logger.log: "3 Second Reset"
+        # - button.press: reboot_device
+    # - timing:
+        # - ON for at most 2.9s
+        # - OFF for at least 0.1s
+      # then:
+        # - logger.log: "Single Click"
+        # - light.toggle: main_led
+
+sensor:
+  - platform: uptime
+    name: "Uptime ${box_num}"
+    update_interval: 5min
+
+  - platform: wifi_signal
+    name: "WiFi Signal ${box_num}"
+    update_interval: "${update_interval}"
+    force_update: true
+    filters:
+      - filter_out: 0
+      - median:
+
+  # - platform: dht
+    # model: DHT22
+    # pin:
+      # number: D6
+      # mode: INPUT_PULLUP
+    # update_interval: "${update_interval}"
+    # temperature:
+      # name: "TestTemp${box_num}-22"
+      # force_update: ${force_update}
+      # filters:
+        # - filter_out: 80
+        # - filter_out: -40
+    # humidity:
+      # name: "TestHumi${box_num}-22"
+      # force_update: ${force_update}
+      # accuracy_decimals: 1
+      # filters:
+        # - filter_out: 0
+
+  # - platform: bmp280
+    # address: 0x76
+    # update_interval: "${update_interval}"
+    # temperature:
+      # name: "TestTemp${box_num}-280"
+      # force_update: ${force_update}
+    # pressure:
+      # name: "TestPres${box_num}-280"
+      # force_update: ${force_update}

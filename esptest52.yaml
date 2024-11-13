@@ -1,0 +1,170 @@
+substitutions:
+  box_num: "52"
+  box_name: "esptest"
+  type: "esp32"
+  board: "esp32dev"
+  comment: "38-pin"
+  update_interval: "1min"
+  force_update: "true"
+
+<<: !include .common.yaml
+
+esphome:
+  name: "${box_name}${box_num}"
+  comment: "${type}: ${board} (${comment})"
+  on_boot:
+    then:
+      - switch.turn_off: buzzer
+      - delay: 30s
+      - if:
+          condition:
+            - binary_sensor.is_off: alarm_arm
+          then:
+            - light.turn_off: red_led
+      - if:
+          condition:
+            - binary_sensor.is_on: alarm_arm
+          then:
+            - light.turn_on: red_led
+
+web_server: !include include/web_server.yaml
+button: !include include/button.yaml
+captive_portal:
+
+
+light:
+  - platform: status_led
+    id: main_led
+    pin: 26
+
+  - platform: binary
+    id: red_led
+    output: red_out
+    # effects:
+      # - pulse:
+          # name: "Slow Pulse"
+          # transition_length: 0s
+          # update_interval: 2s
+    # turn_on_action:
+      # - while:
+        # condition:
+          # lambda: 'return true;'
+        # then:
+        # - light.turn_on: red_out
+        # - delay: 2s
+        # - light.turn_off: red_out
+        # - delay: 2s
+
+
+output:
+  - platform: gpio
+    id: red_out
+    pin: 33
+
+  # - platform: gpio
+    # id: buzzer
+    # pin: 27
+
+switch:
+  - platform: gpio
+    name: "Buzzer ${box_num}"
+    id: buzzer
+    pin: 27
+    icon: "mdi:volume-high"
+    # on_turn_on:
+    # - delay: 750ms
+    # - switch.turn_off: buzzer
+
+
+binary_sensor:
+  - platform: status
+    name: "Status ${box_num}"
+
+  - platform: homeassistant
+    id: alarm_arm
+    entity_id: input_boolean.alarm_arm
+    on_state:
+      then:
+        - if:
+            condition:
+              - binary_sensor.is_off: alarm_arm
+            then:
+              - light.turn_off: red_led
+              - logger.log: "ALARM --- DISARM"
+        - if:
+            condition:
+              - binary_sensor.is_on: alarm_arm
+            then:
+              - light.turn_on: red_led
+              - logger.log: "ALARM --- ARM"
+
+  - platform: homeassistant
+    id: alarm_active
+    entity_id: input_boolean.alarm_active
+    on_state:
+      then:
+        - if:
+            condition:
+              - binary_sensor.is_off: alarm_active
+            then:
+              - switch.turn_off: buzzer
+              - logger.log: "ALARM --- OFF"
+        - if:
+            condition:
+              - binary_sensor.is_on: alarm_active
+            then:
+              - switch.turn_on: buzzer
+              - logger.log: "ALARM --- ON"
+
+  - platform: gpio
+    name: "Door ${box_num}"
+    id: door_sensor
+    pin:
+      number: 32
+      mode: INPUT_PULLUP
+    device_class: door
+    on_press:
+      then:
+        - if:
+            condition:
+              - binary_sensor.is_off: alarm_arm
+            then:
+              - light.turn_on: main_led
+              - switch.turn_on: buzzer
+              - delay: 150ms
+              - switch.turn_off: buzzer
+              - delay: 50ms
+              - switch.turn_on: buzzer
+              - delay: 150ms
+              - switch.turn_off: buzzer
+              - logger.log: "DOOR --- OPEN"
+    on_release:
+      then:
+        - if:
+            condition:
+              - binary_sensor.is_off: alarm_arm
+            then:
+              - light.turn_off: main_led
+              - switch.turn_on: buzzer
+              - delay: 150ms
+              - switch.turn_off: buzzer
+              - logger.log: "DOOR --- CLOSED"
+
+
+sensor:
+  - platform: uptime
+    name: "Uptime ${box_num}"
+    update_interval: 5min
+
+  - platform: internal_temperature
+    name: "Core Temp ${box_num}"
+    update_interval: 5min
+    force_update: ${force_update}
+
+  - platform: wifi_signal
+    name: "WiFi Signal ${box_num}"
+    update_interval: 1min
+    force_update: true
+    filters:
+      - filter_out: 0
+      - median:

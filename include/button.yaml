@@ -1,0 +1,6 @@
+  - platform: restart
+    name: "Reboot Device ${box_num}"
+    id: reboot_device
+    
+  - platform: safe_mode
+    name: "Reboot Safe Mode ${box_num}"

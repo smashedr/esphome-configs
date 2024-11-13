@@ -1,0 +1,28 @@
+${type}:
+  board: "${board}"
+
+logger:
+  level: DEBUG
+
+api:
+  encryption:
+    key: !secret enc_key
+
+ota:
+  platform: esphome
+  password: !secret ota_pass
+  id: ota_one
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  domain: !secret local_domain
+  fast_connect: true
+  use_address: "192.168.1.2${box_num}"
+  manual_ip:
+    static_ip: "192.168.1.2${box_num}"
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+  ap:
+    ssid: "${box_name}${box_num}"
+    password: !secret host_pass

@@ -1,0 +1,101 @@
+substitutions:
+  box_num: "52"
+  box_name: "esptest"
+  run_time: "50s"
+  sleep_time: "1min"
+  update_interval: "${sleep_time}"
+
+esphome:
+  name: "${box_name}${box_num}"
+  comment: "esp32 38-pin narrow nodemcu-32s"
+  includes:
+    - system_stats_sensor.h
+  # on_boot:
+    # priority: -100.0
+    # then:
+      # - script.execute: deep_sleep_evaluation
+
+esp32:
+  board: nodemcu-32s
+
+logger:
+  level: DEBUG
+
+api:
+  encryption:
+    key: !secret enc_key
+
+ota:
+  password: !secret ota_pass
+  reboot_timeout: 10min
+  id: ota_one
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  domain: !secret local_domain
+  fast_connect: true
+  power_save_mode: high
+  output_power: 8.5dB
+  use_address: 192.168.1.2${box_num}
+  manual_ip:
+    static_ip: 192.168.1.2${box_num}
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+
+button:
+  - platform: restart
+    name: "Reboot Device ${box_num}"
+    id: reboot_device
+    
+  - platform: safe_mode
+    name: "Reboot Safe Mode ${box_num}"
+
+# deep_sleep:
+  # sleep_duration: "${sleep_time}"
+  # id: deep_sleep_enabled
+
+# script:
+  # - id: deep_sleep_evaluation
+    # mode: queued
+    # then:
+      # - delay: "${run_time}"
+      # - if:
+          # condition:
+            # binary_sensor.is_on: disable_deep_sleep
+          # then:
+            # - logger.log: 'Deep Sleep Disabled'
+          # else:
+            # - deep_sleep.enter: deep_sleep_enabled
+      # - script.execute: deep_sleep_evaluation
+
+binary_sensor:
+  # - platform: homeassistant
+    # id: disable_deep_sleep
+    # entity_id: input_boolean.disable_deep_sleep
+
+sensor:
+  !include sensors.yaml
+  # - platform: wifi_signal
+    # name: "WiFi Signal ${box_num}"
+    # update_interval: "${update_interval}"
+
+  - platform: custom
+    lambda: |-
+      auto my_sensor = new SystemStatsSensor();
+      App.register_component(my_sensor);
+      return {my_sensor->core_temp_sensor, my_sensor->heap_free_sensor};
+
+    sensors:
+    - name: "Core Temp ${box_num}"
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+      entity_category: diagnostic
+      device_class: temperature
+      icon: mdi:cpu-64-bit
+
+    - name: "Heap Free ${box_num}"
+      unit_of_measurement: kB
+      accuracy_decimals: 2
+      entity_category: diagnostic
+      icon: mdi:memory
