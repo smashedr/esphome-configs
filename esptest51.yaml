@@ -8,6 +8,7 @@ substitutions:
   force_update: "true"
 
 <<: !include .common.yaml
+<<: !include include/web_server.yaml
 
 logger:
   level: VERBOSE
@@ -16,10 +17,9 @@ esphome:
   name: "${box_name}${box_num}"
   comment: "${type}: ${board} (${comment})"
 
-web_server: !include include/web_server.yaml
+#web_server: !include include/web_server.yaml
 button: !include include/button.yaml
 captive_portal:
-
 
 api:
   encryption:
@@ -30,24 +30,20 @@ api:
         song_str: string
       then:
         - rtttl.play:
-            rtttl: !lambda 'return song_str;'
-
+            rtttl: !lambda "return song_str;"
 
 light:
   - platform: status_led
     id: main_led
     pin: 32
 
-
 output:
   - platform: ledc
     pin: 33
     id: rtttl_out
 
-
 rtttl:
   output: rtttl_out
-
 
 binary_sensor:
   - platform: status
@@ -96,7 +92,6 @@ binary_sensor:
               binary_sensor.is_off: door_sensor_1
             then:
               - light.turn_off: main_led
-
 
 sensor:
   - platform: uptime

@@ -8,6 +8,7 @@ substitutions:
   force_update: "true"
 
 <<: !include .common.yaml
+<<: !include include/web_server.yaml
 
 esphome:
   name: "${box_name}${box_num}"
@@ -27,10 +28,9 @@ esphome:
           then:
             - light.turn_on: red_led
 
-web_server: !include include/web_server.yaml
+#web_server: !include include/web_server.yaml
 button: !include include/button.yaml
 captive_portal:
-
 
 light:
   - platform: status_led
@@ -40,30 +40,29 @@ light:
   - platform: binary
     id: red_led
     output: red_out
-    # effects:
-      # - pulse:
-          # name: "Slow Pulse"
-          # transition_length: 0s
-          # update_interval: 2s
-    # turn_on_action:
-      # - while:
-        # condition:
-          # lambda: 'return true;'
-        # then:
-        # - light.turn_on: red_out
-        # - delay: 2s
-        # - light.turn_off: red_out
-        # - delay: 2s
-
+    #effects:
+    #  - pulse:
+    #      name: "Slow Pulse"
+    #      transition_length: 0s
+    #      update_interval: 2s
+    #turn_on_action:
+    #  - while:
+    #    condition:
+    #      lambda: "return true;"
+    #    then:
+    #      - light.turn_on: red_out
+    #      - delay: 2s
+    #      - light.turn_off: red_out
+    #      - delay: 2s
 
 output:
   - platform: gpio
     id: red_out
     pin: 33
 
-  # - platform: gpio
-    # id: buzzer
-    # pin: 27
+  #- platform: gpio
+  #  id: buzzer
+  #  pin: 27
 
 switch:
   - platform: gpio
@@ -74,7 +73,6 @@ switch:
     # on_turn_on:
     # - delay: 750ms
     # - switch.turn_off: buzzer
-
 
 binary_sensor:
   - platform: status
@@ -149,7 +147,6 @@ binary_sensor:
               - delay: 150ms
               - switch.turn_off: buzzer
               - logger.log: "DOOR --- CLOSED"
-
 
 sensor:
   - platform: uptime

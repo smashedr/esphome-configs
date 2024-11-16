@@ -6,33 +6,107 @@ substitutions:
   comment: "38-pin (narrow)"
   update_interval: "1min"
   force_update: "true"
+  led_pin: "GPIO33"
 
 <<: !include .common.yaml
+<<: !include include/web_server.yaml
+<<: !include include/light-status_led.yaml
 
 esphome:
   name: "${box_name}${box_num}"
   comment: "${type}: ${board} (${comment})"
 
-web_server: !include include/web_server.yaml
 button: !include include/button.yaml
 captive_portal:
 
-light:
-  - platform: status_led
-    id: main_led
-    pin: 33
+globals:
+  - id: sensor_metric
+    type: int
+    restore_value: yes
+    initial_value: "0"
+  - id: selected_sensor
+    type: int
+    restore_value: yes
+    initial_value: "0"
 
-switch:
-  - platform: gpio
-    pin: 27
-    name: "Plug Relay ${box_num}"
-    id: plug_relay_1
-    on_turn_on:
-      then:
-        light.turn_on: main_led
-    on_turn_off:
-      then:
-        light.turn_off: main_led
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+  scan: false
+  frequency: 400kHz
+
+font:
+  - file: "fonts/arial.ttf"
+    id: font0
+    size: 12
+  - file: "fonts/arial.ttf"
+    id: font1
+    size: 18
+
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: "America/Los_Angeles"
+
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+    address: 0x3C
+    id: display1
+    #reset_pin: D0
+    #update_interval: 5s
+    lambda: |-
+      // it.printf(0, 0, id(font1), "I Blame Ralph!");
+      // it.printf(0, 23, id(font1), "sensor_metric: %d", id(sensor_metric));
+      // it.printf(0, 46, id(font1), "selected_sensor: %d", id(selected_sensor));
+
+      it.strftime(128, 0, id(font0), TextAlign::RIGHT, "%I:%M %p", id(sntp_time).now()); // TOP LINE - RIGHT
+      if (!id(ha_status).state) {
+        it.printf(0, 0, id(font0), "Connecting..."); // TOP LINE - LEFT
+        it.printf(0, 23, id(font1), "I Could Be Slower"); // MIDDLE LINE
+        it.printf(0, 46, id(font1), "if Coded in Java."); // BOTTOM LINE
+      } else {
+        // TOP LINE - LEFT
+        if (id(sensor_metric) == 0) {
+          it.printf(0, 0, id(font0), "Temperature");
+        } else if (id(sensor_metric) == 1) {
+          it.printf(0, 0, id(font0), "Humidity");
+        } else {
+          it.printf(0, 0, id(font0), "Blame Ralph");
+        }
+        // MIDDLE LINE
+        if (id(selected_sensor) == 0) {
+          it.printf(0, 23, id(font1), "Bedroom");
+          if (id(sensor_metric) == 0) {
+            it.printf(128, 23, id(font1), TextAlign::RIGHT, "%.1f F", id(temp01_22).state);
+          } else if (id(sensor_metric) == 1) {
+            it.printf(128, 23, id(font1), TextAlign::RIGHT, "%d %%", (int) id(humi01_22).state);
+          }
+        } else if (id(selected_sensor) == 1) {
+          it.printf(0, 23, id(font1), "Living");
+          if (id(sensor_metric) == 0) {
+            it.printf(128, 23, id(font1), TextAlign::RIGHT, "%.1f F", id(temp03_22).state);
+          } else if (id(sensor_metric) == 1) {
+            it.printf(128, 23, id(font1), TextAlign::RIGHT, "%d %%", (int) id(humi03_22).state);
+          }
+        } else if (id(selected_sensor) == 2) {
+          it.printf(0, 23, id(font1), "Kitchen");
+          if (id(sensor_metric) == 0) {
+            it.printf(128, 23, id(font1), TextAlign::RIGHT, "%.1f F", id(temp04_22).state);
+          } else if (id(sensor_metric) == 1) {
+            it.printf(128, 23, id(font1), TextAlign::RIGHT, "%d %%", (int) id(humi04_22).state);
+          }
+        } else {
+          it.printf(0, 23, id(font1), "Fucking Ralph");
+        }
+        // BOTTOM LINE
+        it.printf(0, 46, id(font1), "Outside");
+        if (id(sensor_metric) == 0) {
+          it.printf(128, 46, id(font1), TextAlign::RIGHT, "%.1f F", id(temp02_22).state);
+        } else if (id(sensor_metric) == 1) {
+          it.printf(128, 46, id(font1), TextAlign::RIGHT, "%d %%", (int) id(humi02_22).state);
+        }
+      }
 
 binary_sensor:
   - platform: status
@@ -46,9 +120,51 @@ binary_sensor:
     icon: mdi:radiobox-marked
     filters:
       - invert:
-    on_press:
-      then:
-        switch.toggle: plug_relay_1
+    on_multi_click:
+      #- timing:
+      #    - ON for at least 3s
+      #  then:
+      #    - logger.log: "3 Second Reset - Disabled"
+
+      - timing:
+          - ON for at least 1s
+          #- OFF for at least 0.1s
+        then:
+          - logger.log: "Long Press"
+          - lambda: |-
+              id(sensor_metric) = (id(sensor_metric) + 1);
+              if (id(sensor_metric) >= 2) {
+                id(sensor_metric) = 0;
+              }
+              ESP_LOGD("main", "sensor_metric: %d", id(sensor_metric));
+
+      - timing:
+          - ON for at most 0.9s
+          - OFF for at least 0.1s
+        then:
+          - logger.log: "Single Click"
+          - lambda: |-
+              id(selected_sensor) = (id(selected_sensor) + 1);
+              if (id(selected_sensor) >= 3) {
+                id(selected_sensor) = 0;
+              }
+              ESP_LOGD("main", "selected_sensor: %d", id(selected_sensor));
+
+    #on_press:
+    #  then:
+    #    #light.toggle: main_led
+    #    - lambda: |-
+    #        ESP_LOGD("main", "selected_sensor: %d", id(selected_sensor));
+    #        // ESP_LOGD("main", "selected_sensor.c_str(): %s", id(selected_sensor).c_str());
+    #        id(selected_sensor) = (id(selected_sensor) + 1);
+    #        if (id(selected_sensor) >= 3) {
+    #          id(selected_sensor) = 0;
+    #        }
+
+  - platform: homeassistant
+    name: "ESP Device Connection"
+    entity_id: binary_sensor.status_53
+    id: ha_status
 
 sensor:
   - platform: uptime
@@ -67,3 +183,32 @@ sensor:
     filters:
       - filter_out: 0
       - median:
+
+  # Bedroom
+  - platform: homeassistant
+    entity_id: sensor.temp01_22
+    id: temp01_22
+  - platform: homeassistant
+    entity_id: sensor.humi01_22
+    id: humi01_22
+  # Outside
+  - platform: homeassistant
+    entity_id: sensor.temp02_22
+    id: temp02_22
+  - platform: homeassistant
+    entity_id: sensor.humi02_22
+    id: humi02_22
+  # Living Room
+  - platform: homeassistant
+    entity_id: sensor.temp03_22
+    id: temp03_22
+  - platform: homeassistant
+    entity_id: sensor.humi03_22
+    id: humi03_22
+  # Kitchen
+  - platform: homeassistant
+    entity_id: sensor.temp04_22
+    id: temp04_22
+  - platform: homeassistant
+    entity_id: sensor.humi04_22
+    id: humi04_22

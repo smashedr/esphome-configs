@@ -1,0 +1,70 @@
+substitutions:
+  box_num: "53"
+  box_name: "esptest"
+  type: "esp32"
+  board: "nodemcu-32s"
+  comment: "38-pin (narrow)"
+  update_interval: "1min"
+  force_update: "true"
+
+<<: !include .common.yaml
+<<: !include include/web_server.yaml
+
+esphome:
+  name: "${box_name}${box_num}"
+  comment: "${type}: ${board} (${comment})"
+
+#web_server: !include include/web_server.yaml
+button: !include include/button.yaml
+captive_portal:
+
+light:
+  - platform: status_led
+    id: main_led
+    pin: 33
+
+switch:
+  - platform: gpio
+    pin: 27
+    name: "Plug Relay ${box_num}"
+    id: plug_relay_1
+    on_turn_on:
+      then:
+        light.turn_on: main_led
+    on_turn_off:
+      then:
+        light.turn_off: main_led
+
+binary_sensor:
+  - platform: status
+    name: "Status ${box_num}"
+
+  - platform: gpio
+    pin:
+      number: 32
+      mode: INPUT_PULLUP
+    name: "Physical Button ${box_num}"
+    icon: mdi:radiobox-marked
+    filters:
+      - invert:
+    on_press:
+      then:
+        switch.toggle: plug_relay_1
+
+sensor:
+  - platform: uptime
+    name: "Uptime ${box_num}"
+    update_interval: 5min
+
+  - platform: internal_temperature
+    name: "Core Temp ${box_num}"
+    update_interval: 5min
+    force_update: ${force_update}
+
+  - platform: wifi_signal
+    name: "WiFi Signal ${box_num}"
+    update_interval: 1min
+    force_update: true
+    filters:
+      - filter_out: 0
+      - median:

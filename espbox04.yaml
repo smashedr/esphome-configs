@@ -10,12 +10,13 @@ substitutions:
 
 <<: !include .common.yaml
 <<: !include include/light-status_led.yaml
+<<: !include include/web_server.yaml
 
 esphome:
   name: "${box_name}${box_num}"
   comment: "${type}: ${board} (${comment})"
 
-web_server: !include include/web_server.yaml
+#web_server: !include include/web_server.yaml
 button: !include include/button.yaml
 captive_portal:
 
@@ -33,17 +34,17 @@ binary_sensor:
     filters:
       - invert:
     on_multi_click:
-    - timing:
-        - ON for at least 3s
-      then:
-        - logger.log: "3 Second Reset"
-        - button.press: reboot_device
-    - timing:
-        - ON for at most 2.9s
-        - OFF for at least 0.1s
-      then:
-        - logger.log: "Single Click"
-        - light.toggle: main_led
+      - timing:
+          - ON for at least 3s
+        then:
+          - logger.log: "3 Second Reset"
+          - button.press: reboot_device
+      - timing:
+          - ON for at most 2.9s
+          - OFF for at least 0.1s
+        then:
+          - logger.log: "Single Click"
+          - light.toggle: main_led
 
 sensor:
   - platform: uptime

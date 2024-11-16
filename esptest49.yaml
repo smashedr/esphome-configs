@@ -6,16 +6,16 @@ substitutions:
   comment: "38-pin (narrow)"
   update_interval: "1min"
   force_update: "true"
-  led_pin: "GPIO12"
+  led_pin: "GPIO32"
 
 <<: !include .common.yaml
+<<: !include include/web_server.yaml
 <<: !include include/light-status_led.yaml
 
 esphome:
   name: "${box_name}${box_num}"
   comment: "${type}: ${board} (${comment})"
 
-web_server: !include include/web_server.yaml
 #button: !include include/button.yaml
 captive_portal:
 
@@ -68,14 +68,16 @@ display:
     #reset_pin: D0
     #update_interval: 5s
     lambda: |-
-      it.print(14, 0, id(font1), "Person Finder");
-      // it.print(0, 23, id(font1), "RALPH BROKE IT");
+      if (id(custom_text_input).state.empty()) {
+        it.printf(0, 0, id(font1), "Connecting...");
+      } else {
+        it.printf(0, 0, id(font1), "%s", id(custom_text_input).state.c_str());
+      }
       if (id(presence_${box_num}).state) {
         it.print(0, 23, id(font1), "Somebody is Here");
       } else {
         it.print(0, 23, id(font1), "Nobody is Here");
       }
-      // it.print(0, 46, id(font1), "Confidence: 100%");
       it.printf(0, 46, id(font1), "Distance: %.1f", id(distance_${box_num}).state);
 
 ld2420:
@@ -85,7 +87,44 @@ select:
     operating_mode:
       name: Operating Mode
 
+number:
+  - platform: ld2420
+    presence_timeout:
+      name: Detection Presence Timeout
+    min_gate_distance:
+      name: Detection Gate Minimum
+    max_gate_distance:
+      name: Detection Gate Maximum
+
+    gate_select:
+      name: Select Gate to Set
+    still_threshold:
+      name: Set Still Threshold Value
+    move_threshold:
+      name: Set Move Threshold Value
+
+    gate_move_sensitivity:
+      name: Move Calibration Sensitivity Factor
+    gate_still_sensitivity:
+      name: Still Calibration Sensitivity Factor
+
+    gate_0:
+      move_threshold:
+        name: Gate 0 Move Threshold
+      still_threshold:
+        name: Gate 0 Still Threshold
+    gate_1:
+      move_threshold:
+        name: Gate 1 Move Threshold
+      still_threshold:
+        name: Gate 1 Still Threshold
+
 text_sensor:
+  - platform: homeassistant
+    name: "Custom Text Input"
+    id: custom_text_input
+    entity_id: input_text.custom_text
+
   - platform: ld2420
     fw_version:
       name: LD2420 Firmware
@@ -100,9 +139,11 @@ binary_sensor:
       id: "presence_${box_num}"
       on_press:
         then:
+          - logger.log: "+++ PRESENCE DETECTED"
           - light.turn_on: main_led
       on_release:
         then:
+          - logger.log: "--- NO PRESENCE"
           - light.turn_off: main_led
 
 sensor:
