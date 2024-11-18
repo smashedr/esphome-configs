@@ -1,0 +1,7 @@
+platform: debug
+free:
+  name: "Heap Free ${box_num}"
+block:
+  name: "Heap Max Block ${box_num}"
+loop_time:
+  name: "Loop Time ${box_num}"

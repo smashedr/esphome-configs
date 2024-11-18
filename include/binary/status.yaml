@@ -1,0 +1,3 @@
+platform: status
+name: "Status ${box_num}"
+icon: mdi:check-network-outline

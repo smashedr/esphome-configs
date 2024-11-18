@@ -1,0 +1,3 @@
+platform: uptime
+name: "Uptime ${box_num}"
+update_interval: 5min

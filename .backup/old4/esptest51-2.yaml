@@ -1,0 +1,69 @@
+substitutions:
+  box_num: "51"
+  box_name: "esptest"
+  type: "esp32"
+  board: "nodemcu-32s"
+  comment: "38-pin narrow"
+  run_time: "6s"
+  sleep_time: "15min"
+  update_interval: "${sleep_time}"
+  force_update: "true"
+  led_pin: "18"
+
+<<: !include .common.yaml
+<<: !include include/deep-sleep.yaml
+
+deep_sleep:
+  # sleep_duration: "${sleep_time}"
+  id: deep_sleep_enter
+  wakeup_pin_mode: KEEP_AWAKE
+  wakeup_pin: 32
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  domain: !secret local_domain
+  fast_connect: true
+  # use_address: "192.168.1.2${box_num}"
+  manual_ip:
+    static_ip: "192.168.1.2${box_num}"
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+  ap:
+    ssid: "${box_name}${box_num}"
+    password: !secret host_pass
+
+esphome:
+  name: "${box_name}${box_num}"
+  comment: "${type}: ${board} (${comment})"
+  on_boot: !include include/on_boot-sleep.yaml
+
+web_server: !include include/web_server.yaml
+button: !include include/button.yaml
+captive_portal:
+
+light:
+  - platform: status_led
+    id: main_led
+    pin: ${led_pin}
+
+binary_sensor:
+  - platform: status
+    name: "Status ${box_num}"
+
+  - platform: homeassistant
+    id: deep_sleep_binary
+    entity_id: input_boolean.deep_sleep_${box_num}
+
+  - platform: gpio
+    pin: 32
+    name: "PIR ${box_num}"
+    device_class: motion
+    on_press:
+      then:
+        - light.turn_on: main_led
+    on_release:
+      then:
+        - light.turn_off: main_led
+    filters:
+      - delayed_off: "${run_time}"

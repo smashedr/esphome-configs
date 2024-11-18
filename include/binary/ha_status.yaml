@@ -1,0 +1,4 @@
+platform: homeassistant
+name: "Home Assistant Status"
+id: ha_status
+entity_id: binary_sensor.status_${box_num}

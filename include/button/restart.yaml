@@ -1,0 +1,3 @@
+platform: restart
+name: "Reboot Device ${box_num}"
+id: reboot_device

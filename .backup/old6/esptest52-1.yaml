@@ -8,9 +8,6 @@ substitutions:
   force_update: "true"
 
 <<: !include .common.yaml
-<<: !include { file: include/web_server.yaml, vars: { version: 3 } }
-
-captive_portal:
 
 esphome:
   name: "${box_name}${box_num}"
@@ -30,35 +27,41 @@ esphome:
           then:
             - light.turn_on: red_led
 
+web_server: !include include/web_server.yaml
+button: !include include/button.yaml
+captive_portal:
+
 light:
-  - !include { file: include/light/status_led.yaml, vars: { pin: 26 } }
+  - platform: status_led
+    id: main_led
+    pin: 26
 
   - platform: binary
     id: red_led
     output: red_out
-    #effects:
-    #  - pulse:
-    #      name: "Slow Pulse"
-    #      transition_length: 0s
-    #      update_interval: 2s
-    #turn_on_action:
-    #  - while:
-    #    condition:
-    #      lambda: "return true;"
-    #    then:
-    #      - light.turn_on: red_out
-    #      - delay: 2s
-    #      - light.turn_off: red_out
-    #      - delay: 2s
+    # effects:
+    # - pulse:
+    # name: "Slow Pulse"
+    # transition_length: 0s
+    # update_interval: 2s
+    # turn_on_action:
+    # - while:
+    # condition:
+    # lambda: 'return true;'
+    # then:
+    # - light.turn_on: red_out
+    # - delay: 2s
+    # - light.turn_off: red_out
+    # - delay: 2s
 
 output:
   - platform: gpio
     id: red_out
     pin: 33
 
-  #- platform: gpio
-  #  id: buzzer
-  #  pin: 27
+  # - platform: gpio
+  # id: buzzer
+  # pin: 27
 
 switch:
   - platform: gpio
@@ -70,12 +73,9 @@ switch:
     # - delay: 750ms
     # - switch.turn_off: buzzer
 
-text_sensor:
-  - !include { file: include/text/version.yaml }
-  - !include { file: include/text/wifi_info.yaml }
-
 binary_sensor:
-  - !include { file: include/binary/status.yaml }
+  - platform: status
+    name: "Status ${box_num}"
 
   - platform: homeassistant
     id: alarm_arm
@@ -148,6 +148,18 @@ binary_sensor:
               - logger.log: "DOOR --- CLOSED"
 
 sensor:
-  - !include { file: include/sensor/internal_temperature.yaml }
-  - !include { file: include/sensor/uptime.yaml }
-  - !include { file: include/sensor/wifi_signal.yaml }
+  - platform: uptime
+    name: "Uptime ${box_num}"
+    update_interval: 5min
+
+  - platform: internal_temperature
+    name: "Core Temp ${box_num}"
+    update_interval: 5min
+
+  - platform: wifi_signal
+    name: "WiFi Signal ${box_num}"
+    update_interval: 1min
+    force_update: true
+    filters:
+      - filter_out: 0
+      - median:

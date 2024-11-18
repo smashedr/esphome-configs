@@ -1,0 +1,180 @@
+substitutions:
+  box_num: "51"
+  box_name: "esptest"
+  type: "esp32"
+  board: "nodemcu-32s"
+  comment: "38-pin narrow"
+  update_interval: "1min"
+  force_update: "true"
+  led_pin: "18"
+
+<<: !include .common.yaml
+
+logger:
+  level: VERBOSE
+
+esphome:
+  name: "${box_name}${box_num}"
+  comment: "${type}: ${board} (${comment})"
+
+web_server: !include include/web_server.yaml
+button: !include include/button.yaml
+captive_portal:
+
+light:
+  - platform: status_led
+    id: main_led
+    pin: ${led_pin}
+
+  - platform: binary
+    id: red_led
+    output: red_out
+
+output:
+  - platform: gpio
+    id: red_out
+    pin: 21
+
+  - platform: ledc
+    pin: 33
+    id: rtttl_out
+
+rtttl:
+  output: rtttl_out
+
+switch:
+  - platform: template
+    name: "Pause Count"
+    id: pause_count
+    optimistic: true
+    icon: mdi:play-pause
+
+binary_sensor:
+  - platform: status
+    name: "Status ${box_num}"
+
+  - platform: gpio
+    name: "Door Sensor ${box_num}"
+    id: door_sensor
+    pin:
+      number: 27
+      mode: INPUT_PULLUP
+    device_class: door
+    # entity_category: config
+    # icon: mdi:radiobox-marked
+    # filters:
+    # - invert:
+    on_press:
+      then:
+        - logger.log: "DOOR --- OPEN"
+    on_release:
+      then:
+        - logger.log: "DOOR --- CLOSED"
+
+  - platform: gpio
+    name: "Pause Button"
+    id: pause_button
+    pin:
+      number: 19
+      mode: INPUT_PULLUP
+    # internal: true
+    entity_category: config
+    icon: mdi:radiobox-marked
+    filters:
+      - invert:
+    on_multi_click:
+      - timing:
+          - ON for at least 3s
+        then:
+          - logger.log: "3 Second Reset"
+          - number.operation:
+              id: parts_count
+              operation: TO_MIN
+              cycle: true
+          - rtttl.play: "two:d=4,o=5,b=100:16e6,16e6"
+          - light.toggle: red_led
+          - delay: 250ms
+          - light.toggle: red_led
+      - timing:
+          - ON for at most 2.9s
+          - OFF for at least 0.1s
+        then:
+          - logger.log: "Toggle Pause Count"
+          - rtttl.play: "one:d=4,o=4,b=100:6e6"
+          - switch.toggle: pause_count
+          - light.toggle: red_led
+
+  - platform: gpio
+    pin: 32
+    name: "PIR ${box_num}"
+    device_class: motion
+    on_press:
+      then:
+        - light.turn_on: main_led
+
+        - if:
+            condition:
+              switch.is_off: pause_count
+            then:
+              - number.increment:
+                  id: parts_count
+                  cycle: false
+              - rtttl.play: "one:d=4,o=4,b=100:6e6"
+            else:
+              - rtttl.play: "long:d=1,o=5,b=100:e6"
+              - logger.log: "Counter PAUSED!"
+
+        # - number.decrement:
+        # id: parts_count
+        # cycle: false
+
+        # - number.operation:
+        # id: parts_count
+        # cycle: false
+        # operation: !lambda |-
+        # if (id(pause_count).state) {
+        # return {};
+        # } else {
+        # return NUMBER_OP_INCREMENT;
+        # }
+
+        # - lambda: |-
+        # if (not id(pause_count).state) {
+        # float new_count = id(parts_count).state + 1;
+        # auto call = id(parts_count).make_call();
+        # call.set_value(new_count);
+        # call.perform();
+        # }
+
+    on_release:
+      then:
+        - light.turn_off: main_led
+
+sensor:
+  - platform: uptime
+    name: "Uptime ${box_num}"
+    update_interval: 5min
+
+  - platform: internal_temperature
+    name: "Core Temp ${box_num}"
+    update_interval: 5min
+
+  - platform: wifi_signal
+    name: "WiFi Signal ${box_num}"
+    update_interval: 1min
+    force_update: true
+    filters:
+      - filter_out: 0
+      - median:
+
+number:
+  - platform: template
+    name: "Parts Count"
+    id: parts_count
+    icon: "mdi:counter"
+    optimistic: true
+    min_value: 0
+    max_value: 999999
+    step: 1
+    restore_value: true
+    initial_value: 0

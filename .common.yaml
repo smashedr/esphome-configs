@@ -1,6 +1,13 @@
 ${type}:
   board: "${board}"
 
+esphome:
+  name: "${box_name}${box_num}"
+  comment: "${type}: ${board} (${comment})"
+
+debug:
+  update_interval: 5min
+
 logger:
   level: DEBUG
 
@@ -26,3 +33,12 @@ wifi:
   ap:
     ssid: "${box_name}${box_num}"
     password: !secret host_pass
+
+time:
+  - platform: homeassistant
+    id: ha_time
+    timezone: "America/Los_Angeles"
+
+button:
+  - !include { file: include/button/restart.yaml }
+  - !include { file: include/button/safe_mode.yaml }

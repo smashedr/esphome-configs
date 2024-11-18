@@ -1,0 +1,9 @@
+platform: bmp280_i2c
+address: ${address}
+update_interval: "${update_interval}"
+temperature:
+  name: "Temp${box_num}-280"
+  force_update: ${force_update}
+pressure:
+  name: "Pres${box_num}-280"
+  force_update: ${force_update}

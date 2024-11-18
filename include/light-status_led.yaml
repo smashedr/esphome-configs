@@ -1,8 +1,0 @@
-light:
-  - platform: status_led
-    name: "Status LED ${box_num}"
-    icon: mdi:alarm-light-outline
-    id: main_led
-    entity_category: config
-    pin: ${led_pin}
-    restore_mode: RESTORE_DEFAULT_ON

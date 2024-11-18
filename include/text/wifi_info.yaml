@@ -1,0 +1,16 @@
+platform: wifi_info
+ip_address:
+  name: "WiFi IP ${box_num}"
+  id: ip_address
+  icon: mdi:wifi
+  #icon: mdi:ip-outline
+ssid:
+  name: "WiFi SSID ${box_num}"
+  id: ssid
+  icon: mdi:wifi
+  #icon: mdi:rename-box-outline
+mac_address:
+  name: "WiFi MAC ${box_num}"
+  id: mac_address
+  icon: mdi:wifi
+  #icon: mdi:identifier

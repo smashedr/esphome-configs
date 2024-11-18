@@ -1,0 +1,5 @@
+platform: absolute_humidity
+name: "AbsHumi${box_num}"
+temperature: "temp_${box_num}"
+humidity: "humi_${box_num}"
+force_update: ${force_update}

@@ -1,0 +1,21 @@
+platform: gpio
+name: "Physical Button ${box_num}"
+pin:
+  number: ${pin}
+  mode: INPUT_PULLUP
+entity_category: diagnostic
+icon: mdi:radiobox-marked
+filters:
+  - invert:
+on_multi_click:
+  - timing:
+      - ON for at least 3s
+    then:
+      - logger.log: "3 Second Reset"
+      - button.press: reboot_device
+  - timing:
+      - ON for at most 2.9s
+      - OFF for at least 0.1s
+    then:
+      - logger.log: "Single Click"
+      - light.toggle: main_led

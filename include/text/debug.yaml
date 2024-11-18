@@ -1,0 +1,5 @@
+platform: debug
+device:
+  name: "Device Info ${box_num}"
+reset_reason:
+  name: "Reset Reason ${box_num}"

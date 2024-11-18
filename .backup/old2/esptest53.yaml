@@ -1,0 +1,85 @@
+substitutions:
+  box_num: "53"
+  box_name: "esptest"
+  type: "esp32"
+  board: "nodemcu-32s"
+  comment: "38-pin narrow"
+  run_time: "10s"
+  sleep_time: "1min"
+  update_interval: "${sleep_time}"
+  led_pin: "27"
+
+<<: !include .common.yaml
+# <<: !include include/light-status_led.yaml
+# <<: !include include/light-output.yaml
+<<: !include include/deep-sleep.yaml
+
+esphome:
+  name: "${box_name}${box_num}"
+  comment: "${type}: ${board} (${comment})"
+  includes: !include include/includes.yaml
+  on_boot: !include include/on_boot-sleep.yaml
+
+# web_server: !include include/web_server.yaml
+button: !include include/button.yaml
+captive_portal:
+
+logger:
+  # level: WARN
+  # baud_rate: 0
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  domain: !secret local_domain
+  fast_connect: true
+  power_save_mode: high
+  output_power: 8.5dB
+  use_address: 192.168.1.2${box_num}
+  manual_ip:
+    static_ip: 192.168.1.2${box_num}
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+
+dallas:
+  - pin:
+      number: 33
+      mode: INPUT_PULLUP
+    update_interval: "${update_interval}"
+
+binary_sensor:
+  - platform: status
+    name: "Status ${box_num}"
+
+  - platform: homeassistant
+    id: deep_sleep_binary
+    entity_id: input_boolean.deep_sleep_${box_num}
+
+sensor:
+  # - platform: uptime
+  # name: "Uptime ${box_num}"
+  # update_interval: 300s
+
+  - platform: wifi_signal
+    name: "WiFi Signal ${box_num}"
+    update_interval: "${update_interval}"
+    filters:
+      - filter_out: 0
+      - median:
+
+  - platform: custom
+    lambda: |-
+      auto my_sensor = new SystemStatsSensor();
+      App.register_component(my_sensor);
+      return {my_sensor->heap_free_sensor};
+
+    sensors:
+      - name: "Heap Free ${box_num}"
+        unit_of_measurement: "%"
+        accuracy_decimals: 1
+        entity_category: diagnostic
+        icon: mdi:memory
+
+  - platform: dallas
+    address: 0xf8011453d4c3aa28
+    name: "Temp${box_num}-DS"
