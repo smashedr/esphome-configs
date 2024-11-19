@@ -12,8 +12,14 @@ substitutions:
 
 captive_portal:
 
+debug:
+  update_interval: 5min
+
 light:
   - !include { file: include/light/status_led.yaml, vars: { pin: 33 } }
+
+time:
+  - !include { file: include/time/ha_time.yaml }
 
 globals:
   - id: sensor_metric
