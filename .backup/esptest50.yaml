@@ -1,0 +1,54 @@
+# PIR - Kitchen - BENCHED
+
+substitutions:
+  box_num: "50"
+  box_name: "esptest"
+  type: "esp8266"
+  board: "nodemcuv2"
+  comment: "full"
+  update_interval: "${sleep_time}"
+  force_update: "true"
+  #run_time: "10s"
+  #sleep_time: "1min"
+
+<<: !include .common.yaml
+<<: !include { file: include/web_server.yaml, vars: { version: 3 } }
+
+captive_portal:
+
+#logger:
+#  baud_rate: 0
+
+light:
+  - !include { file: include/light/status_led.yaml, vars: { pin: D6 } }
+
+i2c:
+  scan: false
+
+text_sensor:
+  - !include { file: include/text/version.yaml }
+  - !include { file: include/text/wifi_info.yaml }
+
+binary_sensor:
+  - !include { file: include/binary/status.yaml }
+  #- !include { file: include/binary/btn_light_reset.yaml, vars: { pin: D5 } }
+
+  - platform: gpio
+    pin: D5
+    name: "PIR ${box_num}"
+    device_class: motion
+    on_press:
+      then:
+        - light.turn_on: main_led
+    on_release:
+      then:
+        - light.turn_off: main_led
+    filters:
+      - delayed_off: 15s
+
+sensor:
+  - !include { file: include/sensor/internal_temperature.yaml }
+  - !include { file: include/sensor/uptime.yaml }
+  - !include { file: include/sensor/wifi_signal.yaml }
+  #- !include { file: include/sensor/dht22.yaml, vars: { pin: 19 } }
+  #- !include { file: include/sensor/bmp280.yaml, vars: { address: 0x76 } }

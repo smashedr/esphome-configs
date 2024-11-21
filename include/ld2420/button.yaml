@@ -1,0 +1,9 @@
+platform: ld2420
+apply_config:
+  name: Apply Config
+factory_reset:
+  name: Factory Reset
+restart_module:
+  name: Restart Module
+revert_config:
+  name: Undo Edits

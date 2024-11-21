@@ -1,3 +1,5 @@
+# Temp/Humidity - Outside
+
 substitutions:
   box_num: "02"
   box_name: "espbox"
