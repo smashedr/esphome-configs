@@ -17,22 +17,23 @@ captive_portal:
 debug:
   update_interval: 5min
 
-logger:
-  level: DEBUG
-  baud_rate: 0
-  #logs:
-  #  component: ERROR
+#logger:
+#  level: DEBUG
+#  baud_rate: 0
 
 api:
   encryption:
     key: !secret enc_key
-  actions:
-    - action: play_rtttl
-      variables:
-        song_str: string
-      then:
-        - rtttl.play:
-            rtttl: !lambda "return song_str;"
+
+#interval:
+#  - interval: 15s
+#    then:
+#      - logger.log: "15s Interval"
+#      - logger.log:
+#          format: "WiFi IP 1: %s"
+#          args: ["id(wifi_ip).state.c_str()"]
+#      - lambda: |-
+#          ESP_LOGI("main", "WiFi IP 2: %s", WiFi.localIP().toString().c_str());
 
 light:
   - !include { file: include/light/status_led.yaml, vars: { pin: 32 } }
@@ -41,52 +42,23 @@ button:
   - !include { file: include/button/restart.yaml }
   - !include { file: include/button/safe_mode.yaml }
 
-  - platform: ld2420
-    apply_config:
-      name: Apply Config
-    factory_reset:
-      name: Factory Reset
-    restart_module:
-      name: Restart Module
-    revert_config:
-      name: Undo Edits
-
-#switch:
-#  - platform: gpio
-#    name: "Buzzer ${box_num}"
-#    id: buzzer
-#    pin: GPIO19
-#    icon: "mdi:volume-high"
-
-output:
-  - platform: ledc
-    pin: GPIO33
-    id: rtttl_out
-
-rtttl:
-  output: rtttl_out
-  on_finished_playback:
-    - logger.log: "Playback Finished."
-
-#one_wire:
-#  - platform: gpio
-#    pin: GPIO14
-
 i2c:
   sda: GPIO21
   scl: GPIO22
   scan: false
   frequency: 400kHz
 
-uart:
-  tx_pin: GPIO17
-  rx_pin: GPIO16
-  baud_rate: 115200
+one_wire:
+  - platform: gpio
+    pin: GPIO33
 
 font:
   - file: "fonts/arial.ttf"
     id: font1
     size: 14
+  - file: "fonts/arial.ttf"
+    id: font2
+    size: 16
 
 display:
   - platform: ssd1306_i2c
@@ -95,74 +67,33 @@ display:
     #reset_pin: D0
     #update_interval: 5s
     lambda: |-
-      if (id(custom_text_input).state.empty()) {
+      if (!id(ha_status).state) {
         it.printf(0, 0, id(font1), "Connecting...");
       } else {
-        it.printf(0, 0, id(font1), "%s", id(custom_text_input).state.c_str());
+        it.printf(0, 0, id(font1), "IP:");
+        it.printf(128, 0, id(font1), TextAlign::RIGHT, "%s", id(wifi_ip).state.c_str());
+
+        it.printf(0, 23, id(font2), "Fridge:");
+        it.printf(128, 23, id(font2), TextAlign::RIGHT, "%.1f°F", id(temp1).state * 1.8 + 32);
+
+        it.printf(0, 46, id(font2), "Freezer:");
+        it.printf(128, 46, id(font2), TextAlign::RIGHT, "%.1f°F", id(temp2).state * 1.8 + 32);
+
       }
-      if (id(presence).state) {
-        it.print(0, 23, id(font1), "Somebody is Here");
-      } else {
-        it.print(0, 23, id(font1), "Nobody is Here");
-      }
-      it.printf(0, 46, id(font1), "Distance: %.1f", id(moving_distance).state);
-
-ld2420:
-
-select:
-  - platform: ld2420
-    operating_mode:
-      name: Operating Mode
-
-number:
-  - platform: ld2420
-    presence_timeout:
-      name: Detection Presence Timeout
-    min_gate_distance:
-      name: Detection Gate Minimum
-    max_gate_distance:
-      name: Detection Gate Maximum
-
-    gate_select:
-      name: Select Gate to Set
-    still_threshold:
-      name: Set Still Threshold Value
-    move_threshold:
-      name: Set Move Threshold Value
-
-    gate_move_sensitivity:
-      name: Move Calibration Sensitivity Factor
-    gate_still_sensitivity:
-      name: Still Calibration Sensitivity Factor
-
-    gate_0:
-      move_threshold:
-        name: Gate 0 Move Threshold
-      still_threshold:
-        name: Gate 0 Still Threshold
-    gate_1:
-      move_threshold:
-        name: Gate 1 Move Threshold
-      still_threshold:
-        name: Gate 1 Still Threshold
 
 text_sensor:
   - !include { file: include/text/debug.yaml }
   - !include { file: include/text/version.yaml }
   - !include { file: include/text/wifi_info.yaml }
 
-  - platform: ld2420
-    fw_version:
-      name: "LD2420 Firmware ${box_num}"
-
   - platform: homeassistant
-    name: "Custom Text Input"
-    id: custom_text_input
-    entity_id: input_text.custom_text
+    name: "WiFi IP Address"
+    id: wifi_ip
+    entity_id: sensor.wifi_ip_51
 
 binary_sensor:
   - !include { file: include/binary/status.yaml }
-  #- !include { file: include/binary/ha_status.yaml }
+  - !include { file: include/binary/ha_status.yaml }
 
   - platform: gpio
     pin:
@@ -173,24 +104,19 @@ binary_sensor:
     filters:
       - invert:
     on_click:
-      - logger.log: "BUTTON PRESSED"
-      - rtttl.play: "HighMedium:d=4,o=6,b=120:c, e, c, e"
-      #- rtttl.play: "one:d=4,o=4,b=240:6e6"
-      #- rtttl.play: "long:d=2,o=5,b=100:e6"
-
-  - platform: ld2420
-    has_target:
-      name: "Presence ${box_num}"
-      id: presence
-      on_press:
+      - min_length: 1ms
+        max_length: 1000ms
         then:
-          - logger.log: "+++ PRESENCE DETECTED"
-          - light.turn_on: main_led
-          #- rtttl.play: "HighMedium:d=4,o=6,b=120:c, e, c, e"
-      on_release:
+          - logger.log: ">1 Second Single Click"
+          - light.toggle: main_led
+      - min_length: 1001ms
+        max_length: 4999ms
         then:
-          - logger.log: "--- NO PRESENCE"
-          - light.turn_off: main_led
+          - logger.log: "1-5 Second Long Press"
+      - min_length: 5000ms
+        max_length: 10000ms
+        then:
+          - logger.log: "5< Second Long Press"
 
 sensor:
   - !include { file: include/sensor/debug.yaml }
@@ -198,13 +124,16 @@ sensor:
   - !include { file: include/sensor/uptime.yaml }
   - !include { file: include/sensor/wifi_signal.yaml }
 
-  #- platform: dallas_temp
-  #  name: "Temp${box_num}-18"
-  #  id: "temp_${box_num}"
-  #  #address: 0xf8011453d4c3aa28
-  #  update_interval: 5s
+  - platform: dallas_temp
+    name: "Temp${box_num}-1"
+    id: temp1
+    address: 0x80011453ddfcaa28
+    update_interval: 15s
+    #force_update: ${force_update}
 
-  - platform: ld2420
-    moving_distance:
-      name: "Moving Distance ${box_num}"
-      id: moving_distance
+  - platform: dallas_temp
+    name: "Temp${box_num}-2"
+    id: temp2
+    address: 0xf8011453d4c3aa28
+    update_interval: 15s
+    #force_update: ${force_update}
