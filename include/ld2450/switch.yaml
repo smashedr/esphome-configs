@@ -1,0 +1,5 @@
+platform: ld2450
+single_target:
+  name: "Single Target ${box_num}"
+bluetooth:
+  name: "Bluetooth ${box_num}"

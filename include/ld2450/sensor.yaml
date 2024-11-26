@@ -1,0 +1,31 @@
+platform: ld2450
+target_count:
+  name: "Targets ${box_num}"
+
+person_0:
+  position_x:
+    name: "P0 Position X"
+  position_y:
+    name: "P0 Position Y"
+  speed:
+    name: "P0 Speed"
+  resolution:
+    name: "P0 Resolution"
+person_1:
+  position_x:
+    name: "P1 Position X"
+  position_y:
+    name: "P1 Position Y"
+  speed:
+    name: "P1 Speed"
+  resolution:
+    name: "P1 Resolution"
+person_2:
+  position_x:
+    name: "P2 Position X"
+  position_y:
+    name: "P2 Position Y"
+  speed:
+    name: "P2 Speed"
+  resolution:
+    name: "P2 Resolution"

@@ -1,0 +1,6 @@
+external_components:
+  - source:
+      type: git
+      url: https://github.com/uncle-yura/esphome-ld2450
+      ref: master
+    components: [ld2450]

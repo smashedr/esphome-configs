@@ -1,0 +1,7 @@
+platform: ld2450
+has_target:
+  name: "Presence ${box_num}"
+has_moving_target:
+  name: "Moving Target ${box_num}"
+has_still_target:
+  name: "Still Target ${box_num}"

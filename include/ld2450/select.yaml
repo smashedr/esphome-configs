@@ -1,0 +1,5 @@
+platform: ld2450
+baud_rate:
+  name: "Baud Rate ${box_num}"
+regions_type:
+  name: "Regions Type ${box_num}"

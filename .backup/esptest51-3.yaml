@@ -68,47 +68,39 @@ display:
     #update_interval: 5s
     lambda: |-
       if (!id(ha_status).state) {
-        it.printf(0, 0, id(font1), "Connecting to HA...");
+        it.printf(0, 0, id(font1), "Connecting...");
       } else {
-        it.printf(0, 0, id(font1), "Online");
-        
-        it.printf(0, 23, id(font1), "IP:");
-        it.printf(128, 23, id(font1), TextAlign::RIGHT, "%s", WiFi.localIP().toString().c_str());
+        it.printf(0, 0, id(font1), "IP:");
+        it.printf(128, 0, id(font1), TextAlign::RIGHT, "%s", id(wifi_ip).state.c_str());
 
-        // it.printf(0, 23, id(font2), "Fridge:");
-        // it.printf(128, 23, id(font2), TextAlign::RIGHT, "%.1f°F", id(temp1).state * 1.8 + 32);
-        // it.printf(0, 46, id(font2), "Freezer:");
-        // it.printf(128, 46, id(font2), TextAlign::RIGHT, "%.1f°F", id(temp2).state * 1.8 + 32);
+        it.printf(0, 23, id(font2), "Fridge:");
+        it.printf(128, 23, id(font2), TextAlign::RIGHT, "%.1f°F", id(temp1).state * 1.8 + 32);
+
+        it.printf(0, 46, id(font2), "Freezer:");
+        it.printf(128, 46, id(font2), TextAlign::RIGHT, "%.1f°F", id(temp2).state * 1.8 + 32);
 
       }
-
-switch:
-  - platform: gpio
-    name: "Buzzer ${box_num}"
-    id: buzzer
-    pin: GPIO18
-    icon: "mdi:volume-high"
 
 text_sensor:
   - !include { file: include/text/debug.yaml }
   - !include { file: include/text/version.yaml }
   - !include { file: include/text/wifi_info.yaml }
 
-  #- platform: homeassistant
-  #  name: "WiFi IP Address"
-  #  id: wifi_ip
-  #  entity_id: sensor.wifi_ip_51
+  - platform: homeassistant
+    name: "WiFi IP Address"
+    id: wifi_ip
+    entity_id: sensor.wifi_ip_51
 
 binary_sensor:
   - !include { file: include/binary/status.yaml }
   - !include { file: include/binary/ha_status.yaml }
 
   - platform: gpio
-    name: "Physical Button ${box_num}"
-    icon: mdi:radiobox-marked
     pin:
       number: 19
       mode: INPUT_PULLUP
+    name: "Physical Button ${box_num}"
+    icon: mdi:radiobox-marked
     filters:
       - invert:
     on_click:
@@ -126,54 +118,22 @@ binary_sensor:
         then:
           - logger.log: "5< Second Long Press"
 
-  - platform: gpio
-    name: "Touch 1 - ${box_num}"
-    id: touch_1
-    icon: mdi:gesture-tap
-    pin:
-      number: 27
-      mode: INPUT_PULLUP
-    #  inverted: true
-    on_press:
-      then:
-        - logger.log: "Touch START"
-        - light.turn_on: main_led
-        - switch.turn_on: buzzer
-    on_release:
-      then:
-        - logger.log: "Touch END"
-        - light.turn_off: main_led
-        - switch.turn_off: buzzer
-
-  #- platform: gpio
-  #  name: "Obstacle ${box_num}"
-  #  pin:
-  #    number: 18
-  #    inverted: true
-  #    #mode: INPUT_PULLUP
-  #  on_press:
-  #    then:
-  #      - light.turn_on: main_led
-  #  on_release:
-  #    then:
-  #      - light.turn_off: main_led
-
 sensor:
   - !include { file: include/sensor/debug.yaml }
   - !include { file: include/sensor/internal_temperature.yaml }
   - !include { file: include/sensor/uptime.yaml }
   - !include { file: include/sensor/wifi_signal.yaml }
 
-  # platform: dallas_temp
-  # name: "Temp${box_num}-1"
-  # id: temp1
-  # address: 0x80011453ddfcaa28
-  # update_interval: 15s
-  # #force_update: ${force_update}
+  - platform: dallas_temp
+    name: "Temp${box_num}-1"
+    id: temp1
+    address: 0x80011453ddfcaa28
+    update_interval: 15s
+    #force_update: ${force_update}
 
-  # platform: dallas_temp
-  # name: "Temp${box_num}-2"
-  # id: temp2
-  # address: 0xf8011453d4c3aa28
-  # update_interval: 15s
-  # #force_update: ${force_update}
+  - platform: dallas_temp
+    name: "Temp${box_num}-2"
+    id: temp2
+    address: 0xf8011453d4c3aa28
+    update_interval: 15s
+    #force_update: ${force_update}

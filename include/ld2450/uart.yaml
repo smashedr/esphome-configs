@@ -1,0 +1,9 @@
+uart:
+  id: uart_bus
+  tx_pin:
+    number: ${tx}
+  rx_pin:
+    number: ${rx}
+  baud_rate: 256000
+  parity: NONE
+  stop_bits: 1

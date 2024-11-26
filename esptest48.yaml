@@ -1,0 +1,49 @@
+# PIR - Kitchen - BENCHED
+
+substitutions:
+  box_num: "48"
+  box_name: "esptest"
+  type: "esp32"
+  board: "nodemcu-32s"
+  comment: "38-pin (narrow)"
+  update_interval: "1min"
+  force_update: "true"
+
+<<: !include .common.yaml
+<<: !include { file: include/web_server.yaml, vars: { version: 3 } }
+
+captive_portal:
+
+debug:
+  update_interval: 5min
+
+light:
+  - !include { file: include/light/status_led.yaml, vars: { pin: 33 } }
+
+text_sensor:
+  - !include { file: include/text/debug.yaml }
+  - !include { file: include/text/version.yaml }
+  - !include { file: include/text/wifi_info.yaml }
+
+binary_sensor:
+  - !include { file: include/binary/status.yaml }
+
+  - platform: gpio
+    pin: GPIO19
+    name: "PIR ${box_num}"
+    id: pir_1
+    device_class: motion
+    on_press:
+      then:
+        - light.turn_on: main_led
+    on_release:
+      then:
+        - light.turn_off: main_led
+    #filters:
+    #  - delayed_off: 15s
+
+sensor:
+  - !include { file: include/sensor/debug.yaml }
+  - !include { file: include/sensor/internal_temperature.yaml }
+  - !include { file: include/sensor/uptime.yaml }
+  - !include { file: include/sensor/wifi_signal.yaml }
