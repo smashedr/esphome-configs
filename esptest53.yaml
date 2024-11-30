@@ -1,4 +1,4 @@
-# mmWave - Kitchen
+# ld2420 - Bedroom
 
 substitutions:
   box_num: "53"
@@ -27,7 +27,25 @@ light:
 button:
   - !include { file: include/button/restart.yaml }
   - !include { file: include/button/safe_mode.yaml }
+  - !include { file: include/button/factory_reset.yaml }
   - !include { file: include/ld2420/button.yaml }
+
+switch:
+  - platform: template
+    name: "Presence Light ${box_num}"
+    id: presence_light
+    icon: mdi:alarm-light
+    optimistic: true
+    turn_on_action:
+      #- logger.log: "Light Enabled"
+      - if:
+          condition:
+            binary_sensor.is_on: presence
+          then:
+            - light.turn_on: main_led
+    turn_off_action:
+      #- logger.log: "Light Disabled"
+      - light.turn_off: main_led
 
 select:
   - !include { file: include/ld2420/select.yaml }
@@ -57,12 +75,31 @@ binary_sensor:
       id: presence
       on_press:
         then:
-          - logger.log: "+++ PRESENCE DETECTED"
-          - light.turn_on: main_led
+          #- logger.log: "+++ PRESENCE DETECTED"
+          - if:
+              condition:
+                switch.is_on: presence_light
+              then:
+                - light.turn_on: main_led
       on_release:
         then:
-          - logger.log: "--- NO PRESENCE"
+          #- logger.log: "--- NO PRESENCE"
           - light.turn_off: main_led
+
+  - platform: gpio
+    name: "Touch 1 - ${box_num}"
+    id: touch_1
+    icon: mdi:gesture-tap
+    pin:
+      number: 26
+      mode: INPUT_PULLUP
+    on_press:
+      then:
+        #- logger.log: "Touch START"
+        - switch.toggle: presence_light
+    #on_release:
+    #  then:
+    #    - logger.log: "Touch END"
 
 sensor:
   - !include { file: include/sensor/debug.yaml }

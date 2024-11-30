@@ -34,3 +34,4 @@ wifi:
 button:
   - !include { file: include/button/restart.yaml }
   - !include { file: include/button/safe_mode.yaml }
+  - !include { file: include/button/factory_reset.yaml }

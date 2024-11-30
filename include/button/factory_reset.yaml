@@ -1,0 +1,2 @@
+platform: factory_reset
+name: "Factory Reset ${box_num}"

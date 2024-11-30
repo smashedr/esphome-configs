@@ -12,13 +12,116 @@ substitutions:
 <<: !include .common.yaml
 <<: !include { file: include/web_server.yaml, vars: { version: 3 } }
 
+esphome:
+  name: "${box_name}${box_num}"
+  comment: "${type}: ${board} (${comment})"
+  on_boot:
+    priority: -100
+    then:
+      - if:
+          condition:
+            - binary_sensor.is_on: presence
+            - switch.is_on: presence_light
+          then:
+            - logger.log: "Sensor and Switch ON - Turning On: main_led"
+            - light.turn_on: main_led
+
 captive_portal:
 
 debug:
   update_interval: 5min
 
 light:
-  - !include { file: include/light/status_led.yaml, vars: { pin: 33 } }
+  - !include { file: include/light/status_led.yaml, vars: { pin: 25 } }
+
+  - platform: rgb
+    name: "RGB LED ${box_num}"
+    id: rgb_led
+    icon: mdi:lightbulb-outline
+    red: rgb_r
+    green: rgb_g
+    blue: rgb_b
+    effects: !include_dir_merge_list include/light/effects
+
+  - platform: monochromatic
+    name: "Monochromatic Light ${box_num}"
+    output: mono_chromo
+    icon: mdi:lightbulb-outline
+    effects: !include { file: include/light/effects/pulse.yaml }
+
+#number:
+#  - platform: template
+#    name: "Presence Delay ${box_num}"
+#    id: presence_delay
+#    unit_of_measurement: "s"
+#    icon: mdi:timer
+#    optimistic: true
+#    restore_value: true
+#    initial_value: 15
+#    min_value: 0
+#    max_value: 300
+#    step: 1
+
+button:
+  - !include { file: include/button/restart.yaml }
+  - !include { file: include/button/safe_mode.yaml }
+  - !include { file: include/button/factory_reset.yaml }
+
+  #- platform: template
+  #  name: "Effect None ${box_num}"
+  #  on_press:
+  #    - logger.log: "light.turn_on: rgb_led: None"
+  #    - light.turn_on:
+  #        id: rgb_led
+  #        effect: None
+
+switch:
+  - platform: template
+    name: "Presence Light ${box_num}"
+    id: presence_light
+    icon: mdi:alarm-light-off-outline
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    turn_on_action:
+      #- logger.log: "Light Enabled"
+      #- light.turn_on: rgb_led
+      - if:
+          condition:
+            binary_sensor.is_on: presence
+          then:
+            - light.turn_on: main_led
+    turn_off_action:
+      #- logger.log: "Light Disabled"
+      #- light.turn_off: rgb_led
+      - light.turn_off: main_led
+
+  #- platform: template
+  #  name: "Light Effect ${box_num}"
+  #  turn_on_action:
+  #    - light.turn_on:
+  #        id: rgb_led
+  #        effect: strobe
+  #  turn_off_action:
+  #    - light.turn_off: rgb_led
+
+output:
+  - platform: ledc
+    id: rgb_r
+    pin: GPIO27
+    max_power: 75%
+  - platform: ledc
+    id: rgb_g
+    pin: GPIO14
+    max_power: 80%
+  - platform: ledc
+    id: rgb_b
+    pin: GPIO12
+    max_power: 80%
+
+  - platform: ledc
+    id: mono_chromo
+    pin: GPIO33
+    max_power: 80%
 
 text_sensor:
   - !include { file: include/text/debug.yaml }
@@ -30,17 +133,43 @@ binary_sensor:
 
   - platform: gpio
     pin: GPIO19
-    name: "PIR ${box_num}"
-    id: pir_1
+    name: "Presence ${box_num}"
+    id: presence
+    #icon: mdi:motion-sensor
     device_class: motion
+    filters:
+      - delayed_off: 60s
+      #- delayed_off: !lambda "return id(presence_delay).state;"
+      #- delayed_off: !lambda -|
+      #    int delay = id(presence_delay).state
+      #    return std::format(%ds, delay);
     on_press:
       then:
-        - light.turn_on: main_led
+        #- logger.log: "+++ PRESENCE DETECTED"
+        - if:
+            condition:
+              switch.is_on: presence_light
+            then:
+              - light.turn_on: main_led
     on_release:
       then:
+        #- logger.log: "--- NO PRESENCE"
         - light.turn_off: main_led
-    #filters:
-    #  - delayed_off: 15s
+
+  - platform: gpio
+    name: "Touch 1 - ${box_num}"
+    id: touch_1
+    icon: mdi:gesture-tap
+    pin:
+      number: 26
+      mode: INPUT_PULLUP
+    on_press:
+      then:
+        #- logger.log: "Touch START"
+        - switch.toggle: presence_light
+    #on_release:
+    #  then:
+    #    - logger.log: "Touch END"
 
 sensor:
   - !include { file: include/sensor/debug.yaml }

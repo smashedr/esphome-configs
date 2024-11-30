@@ -1,0 +1,104 @@
+- strobe:
+    name: "RGB"
+    colors:
+      - state: true
+        brightness: 100%
+        red: 100%
+        green: 0%
+        blue: 0%
+        duration: 1000ms
+      - state: true
+        brightness: 100%
+        red: 0%
+        green: 100%
+        blue: 0%
+        duration: 1000ms
+      - state: true
+        brightness: 100%
+        red: 0%
+        green: 0%
+        blue: 100%
+        duration: 1000ms
+
+- strobe:
+    name: "Transition RGB"
+    colors:
+      - state: true
+        brightness: 100%
+        red: 100%
+        green: 0%
+        blue: 0%
+        duration: 1000ms
+        transition_length: 500ms
+      - state: true
+        brightness: 100%
+        red: 0%
+        green: 100%
+        blue: 0%
+        duration: 1000ms
+        transition_length: 500ms
+      - state: true
+        brightness: 100%
+        red: 0%
+        green: 0%
+        blue: 100%
+        duration: 1000ms
+        transition_length: 500ms
+
+- strobe:
+    name: "Street Light"
+    colors:
+      - state: true
+        brightness: 100%
+        red: 0%
+        green: 100%
+        blue: 0%
+        duration: 1000ms
+      - state: true
+        brightness: 100%
+        red: 100%
+        green: 80%
+        blue: 0%
+        duration: 1000ms
+      - state: true
+        brightness: 100%
+        red: 100%
+        green: 0%
+        blue: 0%
+        duration: 1000ms
+
+- strobe:
+    name: "Flash RG"
+    colors:
+      - state: true
+        brightness: 100%
+        red: 100%
+        green: 0%
+        blue: 0%
+        duration: 250ms
+      #- state: false
+      #  duration: 250ms
+      - state: true
+        brightness: 100%
+        red: 0%
+        green: 100%
+        blue: 0%
+        duration: 250ms
+
+- strobe:
+    name: "Transition RG"
+    colors:
+      - state: true
+        brightness: 100%
+        red: 100%
+        green: 0%
+        blue: 0%
+        duration: 250ms
+        transition_length: 250ms
+      - state: true
+        brightness: 100%
+        red: 0%
+        green: 100%
+        blue: 0%
+        duration: 250ms
+        transition_length: 250ms

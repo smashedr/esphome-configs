@@ -1,4 +1,4 @@
-# ld2450 - BENCHED
+# ld2450 - Kitchen
 
 substitutions:
   box_num: "47"
@@ -200,6 +200,7 @@ ld2450:
 button:
   - !include { file: include/button/restart.yaml }
   - !include { file: include/button/safe_mode.yaml }
+  - !include { file: include/button/factory_reset.yaml }
 
   - platform: ld2450
     factory_reset:

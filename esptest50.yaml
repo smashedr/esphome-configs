@@ -1,4 +1,4 @@
-# PIR - Kitchen - BENCHED
+# ld2420 - Bathroom
 
 substitutions:
   box_num: "50"
@@ -11,6 +11,18 @@ substitutions:
 
 <<: !include .common.yaml
 <<: !include { file: include/web_server.yaml, vars: { version: 3 } }
+
+#esphome:
+#  name: "${box_name}${box_num}"
+#  comment: "${type}: ${board} (${comment})"
+#  on_boot:
+#    priority: -100
+#    then:
+#      - if:
+#          condition:
+#            - binary_sensor.is_off: bathroom_light
+#          then:
+#            - light.turn_off: main_led
 
 captive_portal:
 
@@ -27,6 +39,7 @@ light:
 button:
   - !include { file: include/button/restart.yaml }
   - !include { file: include/button/safe_mode.yaml }
+  - !include { file: include/button/factory_reset.yaml }
   - !include { file: include/ld2420/button.yaml }
 
 select:
@@ -57,12 +70,21 @@ binary_sensor:
       id: presence
       on_press:
         then:
-          - logger.log: "+++ PRESENCE DETECTED"
+          - logger.log: "Presence Detected"
+          - wait_until:
+              condition:
+                binary_sensor.is_on: bathroom_light
+              timeout: 8s
           - light.turn_off: main_led
       on_release:
         then:
-          - logger.log: "--- NO PRESENCE"
+          - logger.log: "No Presence"
           - light.turn_on: main_led
+
+  - platform: homeassistant
+    name: "Bathroom Light"
+    id: bathroom_light
+    entity_id: light.bathroom_light
 
 sensor:
   - !include { file: include/sensor/debug.yaml }
