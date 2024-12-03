@@ -1,5 +1,7 @@
 platform: debug
 device:
   name: "Device Info ${box_num}"
+  disabled_by_default: true
 reset_reason:
   name: "Reset Reason ${box_num}"
+  disabled_by_default: true

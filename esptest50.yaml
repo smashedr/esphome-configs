@@ -9,22 +9,31 @@ substitutions:
   update_interval: "1min"
   force_update: "true"
 
-<<: !include .common.yaml
-<<: !include { file: include/web_server.yaml, vars: { version: 3 } }
+<<: !include { file: .common.yaml }
+<<: !include { file: include/web/web_server.yaml, vars: { version: 3 } }
+
+captive_portal:
 
 #esphome:
 #  name: "${box_name}${box_num}"
 #  comment: "${type}: ${board} (${comment})"
 #  on_boot:
-#    priority: -100
-#    then:
-#      - if:
-#          condition:
-#            - binary_sensor.is_off: bathroom_light
-#          then:
-#            - light.turn_off: main_led
-
-captive_portal:
+#    - priority: -100
+#      then:
+#        - if:
+#            condition:
+#              - binary_sensor.is_on: presence
+#              - light.is_on: main_led
+#            then:
+#              - logger.log: "Turning Off: main_led"
+#              - light.turn_off: main_led
+#            else:
+#              - if:
+#                  condition:
+#                    - switch.is_on: night_light
+#                  then:
+#                    - logger.log: "Turning On: main_led"
+#                    - light.turn_on: main_led
 
 debug:
   update_interval: 5min
@@ -37,10 +46,28 @@ light:
   - !include { file: include/light/status_led.yaml, vars: { pin: D5 } }
 
 button:
+  - !include { file: include/button/identify.yaml }
   - !include { file: include/button/restart.yaml }
   - !include { file: include/button/safe_mode.yaml }
   - !include { file: include/button/factory_reset.yaml }
   - !include { file: include/ld2420/button.yaml }
+
+switch:
+  - platform: template
+    name: "Night Light ${box_num}"
+    id: night_light
+    icon: mdi:lightbulb-night
+    optimistic: true
+    turn_on_action:
+      #- logger.log: "Light Enabled"
+      - if:
+          condition:
+            binary_sensor.is_off: presence
+          then:
+            - light.turn_on: main_led
+    turn_off_action:
+      #- logger.log: "Light Disabled"
+      - light.turn_off: main_led
 
 select:
   - !include { file: include/ld2420/select.yaml }
@@ -81,6 +108,21 @@ binary_sensor:
           - logger.log: "No Presence"
           - light.turn_on: main_led
 
+  #- platform: gpio
+  #  name: "Touch 1 - ${box_num}"
+  #  id: touch_1
+  #  icon: mdi:gesture-tap-box
+  #  pin:
+  #    number: 26
+  #    mode: INPUT_PULLUP
+  #  on_press:
+  #    then:
+  #      #- logger.log: "Touch START"
+  #      - switch.toggle: night_light
+  #  #on_release:
+  #  #  then:
+  #  #    - logger.log: "Touch END"
+
   - platform: homeassistant
     name: "Bathroom Light"
     id: bathroom_light
@@ -88,6 +130,7 @@ binary_sensor:
 
 sensor:
   - !include { file: include/sensor/debug.yaml }
+  #- !include { file: include/sensor/internal_temperature.yaml }  # not on 8266
   - !include { file: include/sensor/uptime.yaml }
   - !include { file: include/sensor/wifi_signal.yaml }
   - !include { file: include/ld2420/sensor.yaml }

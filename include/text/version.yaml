@@ -1,2 +1,3 @@
 platform: version
 name: "ESPHome Version ${box_num}"
+disabled_by_default: true

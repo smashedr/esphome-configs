@@ -1,0 +1,15 @@
+platform: template
+name: "Identify ${box_num}"
+#icon: mdi:lightbulb-on-50
+entity_category: config
+device_class: identify
+on_press:
+  - logger.log: "Flashing Main LED For 20 Seconds..."
+  - light.turn_on:
+      id: main_led
+      effect: Flash
+  - delay: 20s
+  - light.turn_off: main_led
+web_server:
+  #sorting_group_id: sg_device
+  sorting_weight: 22

@@ -1,0 +1,6 @@
+web_server:
+  port: 80
+  ota: false
+  version: ${version}
+  #sorting_groups:
+  #  - !include { file: groups/device.yaml }

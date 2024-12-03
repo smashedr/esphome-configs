@@ -1,4 +1,4 @@
-# Door Sensor - Front Door - BENCHED
+# Door Sensor - Front Door
 
 substitutions:
   box_num: "52"
@@ -9,8 +9,8 @@ substitutions:
   update_interval: "1min"
   force_update: "true"
 
-<<: !include { file: .common.yaml }
-<<: !include { file: include/web/web_server.yaml, vars: { version: 3 } }
+<<: !include .common.yaml
+<<: !include { file: include/web_server.yaml, vars: { version: 3 } }
 
 captive_portal:
 
@@ -66,8 +66,8 @@ switch:
   - platform: gpio
     name: "Buzzer ${box_num}"
     id: buzzer
-    icon: mdi:volume-high
     pin: 27
+    icon: mdi:volume-high
     # on_turn_on:
     # - delay: 750ms
     # - switch.turn_off: buzzer
@@ -118,10 +118,10 @@ binary_sensor:
   - platform: gpio
     name: "Door ${box_num}"
     id: door_sensor
-    device_class: door
     pin:
       number: 32
       mode: INPUT_PULLUP
+    device_class: door
     on_press:
       then:
         - if:

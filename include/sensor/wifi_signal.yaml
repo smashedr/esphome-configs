@@ -1,8 +1,13 @@
 platform: wifi_signal
 name: "WiFi Signal ${box_num}"
-update_interval: 1min
+update_interval: 5min
 force_update: ${force_update}
-icon: mdi:wifi
+icon: mdi:wifi-arrow-up-down
+device_class: signal_strength
 filters:
-  - filter_out: 0
+  - lambda: |-
+      float MIN = -100.0;
+      float MAX = -25.0;
+      if (MIN <= x && x <= MAX) return x;
+      else return {};
   - median:

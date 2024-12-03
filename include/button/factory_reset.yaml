@@ -1,2 +1,5 @@
 platform: factory_reset
 name: "Factory Reset ${box_num}"
+web_server:
+  #sorting_group_id: sg_device
+  sorting_weight: 26

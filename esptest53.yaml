@@ -9,10 +9,31 @@ substitutions:
   update_interval: "1min"
   force_update: "true"
 
-<<: !include .common.yaml
-<<: !include { file: include/web_server.yaml, vars: { version: 3 } }
+<<: !include { file: .common.yaml }
+<<: !include { file: include/web/web_server.yaml, vars: { version: 3 } }
 
 captive_portal:
+
+esphome:
+  name: "${box_name}${box_num}"
+  comment: "${type}: ${board} (${comment})"
+  on_boot:
+    - priority: -100
+      then:
+        - if:
+            condition:
+              - binary_sensor.is_on: presence
+              - light.is_on: main_led
+            then:
+              - logger.log: "Turning Off: main_led"
+              - light.turn_off: main_led
+            else:
+              - if:
+                  condition:
+                    - switch.is_on: night_light
+                  then:
+                    - logger.log: "Turning On: main_led"
+                    - light.turn_on: main_led
 
 debug:
   update_interval: 5min
@@ -25,6 +46,7 @@ light:
   - !include { file: include/light/status_led.yaml, vars: { pin: 33 } }
 
 button:
+  - !include { file: include/button/identify.yaml }
   - !include { file: include/button/restart.yaml }
   - !include { file: include/button/safe_mode.yaml }
   - !include { file: include/button/factory_reset.yaml }
@@ -32,15 +54,15 @@ button:
 
 switch:
   - platform: template
-    name: "Presence Light ${box_num}"
-    id: presence_light
-    icon: mdi:alarm-light
+    name: "Night Light ${box_num}"
+    id: night_light
+    icon: mdi:lightbulb-night
     optimistic: true
     turn_on_action:
       #- logger.log: "Light Enabled"
       - if:
           condition:
-            binary_sensor.is_on: presence
+            binary_sensor.is_off: presence
           then:
             - light.turn_on: main_led
     turn_off_action:
@@ -75,31 +97,40 @@ binary_sensor:
       id: presence
       on_press:
         then:
-          #- logger.log: "+++ PRESENCE DETECTED"
-          - if:
+          - logger.log: "Presence Detected"
+          - wait_until:
               condition:
-                switch.is_on: presence_light
-              then:
-                - light.turn_on: main_led
+                binary_sensor.is_on: bedroom_light
+              timeout: 8s
+          - light.turn_off: main_led
       on_release:
         then:
-          #- logger.log: "--- NO PRESENCE"
-          - light.turn_off: main_led
+          - if:
+              condition:
+                - switch.is_on: night_light
+              then:
+                - logger.log: "No Presence"
+                - light.turn_on: main_led
 
   - platform: gpio
     name: "Touch 1 - ${box_num}"
     id: touch_1
-    icon: mdi:gesture-tap
+    icon: mdi:gesture-tap-box
     pin:
       number: 26
       mode: INPUT_PULLUP
     on_press:
       then:
         #- logger.log: "Touch START"
-        - switch.toggle: presence_light
+        - switch.toggle: night_light
     #on_release:
     #  then:
     #    - logger.log: "Touch END"
+
+  - platform: homeassistant
+    name: "Bedroom Light"
+    id: bedroom_light
+    entity_id: light.bedroom_light
 
 sensor:
   - !include { file: include/sensor/debug.yaml }

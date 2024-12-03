@@ -1,16 +1,18 @@
 platform: wifi_info
 ip_address:
   name: "WiFi IP ${box_num}"
-  id: ip_address
+  #id: wifi_ip
   icon: mdi:wifi
   #icon: mdi:ip-outline
 ssid:
   name: "WiFi SSID ${box_num}"
-  id: ssid
-  icon: mdi:wifi
+  #id: wifi_ssid
+  icon: mdi:wifi-marker
   #icon: mdi:rename-box-outline
+  disabled_by_default: true
 mac_address:
   name: "WiFi MAC ${box_num}"
-  id: mac_address
-  icon: mdi:wifi
+  #id: wifi_mac
+  icon: mdi:wifi-cog
   #icon: mdi:identifier
+  disabled_by_default: true

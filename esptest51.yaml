@@ -9,21 +9,9 @@ substitutions:
   update_interval: "1min"
   force_update: "true"
 
-<<: !include .common.yaml
+<<: !include { file: .common.yaml }
 
 captive_portal:
-
-web_server:
-  port: 80
-  ota: false
-  version: 3
-  sorting_groups:
-    - id: sg_audio
-      name: "Audio Settings"
-      sorting_weight: 1
-    # - id: sorting_group_number_settings
-    #   name: "Number settings"
-    #   sorting_weight: 20
 
 esphome:
   name: "${box_name}${box_num}"
@@ -32,7 +20,7 @@ esphome:
     - priority: 600
       then:
         - logger.log: "Boot 600"
-        - rtttl.play: "KeyUp:d=4,o=6,b=250:16c,16c#,16d,16d#,16e,16f,16f#,16g,16g#,16a,16a#,2b"
+        - rtttl.play: "SMWTheme:d=4,o=6,b=100:16e,16e,32p,8e,16c,8e,8g,8p,8g5,8p"
     - priority: 200
       then:
         - logger.log: "Boot 200"
@@ -53,11 +41,26 @@ api:
       then:
         - rtttl.play: !lambda "return song_str;"
   on_client_connected:
+    - rtttl.play: "one_short:d=1,o=5,b=100:8e6"
     - logger.log:
-        format: "Client: %s - IP: %s"
+        format: "API Client: %s - IP: %s"
         args: ["client_info.c_str()", "client_address.c_str()"]
   on_client_disconnected:
-    - logger.log: "API client disconnected!"
+    - rtttl.play: "s:d=4,o=5,b=100:8e6,32p,8e6"
+    - logger.log: "API Client disconnected!"
+
+web_server:
+  port: 80
+  ota: false
+  version: 3
+  sorting_groups:
+    #- !include { file: include/web/groups/device.yaml }
+    - id: sg_tof
+      name: "TOF"
+      sorting_weight: -11
+    - id: sg_audio
+      name: "Audio"
+      sorting_weight: -10
 
 debug:
   update_interval: 5min
@@ -89,14 +92,19 @@ light:
   - !include { file: include/light/status_led.yaml, vars: { pin: 25 } }
 
 button:
+  - !include { file: include/button/identify.yaml }
   - !include { file: include/button/restart.yaml }
   - !include { file: include/button/safe_mode.yaml }
   - !include { file: include/button/factory_reset.yaml }
 
   - platform: template
     name: "Test Tone ${box_num}"
+    icon: mdi:play
     on_press:
       - rtttl.play: !lambda "return id(select_tune).state;"
+    web_server:
+      sorting_group_id: sg_audio
+      sorting_weight: 12
 
   #- platform: template
   #  name: "Suspend TOF ${box_num}"
@@ -108,14 +116,17 @@ number:
   - platform: template
     name: "Last TOF ${box_num}"
     id: last_tof
-    unit_of_measurement: "m"
     icon: mdi:arrow-expand-vertical
+    unit_of_measurement: "m"
     optimistic: true
     restore_value: false
     initial_value: 0
     min_value: 0.000
     max_value: 3.000
     step: 0.001
+    web_server:
+      sorting_group_id: sg_tof
+      sorting_weight: 12
 
   - platform: template
     name: "TOF Count ${box_num}"
@@ -127,6 +138,9 @@ number:
     min_value: 0
     max_value: 999999
     step: 1
+    web_server:
+      sorting_group_id: sg_tof
+      sorting_weight: 13
 
 i2c:
   sda: GPIO21
@@ -158,8 +172,8 @@ display:
         it.printf(0, 0, id(font1), "Connecting to HA...");
         it.printf(0, 23, id(font1), "IP:");
         it.printf(128, 23, id(font1), TextAlign::RIGHT, "%s", WiFi.localIP().toString().c_str());
+
       } else {
-        // it.printf(0, 0, id(font1), "%s", client_info.c_str());
         it.printf(0, 0, id(font1), "IP:");
         it.printf(128, 0, id(font1), TextAlign::RIGHT, "%s", WiFi.localIP().toString().c_str());
 
@@ -195,11 +209,13 @@ select:
   - platform: template
     name: "Select ${box_num}"
     id: select_tune
+    icon: mdi:playlist-play
     options:
       - "KeyUp:d=4,o=6,b=250:16c,16c#,16d,16d#,16e,16f,16f#,16g,16g#,16a,16a#,2b"
+      - "ScaleUp:d=32,o=5,b=100:c,c#,d#,e,f#,g#,a#,b"
+      - "LanDanza:d=4,o=6,b=225:8d,8a5,8d,2e"
       - "SuperMario:d=4,o=6,b=100:16e,16e,32p,8e,16c,8e,8g,8p,8g5,8p"
       - "ZombieNation:d=4,o=5,b=140:8a,8a,8c6,8d,8e,8a,8a,8a,8a,8a,8c6"
-      - "LanDanza:d=4,o=6,b=225:8d,8a5,8d,2e"
     #initial_option: "SuperMario:d=4,o=6,b=100:16e,16e,32p,8e,16c,8e,8g,8p,8g5,8p"
     optimistic: true
     #restore_value: true
@@ -207,13 +223,19 @@ select:
       - logger.log:
           format: "Chosen option: %s"
           args: ["x.c_str()"]
+    web_server:
+      sorting_group_id: sg_audio
+      sorting_weight: 13
 
 switch:
   - platform: gpio
     name: "Buzzer ${box_num}"
     id: buzzer_1
-    pin: GPIO18
     icon: mdi:volume-high
+    pin: GPIO18
+    web_server:
+      sorting_group_id: sg_audio
+      sorting_weight: 11
 
   - platform: template
     name: "Enable TOF ${box_num}"
@@ -224,9 +246,14 @@ switch:
     turn_on_action:
       - logger.log: "Resume TOF"
       - component.resume: tof_1
+      - component.update: main_display
     turn_off_action:
       - logger.log: "Suspend TOF"
       - component.suspend: tof_1
+      - component.update: main_display
+    web_server:
+      sorting_group_id: sg_tof
+      sorting_weight: 11
 
 output:
   #- platform: gpio
@@ -254,7 +281,6 @@ text_sensor:
 
 binary_sensor:
   - !include { file: include/binary/status.yaml }
-  - !include { file: include/binary/ha_status.yaml }
 
   #- platform: gpio
   #  name: "Buzzer ${box_num}"
@@ -311,7 +337,7 @@ binary_sensor:
   - platform: gpio
     name: "Touch 1 - ${box_num}"
     id: touch_1
-    icon: mdi:gesture-tap
+    icon: mdi:gesture-tap-box
     pin:
       number: 19
       mode: INPUT_PULLUP

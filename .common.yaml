@@ -32,6 +32,8 @@ wifi:
     password: !secret host_pass
 
 button:
+  - !include { file: include/button/identify.yaml }
   - !include { file: include/button/restart.yaml }
-  - !include { file: include/button/safe_mode.yaml }
   - !include { file: include/button/factory_reset.yaml }
+  - !include { file: include/button/safe_mode.yaml }
+  #- !include { file: include/button/shutdown.yaml }

@@ -1,4 +1,4 @@
-# PIR - Kitchen - BENCHED
+# ld2420 - Bathroom
 
 substitutions:
   box_num: "50"
@@ -6,49 +6,131 @@ substitutions:
   type: "esp8266"
   board: "nodemcuv2"
   comment: "full"
-  update_interval: "${sleep_time}"
+  update_interval: "1min"
   force_update: "true"
-  #run_time: "10s"
-  #sleep_time: "1min"
 
-<<: !include .common.yaml
-<<: !include { file: include/web_server.yaml, vars: { version: 3 } }
+<<: !include { file: .common.yaml }
+<<: !include { file: include/web/web_server.yaml, vars: { version: 3 } }
 
 captive_portal:
 
-#logger:
-#  baud_rate: 0
+#esphome:
+#  name: "${box_name}${box_num}"
+#  comment: "${type}: ${board} (${comment})"
+#  on_boot:
+#    - priority: -100
+#      then:
+#        - if:
+#            condition:
+#              - binary_sensor.is_on: presence
+#              - light.is_on: main_led
+#            then:
+#              - logger.log: "Turning Off: main_led"
+#              - light.turn_off: main_led
+#            else:
+#              - if:
+#                  condition:
+#                    - switch.is_on: night_light
+#                  then:
+#                    - logger.log: "Turning On: main_led"
+#                    - light.turn_on: main_led
+
+debug:
+  update_interval: 5min
+
+logger:
+  level: DEBUG
+  baud_rate: 0
 
 light:
-  - !include { file: include/light/status_led.yaml, vars: { pin: D6 } }
+  - !include { file: include/light/status_led.yaml, vars: { pin: D5 } }
 
-i2c:
-  scan: false
+button:
+  - !include { file: include/button/identify.yaml }
+  - !include { file: include/button/restart.yaml }
+  - !include { file: include/button/safe_mode.yaml }
+  - !include { file: include/button/factory_reset.yaml }
+  - !include { file: include/ld2420/button.yaml }
+
+switch:
+  - platform: template
+    name: "Night Light ${box_num}"
+    id: night_light
+    icon: mdi:lightbulb-night
+    optimistic: true
+    turn_on_action:
+      #- logger.log: "Light Enabled"
+      - if:
+          condition:
+            binary_sensor.is_off: presence
+          then:
+            - light.turn_on: main_led
+    turn_off_action:
+      #- logger.log: "Light Disabled"
+      - light.turn_off: main_led
+
+select:
+  - !include { file: include/ld2420/select.yaml }
+
+number:
+  - !include { file: include/ld2420/number.yaml }
+
+uart:
+  tx_pin: GPIO1
+  rx_pin: GPIO3
+  baud_rate: 115200
+
+ld2420:
 
 text_sensor:
+  - !include { file: include/text/debug.yaml }
   - !include { file: include/text/version.yaml }
   - !include { file: include/text/wifi_info.yaml }
+  - !include { file: include/ld2420/text_sensor.yaml }
 
 binary_sensor:
   - !include { file: include/binary/status.yaml }
-  #- !include { file: include/binary/btn_light_reset.yaml, vars: { pin: D5 } }
 
-  - platform: gpio
-    pin: D5
-    name: "PIR ${box_num}"
-    device_class: motion
-    on_press:
-      then:
-        - light.turn_on: main_led
-    on_release:
-      then:
-        - light.turn_off: main_led
-    filters:
-      - delayed_off: 15s
+  - platform: ld2420
+    has_target:
+      name: "Presence ${box_num}"
+      id: presence
+      on_press:
+        then:
+          - logger.log: "Presence Detected"
+          - wait_until:
+              condition:
+                binary_sensor.is_on: bathroom_light
+              timeout: 8s
+          - light.turn_off: main_led
+      on_release:
+        then:
+          - logger.log: "No Presence"
+          - light.turn_on: main_led
+
+  #- platform: gpio
+  #  name: "Touch 1 - ${box_num}"
+  #  id: touch_1
+  #  icon: mdi:gesture-tap-box
+  #  pin:
+  #    number: 26
+  #    mode: INPUT_PULLUP
+  #  on_press:
+  #    then:
+  #      #- logger.log: "Touch START"
+  #      - switch.toggle: night_light
+  #  #on_release:
+  #  #  then:
+  #  #    - logger.log: "Touch END"
+
+  - platform: homeassistant
+    name: "Bathroom Light"
+    id: bathroom_light
+    entity_id: light.bathroom_light
 
 sensor:
-  - !include { file: include/sensor/internal_temperature.yaml }
+  - !include { file: include/sensor/debug.yaml }
+  #- !include { file: include/sensor/internal_temperature.yaml }  # not on 8266
   - !include { file: include/sensor/uptime.yaml }
   - !include { file: include/sensor/wifi_signal.yaml }
-  #- !include { file: include/sensor/dht22.yaml, vars: { pin: 19 } }
-  #- !include { file: include/sensor/bmp280.yaml, vars: { address: 0x76 } }
+  - !include { file: include/ld2420/sensor.yaml }

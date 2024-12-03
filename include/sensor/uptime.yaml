@@ -1,3 +1,5 @@
 platform: uptime
 name: "Uptime ${box_num}"
 update_interval: 5min
+#web_server:
+#  sorting_weight: 2

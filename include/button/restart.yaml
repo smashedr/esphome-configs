@@ -1,3 +1,6 @@
 platform: restart
 name: "Reboot Device ${box_num}"
 id: reboot_device
+web_server:
+  #sorting_group_id: sg_device
+  sorting_weight: 24

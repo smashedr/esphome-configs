@@ -1,7 +1,10 @@
 platform: debug
 free:
   name: "Heap Free ${box_num}"
+  disabled_by_default: true
 block:
   name: "Heap Max Block ${box_num}"
+  disabled_by_default: true
 loop_time:
   name: "Loop Time ${box_num}"
+  disabled_by_default: true

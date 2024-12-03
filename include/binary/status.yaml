@@ -1,3 +1,5 @@
 platform: status
 name: "Status ${box_num}"
 icon: mdi:check-network-outline
+#web_server:
+#  sorting_weight: 1

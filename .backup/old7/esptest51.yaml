@@ -1,0 +1,93 @@
+substitutions:
+  box_num: "51"
+  box_name: "esptest"
+  type: "esp32"
+  board: "nodemcu-32s"
+  comment: "38-pin narrow"
+  update_interval: "1min"
+  force_update: "true"
+
+<<: !include .common.yaml
+<<: !include include/web_server.yaml
+
+captive_portal:
+
+logger:
+  level: VERBOSE
+
+api:
+  encryption:
+    key: !secret enc_key
+  services:
+    - service: play_rtttl
+      variables:
+        song_str: string
+      then:
+        - rtttl.play:
+            rtttl: !lambda "return song_str;"
+
+#light:
+#  - !include { file: include/light/status_led.yaml, vars: { pin: 32 } }
+
+output:
+  - platform: ledc
+    pin: 33
+    id: rtttl_out
+
+rtttl:
+  output: rtttl_out
+
+text_sensor:
+  - !include { file: include/text/version.yaml }
+
+binary_sensor:
+  - !include { file: include/binary/status.yaml }
+
+  - platform: gpio
+    name: "Door Freezer"
+    id: door_sensor_1
+    pin:
+      number: 25
+      mode: INPUT_PULLUP
+    device_class: door
+    on_press:
+      then:
+        - logger.log: "DOOR --- OPEN"
+        # - rtttl.play: "one:d=4,o=4,b=240:6e6"
+        - light.turn_on: main_led
+    on_release:
+      then:
+        - logger.log: "DOOR --- CLOSED"
+        - rtttl.play: "one:d=4,o=4,b=240:6e6"
+        - if:
+            condition:
+              binary_sensor.is_off: door_sensor_2
+            then:
+              - light.turn_off: main_led
+
+  - platform: gpio
+    name: "Door Refrigerator"
+    id: door_sensor_2
+    pin:
+      number: 26
+      mode: INPUT_PULLUP
+    device_class: door
+    on_press:
+      then:
+        - logger.log: "DOOR --- OPEN"
+        # - rtttl.play: "one:d=4,o=4,b=240:6e6"
+        - light.turn_on: main_led
+    on_release:
+      then:
+        - logger.log: "DOOR --- CLOSED"
+        - rtttl.play: "one:d=4,o=4,b=240:6e6"
+        - if:
+            condition:
+              binary_sensor.is_off: door_sensor_1
+            then:
+              - light.turn_off: main_led
+
+sensor:
+  - !include { file: include/sensor/uptime.yaml }
+  - !include { file: include/sensor/internal_temperature.yaml }
+  - !include { file: include/sensor/wifi_signal.yaml }
