@@ -1,6 +1,6 @@
 platform: template
 name: "Identify ${box_num}"
-#icon: mdi:lightbulb-on-50
+icon: mdi:crosshairs-question
 entity_category: config
 device_class: identify
 on_press:

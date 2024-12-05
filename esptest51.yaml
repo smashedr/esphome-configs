@@ -13,40 +13,27 @@ substitutions:
 
 captive_portal:
 
+${type}:
+  board: "${board}"
+  framework:
+    type: esp-idf
+
 esphome:
   name: "${box_name}${box_num}"
   comment: "${type}: ${board} (${comment})"
   on_boot:
-    - priority: 600
-      then:
-        - logger.log: "Boot 600"
-        - rtttl.play: "SMWTheme:d=4,o=6,b=100:16e,16e,32p,8e,16c,8e,8g,8p,8g5,8p"
     - priority: 200
       then:
         - logger.log: "Boot 200"
-        - if:
-            condition:
-              - switch.is_off: enable_tof
-            then:
-              - logger.log: "Suspending TOF 1"
-              - component.suspend: tof_1
 
 api:
   encryption:
     key: !secret enc_key
-  services:
-    - service: play_rtttl
-      variables:
-        song_str: string
-      then:
-        - rtttl.play: !lambda "return song_str;"
   on_client_connected:
-    - rtttl.play: "one_short:d=1,o=5,b=100:8e6"
     - logger.log:
         format: "API Client: %s - IP: %s"
         args: ["client_info.c_str()", "client_address.c_str()"]
   on_client_disconnected:
-    - rtttl.play: "s:d=4,o=5,b=100:8e6,32p,8e6"
     - logger.log: "API Client disconnected!"
 
 web_server:
@@ -55,41 +42,111 @@ web_server:
   version: 3
   sorting_groups:
     #- !include { file: include/web/groups/device.yaml }
-    - id: sg_tof
-      name: "TOF"
-      sorting_weight: -11
     - id: sg_audio
       name: "Audio"
-      sorting_weight: -10
+      sorting_weight: -20
 
 debug:
   update_interval: 5min
 
-logger:
-  level: DEBUG
-  #baud_rate: 0
-  logs:
-    sensor: INFO
-    light: INFO
-    #switch: INFO
-    vl53l0x: INFO
-
-#api:
-#  encryption:
-#    key: !secret enc_key
-
-#interval:
-#  - interval: 15s
-#    then:
-#      - logger.log: "15s Interval"
-#      - logger.log:
-#          format: "WiFi IP 1: %s"
-#          args: ["id(wifi_ip).state.c_str()"]
-#      - lambda: |-
-#          ESP_LOGI("main", "WiFi IP 2: %s", WiFi.localIP().toString().c_str());
-
 light:
-  - !include { file: include/light/status_led.yaml, vars: { pin: 25 } }
+  - !include { file: include/light/status_led.yaml, vars: { pin: 26 } }
+
+micro_wake_word:
+  vad:
+  models:
+    - model: okay_nabu
+    - model: hey_mycroft
+  on_wake_word_detected:
+    then:
+      - logger.log: "on_wake_word_detected"
+      #- lambda: |-
+      #    ESP_LOGI("micro_wake_word", "wake_word: %s", wake_word);
+      #- voice_assistant.start:
+      #    wake_word: !lambda return wake_word;
+
+i2s_audio:
+  id: i2s
+  i2s_lrclk_pin: GPIO25 # WS - blue
+  i2s_bclk_pin: GPIO32 # SCK - yellow
+
+microphone:
+  - platform: i2s_audio
+    id: va_mic
+    adc_type: external
+    i2s_din_pin: GPIO33 # SD - green
+    #channel: left
+    i2s_audio_id: i2s
+    #pdm: false
+    #bits_per_sample: 32bit
+    #on_data:
+    #  - logger.log:
+    #      format: "Received %d bytes"
+    #      args: ["x.size()"]
+
+voice_assistant:
+  id: va
+  microphone: va_mic
+  #speaker: va_speaker
+  #auto_gain: 31dBFS
+  noise_suppression_level: 2.0
+  volume_multiplier: 4.0
+  #vad_threshold: 3
+  on_client_connected:
+    then:
+      - logger.log: "on_client_connected"
+  on_client_disconnected:
+    then:
+      - logger.log: "on_client_disconnected"
+
+  on_wake_word_detected:
+    then:
+      - logger.log: "on_wake_word_detected"
+
+  on_start:
+    then:
+      - logger.log: "on_start"
+  on_end:
+    then:
+      - logger.log: "on_end"
+      #- wait_until:
+      #    not:
+      #      voice_assistant.is_running:
+      #- micro_wake_word.start:
+
+  on_listening:
+    then:
+      - logger.log: "on_listening"
+      - light.turn_on: main_led
+
+  on_stt_end:
+    then:
+      - light.turn_off: main_led
+      - logger.log:
+          format: "on_stt_end text: %s"
+          args: ["x.c_str()"]
+
+  on_intent_start:
+    then:
+      - logger.log: "on_intent_start"
+  on_intent_end:
+    then:
+      - logger.log: "on_intent_end"
+
+  on_tts_start:
+    then:
+      - logger.log: "on_tts_start"
+  on_tts_end:
+    then:
+      - logger.log:
+          format: "on_tts_end url: %s"
+          args: ["x.c_str()"]
+
+  on_error:
+    then:
+      - logger.log: "on_error"
+      - light.turn_off: main_led
+      #- micro_wake_word.start:
 
 button:
   - !include { file: include/button/identify.yaml }
@@ -98,373 +155,77 @@ button:
   - !include { file: include/button/factory_reset.yaml }
 
   - platform: template
-    name: "Test Tone ${box_num}"
-    icon: mdi:play
+    name: "Start Voice ${box_num}"
     on_press:
-      - rtttl.play: !lambda "return id(select_tune).state;"
-    web_server:
-      sorting_group_id: sg_audio
-      sorting_weight: 12
-
-  #- platform: template
-  #  name: "Suspend TOF ${box_num}"
-  #  on_press:
-  #    - logger.log: "Suspending TOF 1"
-  #    - component.suspend: tof_1
-
-number:
-  - platform: template
-    name: "Last TOF ${box_num}"
-    id: last_tof
-    icon: mdi:arrow-expand-vertical
-    unit_of_measurement: "m"
-    optimistic: true
-    restore_value: false
-    initial_value: 0
-    min_value: 0.000
-    max_value: 3.000
-    step: 0.001
-    web_server:
-      sorting_group_id: sg_tof
-      sorting_weight: 12
-
-  - platform: template
-    name: "TOF Count ${box_num}"
-    id: tof_count
-    icon: mdi:numeric
-    optimistic: true
-    restore_value: true
-    initial_value: 0
-    min_value: 0
-    max_value: 999999
-    step: 1
-    web_server:
-      sorting_group_id: sg_tof
-      sorting_weight: 13
-
-i2c:
-  sda: GPIO21
-  scl: GPIO22
-  scan: false
-  frequency: 400kHz
-
-#one_wire:
-#  - platform: gpio
-#    pin: GPIO33
-
-font:
-  - file: "fonts/arial.ttf"
-    id: font1
-    size: 12
-  - file: "fonts/arial.ttf"
-    id: font2
-    size: 16
-
-display:
-  - platform: ssd1306_i2c
-    id: main_display
-    model: "SSD1306 128x64"
-    address: 0x3C
-    #reset_pin: D0
-    #update_interval: 5s
-    lambda: |-
-      if (!global_api_server->is_connected() ) {
-        it.printf(0, 0, id(font1), "Connecting to HA...");
-        it.printf(0, 23, id(font1), "IP:");
-        it.printf(128, 23, id(font1), TextAlign::RIGHT, "%s", WiFi.localIP().toString().c_str());
-
-      } else {
-        it.printf(0, 0, id(font1), "IP:");
-        it.printf(128, 0, id(font1), TextAlign::RIGHT, "%s", WiFi.localIP().toString().c_str());
-
-        it.printf(0, 23, id(font2), "Counter:");
-        it.printf(128, 23, id(font2), TextAlign::RIGHT, "%.0f", id(tof_count).state);
-
-        if (!id(enable_tof).state) {
-          it.printf(0, 46, id(font2), "TOF DISABLED!");
-        } else {
-          it.printf(0, 46, id(font2), "Last:");
-          // it.printf(128, 46, id(font2), TextAlign::RIGHT, "%.2f ft", id(last_tof).state * 3.281);
-          float total = id(last_tof).state * 3.281;
-          if (!std::isnan(total)) {
-            int feet = static_cast<int>(total);
-            int inches = static_cast<int>((total - feet) * 12);
-            if (!feet) {
-              it.printf(128, 46, id(font2), TextAlign::RIGHT, "%din", inches);
-            } else {
-              it.printf(128, 46, id(font2), TextAlign::RIGHT, "%dft %din", feet, inches);
-            }
-          } else {
-            it.printf(128, 46, id(font2), TextAlign::RIGHT, "Unknown");
-          }
-        }
-
-        // it.printf(0, 23, id(font2), "Fridge:");
-        // it.printf(128, 23, id(font2), TextAlign::RIGHT, "%.1f°F", id(temp1).state * 1.8 + 32);
-        // it.printf(0, 46, id(font2), "Freezer:");
-        // it.printf(128, 46, id(font2), TextAlign::RIGHT, "%.1f°F", id(temp2).state * 1.8 + 32);
-      }
-
-select:
-  - platform: template
-    name: "Select ${box_num}"
-    id: select_tune
-    icon: mdi:playlist-play
-    options:
-      - "KeyUp:d=4,o=6,b=250:16c,16c#,16d,16d#,16e,16f,16f#,16g,16g#,16a,16a#,2b"
-      - "ScaleUp:d=32,o=5,b=100:c,c#,d#,e,f#,g#,a#,b"
-      - "LanDanza:d=4,o=6,b=225:8d,8a5,8d,2e"
-      - "SuperMario:d=4,o=6,b=100:16e,16e,32p,8e,16c,8e,8g,8p,8g5,8p"
-      - "ZombieNation:d=4,o=5,b=140:8a,8a,8c6,8d,8e,8a,8a,8a,8a,8a,8c6"
-    #initial_option: "SuperMario:d=4,o=6,b=100:16e,16e,32p,8e,16c,8e,8g,8p,8g5,8p"
-    optimistic: true
-    #restore_value: true
-    set_action:
-      - logger.log:
-          format: "Chosen option: %s"
-          args: ["x.c_str()"]
+      - logger.log: "voice_assistant.start"
+      - voice_assistant.start:
     web_server:
       sorting_group_id: sg_audio
       sorting_weight: 13
 
 switch:
-  - platform: gpio
-    name: "Buzzer ${box_num}"
-    id: buzzer_1
-    icon: mdi:volume-high
-    pin: GPIO18
+  - platform: template
+    name: "Enable Wake ${box_num}"
+    id: enable_wake
+    icon: mdi:account-voice
+    optimistic: true
+    #restore_mode: RESTORE_DEFAULT_OFF
+    turn_on_action:
+      - logger.log: "micro_wake_word.start"
+      - micro_wake_word.start:
+    turn_off_action:
+      - logger.log: "micro_wake_word.stop"
+      - micro_wake_word.stop:
     web_server:
       sorting_group_id: sg_audio
       sorting_weight: 11
 
   - platform: template
-    name: "Enable TOF ${box_num}"
-    id: enable_tof
-    icon: mdi:arrow-expand-vertical
+    name: "Enable Continuous ${box_num}"
+    id: enable_continuous
+    icon: mdi:account-voice
     optimistic: true
-    restore_mode: RESTORE_DEFAULT_ON
+    #restore_mode: RESTORE_DEFAULT_OFF
     turn_on_action:
-      - logger.log: "Resume TOF"
-      - component.resume: tof_1
-      - component.update: main_display
+      #- lambda: id(va).set_use_wake_word(true);
+      - if:
+          condition:
+            not:
+              - voice_assistant.is_running:
+          then:
+            - logger.log: "voice_assistant.start_continuous"
+            - voice_assistant.start_continuous:
     turn_off_action:
-      - logger.log: "Suspend TOF"
-      - component.suspend: tof_1
-      - component.update: main_display
+      #- lambda: id(va).set_use_wake_word(false);
+      - logger.log: "voice_assistant.stop"
+      - voice_assistant.stop:
     web_server:
-      sorting_group_id: sg_tof
-      sorting_weight: 11
+      sorting_group_id: sg_audio
+      sorting_weight: 12
 
-output:
-  #- platform: gpio
-  #  pin: GPIO18
-  #  id: buzzer_1
-
-  - platform: ledc
-    pin: GPIO26
-    id: rtttl_out
-
-rtttl:
-  output: rtttl_out
-#  on_finished_playback:
-#    - logger.log: "Playback Finished."
+  #- platform: template
+  #  name: "Start Capture ${box_num}"
+  #  id: start_capture
+  #  icon: mdi:account-voice
+  #  optimistic: true
+  #  #restore_mode: RESTORE_DEFAULT_ON
+  #  turn_on_action:
+  #    - logger.log: "microphone.capture: va_mic"
+  #    - microphone.capture: va_mic
+  #  turn_off_action:
+  #    - logger.log: "microphone.stop_capture: va_mic"
+  #    - microphone.stop_capture: va_mic
+  #  web_server:
+  #    sorting_group_id: sg_audio
+  #    sorting_weight: 13
 
 text_sensor:
   - !include { file: include/text/debug.yaml }
   - !include { file: include/text/version.yaml }
   - !include { file: include/text/wifi_info.yaml }
 
-  #- platform: homeassistant
-  #  name: "WiFi IP Address"
-  #  id: wifi_ip
-  #  entity_id: sensor.wifi_ip_51
-
-binary_sensor:
-  - !include { file: include/binary/status.yaml }
-
-  #- platform: gpio
-  #  name: "Buzzer ${box_num}"
-  #  id: buzzer_1
-  #  pin:
-  #    number: 18
-  #    mode: INPUT_PULLUP
-  #    inverted: true
-
-  #- platform: gpio
-  #  name: "Physical Button ${box_num}"
-  #  icon: mdi:radiobox-marked
-  #  pin:
-  #    number: 19
-  #    mode: INPUT_PULLUP
-  #  filters:
-  #    - invert:
-  #  on_click:
-  #    - min_length: 1ms
-  #      max_length: 1000ms
-  #      then:
-  #        - logger.log: ">1 Second Single Click"
-  #        - light.toggle: main_led
-  #        #- output.turn_on:
-  #        #    id: buzzer_1
-  #        #    length: 0.5s
-  #        - switch.turn_on: buzzer_1
-  #        - delay: 0.1s
-  #        - switch.turn_off: buzzer_1
-
-  #    - min_length: 1001ms
-  #      max_length: 4999ms
-  #      then:
-  #        - logger.log: "1-5 Second Long Press"
-  #        - switch.turn_on: buzzer_1
-  #        - delay: 1s
-  #        - switch.turn_off: buzzer_1
-  #    - min_length: 5000ms
-  #      max_length: 10000ms
-  #      then:
-  #        - logger.log: "5< Second Long Press"
-  #        - switch.turn_on: buzzer_1
-  #        - delay: 0.1s
-  #        - switch.turn_off: buzzer_1
-  #        - delay: 0.1s
-  #        - repeat:
-  #            count: 2
-  #            then:
-  #              - switch.turn_on: buzzer_1
-  #              - delay: 1s
-  #              - switch.turn_off: buzzer_1
-  #              - delay: 0.2s
-
-  - platform: gpio
-    name: "Touch 1 - ${box_num}"
-    id: touch_1
-    icon: mdi:gesture-tap-box
-    pin:
-      number: 19
-      mode: INPUT_PULLUP
-    #  inverted: true
-    on_press:
-      then:
-        - logger.log: "Touch START"
-        - switch.toggle: enable_tof
-        - component.update: main_display
-        #- rtttl.play: !lambda "return id(select_tune).state;"
-        #- component.update: tof_1
-        #- wait_until:
-        #- delay: 100ms
-        #- lambda: |-
-        #    float state = id(tof_1).state;
-        #    ESP_LOGI("TOF", "state: %.6f", state);
-        #    float distance = state * 1000;
-        #    ESP_LOGI("TOF", "distance: %.2f mm", distance);
-        #    id(last_tof).publish_state(distance);
-        #    id(tof_count).publish_state(id(tof_count).state + 1);
-        #    id(main_display).update();
-        #- light.turn_on: main_led
-        #- switch.turn_on: buzzer_1
-        #- delay: 0.1s
-        #- switch.turn_off: buzzer_1
-        #- light.turn_off: main_led
-
-    on_release:
-      then:
-        - logger.log: "Touch END"
-        #- light.turn_off: main_led
-
-  #- platform: gpio
-  #  name: "Obstacle ${box_num}"
-  #  pin:
-  #    number: 18
-  #    inverted: true
-  #    #mode: INPUT_PULLUP
-  #  on_press:
-  #    then:
-  #      - light.turn_on: main_led
-  #  on_release:
-  #    then:
-  #      - light.turn_off: main_led
-
 sensor:
   - !include { file: include/sensor/debug.yaml }
   - !include { file: include/sensor/internal_temperature.yaml }
   - !include { file: include/sensor/uptime.yaml }
   - !include { file: include/sensor/wifi_signal.yaml }
-
-  - platform: vl53l0x
-    name: "TOF ${box_num}"
-    id: tof_1
-    address: 0x29
-    update_interval: 100ms
-    internal: true
-    long_range: true
-    on_value_range:
-      - above: 0.0
-        below: 1.0
-        then:
-          - lambda: |-
-              // auto distance = id(tof_1).state;
-              // ESP_LOGI("TOF", "Distance: %.2f mm", distance * 1000);
-              // ESP_LOGI("TOF", "Distance: %.2f mm", id(tof_1).state * 1000);
-              float state = id(tof_1).state;
-              // ESP_LOGI("TOF", "state: %.6f", state);
-              id(last_tof).publish_state(state);
-              float distance = state * 1000;
-              ESP_LOGI("TOF", "state: %.6f - distance: %.2f mm", state, distance);
-              id(tof_count).publish_state(id(tof_count).state + 1);
-              id(main_display).update();
-          #- component.update: main_display
-          - light.turn_on: main_led
-          - switch.turn_on: buzzer_1
-          - delay: 0.1s
-          - switch.turn_off: buzzer_1
-          - light.turn_off: main_led
-
-  #- platform: vl53l0x
-  #  name: "TOF ${box_num}"
-  #  id: tof_1
-  #  address: 0x29
-  #  update_interval: never
-  #  internal: true
-  #  long_range: false
-  #  #filters:
-  #  #  - offset: -0.070
-  #  #on_value_range:
-  #  on_value:
-  #    then:
-  #      - lambda: |-
-  #          float state = id(tof_1).state;
-  #          ESP_LOGI("TOF", "state: %.6f", state);
-  #          float distance = state * 3.281;
-  #          ESP_LOGI("TOF", "distance: %.2f ft", distance);
-  #          id(last_tof).publish_state(state);
-  #          id(tof_count).publish_state(id(tof_count).state + 1);
-  #          id(main_display).update();
-  #      #- component.update: main_display
-  #      - light.turn_on: main_led
-  #      - switch.turn_on: buzzer_1
-  #      - delay: 0.1s
-  #      - switch.turn_off: buzzer_1
-  #      - light.turn_off: main_led
-
-  #- platform: adc
-  #  pin: GPIO32
-  #  name: "Photo Resistor ${box_num}"
-  #  update_interval: 10s
-  #  unit_of_measurement: lx
-  #  attenuation: 11db
-  #  filters:
-  #    - lambda: |-
-  #        return (x / 10000.0) * 2000000.0;
-
-  # platform: dallas_temp
-  # name: "Temp${box_num}-1"
-  # id: temp1
-  # address: 0x80011453ddfcaa28
-  # update_interval: 15s
-  # #force_update: ${force_update}
-
-  # platform: dallas_temp
-  # name: "Temp${box_num}-2"
-  # id: temp2
-  # address: 0xf8011453d4c3aa28
-  # update_interval: 15s
-  # #force_update: ${force_update}

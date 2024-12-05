@@ -1,0 +1,3 @@
+then:
+  - lambda: |-
+      id(last_gesture).publish_state("UP");

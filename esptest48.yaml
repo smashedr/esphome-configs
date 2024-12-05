@@ -121,6 +121,14 @@ switch:
   #  turn_off_action:
   #    - light.turn_off: rgb_led
 
+remote_receiver:
+  pin: GPIO23
+  dump: all
+  on_raw:
+    then:
+      - logger.log: "RX on_raw"
+      - light.toggle: rgb_led
+
 output:
   - platform: ledc
     id: rgb_r

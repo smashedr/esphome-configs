@@ -1,0 +1,16 @@
+then:
+  - logger.log:
+      format: "Direction: %s"
+      args: ["x.c_str()"]
+  - light.turn_on: main_led
+  - switch.turn_on: buzzer_1
+  - lambda: |-
+      id(tof_count).publish_state(id(tof_count).state + 1);
+      ESP_LOGI("apds", "Direction: %s", x.c_str());
+  #- lambda: |-
+  #    ESP_LOGI("apds", "Direction: %s", x.c_str());
+  #    id(last_gesture).publish_state("UP");
+  - component.update: main_display
+  - delay: 0.1s
+  - switch.turn_off: buzzer_1
+  - light.turn_off: main_led
