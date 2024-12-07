@@ -81,7 +81,7 @@ micro_wake_word:
   vad:
   models:
     - model: hey_jarvis
-    - model: github://smashedr/esphome-configs/models/computer.json
+    - model: github://smashedr/esphome-configs/models/computer.json@master
     #- model:
     #    url: https://raw.githubusercontent.com/JohnnyPrimus/Custom_V2_MicroWakeWords/refs/heads/main/models/computer/computer.json
     #    type: http
@@ -240,8 +240,9 @@ voice_assistant:
       - delay: 30s
       - if:
           condition:
-            not:
-              voice_assistant.is_running:
+            - not:
+                - voice_assistant.is_running:
+            - switch.is_on: enable_wake
           then:
             - text_sensor.template.publish:
                 id: va_status

@@ -39,6 +39,19 @@ substitutions:
 | ------------- | ------------------------------------- | ------------------------------------------------------ |
 | `Computer` \* | [computer.json](models/computer.json) | github://smashedr/esphome-configs/models/computer.json |
 
-\* - Not made by me. See manifest file for details...
+\* Not made by me. See manifest file for details...
+
+Example Configuration:
+
+```yaml
+micro_wake_word:
+  vad:
+  models:
+    - model: hey_jarvis
+    - model: github://smashedr/esphome-configs/models/computer.json@master
+  on_wake_word_detected:
+    then:
+      - voice_assistant.start:
+```
 
 Reference: https://esphome.io/components/micro_wake_word
