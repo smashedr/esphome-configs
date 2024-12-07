@@ -66,6 +66,21 @@ api:
 debug:
   update_interval: 5min
 
+script:
+  - id: close_fridge
+    parameters:
+      door: string
+    then:
+      - logger.log:
+          format: "Closed: %s"
+          args: ["door"]
+      - if:
+          condition:
+            - binary_sensor.is_off: door_sensor_1
+            - binary_sensor.is_off: door_sensor_2
+          then:
+            - light.turn_off: main_led
+
 light:
   - !include { file: include/light/status_led.yaml, vars: { pin: 32 } }
 
@@ -125,12 +140,6 @@ output:
 
 rtttl:
   output: rtttl_out
-#  on_finished_playback:
-#    - logger.log: "Playback Finished."
-
-#one_wire:
-#  - platform: gpio
-#    pin: GPIO33
 
 font:
   - file: "fonts/arial.ttf"
@@ -195,11 +204,6 @@ text_sensor:
   - !include { file: include/text/version.yaml }
   - !include { file: include/text/wifi_info.yaml }
 
-  #- platform: homeassistant
-  #  name: "WiFi IP Address"
-  #  id: wifi_ip
-  #  entity_id: sensor.wifi_ip_49
-
 binary_sensor:
   - !include { file: include/binary/status.yaml }
 
@@ -212,18 +216,13 @@ binary_sensor:
       mode: INPUT_PULLUP
     on_press:
       then:
-        - logger.log: "Freezer --- OPEN"
-        # - rtttl.play: "one:d=4,o=4,b=240:6e6"
+        - logger.log: "Opened: Freezer"
         - light.turn_on: main_led
     on_release:
       then:
-        - logger.log: "Freezer --- CLOSED"
-        - rtttl.play: "one:d=4,o=4,b=240:6e6"
-        - if:
-            condition:
-              binary_sensor.is_off: door_sensor_2
-            then:
-              - light.turn_off: main_led
+        - script.execute:
+          id: close_fridge
+          delay_ms: Freezer
 
   - platform: gpio
     name: "Door Refrigerator"
@@ -234,18 +233,13 @@ binary_sensor:
       mode: INPUT_PULLUP
     on_press:
       then:
-        - logger.log: "Refrigerator --- OPEN"
-        # - rtttl.play: "one:d=4,o=4,b=240:6e6"
+        - logger.log: "Opened: Refrigerator"
         - light.turn_on: main_led
     on_release:
       then:
-        - logger.log: "Refrigerator --- CLOSED"
-        - rtttl.play: "one:d=4,o=4,b=240:6e6"
-        - if:
-            condition:
-              binary_sensor.is_off: door_sensor_1
-            then:
-              - light.turn_off: main_led
+        - script.execute:
+          id: close_fridge
+          delay_ms: Refrigerator
 
   - platform: gpio
     name: "Door Front"
@@ -256,21 +250,15 @@ binary_sensor:
       mode: INPUT_PULLUP
     on_press:
       then:
-        - logger.log: "DOOR --- OPEN"
+        - logger.log: "Open: Front Door"
         - if:
             condition:
               - binary_sensor.is_off: alarm_active
             then:
               - rtttl.play: "HiLoLong:d=4,o=6,b=200:e,8d,2e"
-            #else:
-            #  - while:
-            #      condition:
-            #        binary_sensor.is_on: alarm_active
-            #      then:
-            #        - rtttl.play: "siren:d=8,o=5,b=100:d,e,d,e,d,e,d,e"
     on_release:
       then:
-        - logger.log: "DOOR --- CLOSED"
+        - logger.log: "Closed: Front Door"
         - if:
             condition:
               - binary_sensor.is_off: alarm_active
@@ -312,32 +300,9 @@ binary_sensor:
               - logger.log: "ALARM --- ACTIVATE"
               - while:
                   condition:
-                    binary_sensor.is_on: alarm_active
+                    - binary_sensor.is_on: alarm_active
                   then:
                     - rtttl.play: "siren:d=8,o=5,b=100:d,e,d,e,d,e,d,e"
-
-  #- platform: gpio
-  #  pin:
-  #    number: 19
-  #    mode: INPUT_PULLUP
-  #  name: "Physical Button ${box_num}"
-  #  icon: mdi:radiobox-marked
-  #  filters:
-  #    - invert:
-  #  on_click:
-  #    - min_length: 1ms
-  #      max_length: 1000ms
-  #      then:
-  #        - logger.log: ">1 Second Single Click"
-  #        - light.toggle: main_led
-  #    - min_length: 1001ms
-  #      max_length: 4999ms
-  #      then:
-  #        - logger.log: "1-5 Second Long Press"
-  #    - min_length: 5000ms
-  #      max_length: 10000ms
-  #      then:
-  #        - logger.log: "5< Second Long Press"
 
 sensor:
   - !include { file: include/sensor/debug.yaml }

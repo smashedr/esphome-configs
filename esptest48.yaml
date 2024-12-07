@@ -104,7 +104,7 @@ switch:
       #- light.turn_on: rgb_led
       - if:
           condition:
-            binary_sensor.is_on: presence
+            - binary_sensor.is_on: presence
           then:
             - light.turn_on: main_led
     turn_off_action:
@@ -173,7 +173,7 @@ binary_sensor:
         #- logger.log: "+++ PRESENCE DETECTED"
         - if:
             condition:
-              switch.is_on: presence_light
+              - switch.is_on: presence_light
             then:
               - light.turn_on: main_led
     on_release:

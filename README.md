@@ -32,3 +32,13 @@ substitutions:
   update_interval: "1min" # Used to define update_interval for many of the included sensors.
   force_update: "true" # Used to define force_update for many of the included sensors.
 ```
+
+## microWakeWord Models
+
+| Wake Word     | File                                  | URL for Model                                          |
+| ------------- | ------------------------------------- | ------------------------------------------------------ |
+| `Computer` \* | [computer.json](models/computer.json) | github://smashedr/esphome-configs/models/computer.json |
+
+\* - Not made by me. See manifest file for details...
+
+Reference: https://esphome.io/components/micro_wake_word

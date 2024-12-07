@@ -31,10 +31,19 @@ esphome:
   name: "${box_name}${box_num}"
   comment: "${type}: ${board} (${comment})"
   on_boot:
-    - priority: 200
+    - priority: -100
       then:
-        - logger.log: "Boot 200"
-        - micro_wake_word.start:
+        - logger.log: "Boot -100"
+        #- micro_wake_word.start:
+        #- switch.turn_on: enable_wake
+
+external_components:
+  - source: github://jesserockz/esphome-components
+    components: [udp_audio]
+
+udp_audio:
+  ip_address: 192.168.1.20
+  port: 6056
 
 api:
   encryption:
@@ -65,9 +74,12 @@ light:
 micro_wake_word:
   vad:
   models:
-    - model: okay_nabu
-    - model: hey_mycroft
     - model: hey_jarvis
+    #- model: github://cssnr/micro-wake-word-models/models/jenkins.json@master
+    #- model: https://github.com/cssnr/micro-wake-word-models/raw/master/models/jenkins.json
+    #- model:
+    #    url: https://github.com/cssnr/micro-wake-word-models/raw/master/models/jenkins.json
+    #    type: http
   on_wake_word_detected:
     then:
       - logger.log: "+ + +  on_wake_word_detected  + + +"
@@ -129,19 +141,26 @@ voice_assistant:
       - logger.log: "on_listening"
       - light.turn_on: main_led
 
-  on_stt_end:
-    then:
-      - light.turn_off: main_led
-      - logger.log:
-          format: "on_stt_end text: %s"
-          args: ["x.c_str()"]
-
   on_intent_start:
     then:
       - logger.log: "on_intent_start"
   on_intent_end:
     then:
       - logger.log: "on_intent_end"
+
+  on_stt_vad_start:
+    then:
+      - logger.log: "on_stt_vad_start"
+  on_stt_vad_end:
+    then:
+      - logger.log: "on_stt_vad_end"
+
+  on_stt_end:
+    then:
+      - light.turn_off: main_led
+      - logger.log:
+          format: "on_stt_end text: %s"
+          args: ["x.c_str()"]
 
   on_tts_start:
     then:

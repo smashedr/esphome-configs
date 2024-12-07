@@ -62,7 +62,7 @@ switch:
       #- logger.log: "Light Enabled"
       - if:
           condition:
-            binary_sensor.is_off: presence
+            - binary_sensor.is_off: presence
           then:
             - light.turn_on: main_led
     turn_off_action:

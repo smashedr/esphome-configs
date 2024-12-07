@@ -1,0 +1,56 @@
+name: "Test"
+
+on:
+  push:
+    branches: ["master"]
+    paths:
+      - "*.yaml"
+  pull_request:
+    branches: ["master"]
+    paths:
+      - "*.yaml"
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: "Lint"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Prepare"
+        run: rm -rf .backup
+
+      - name: "🚀 Run yamllint"
+        uses: frenck/action-yamllint@v1
+
+  esphome:
+    name: "ESPHome"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Configure Secrets"
+        run: |-
+          echo "need secrets.yaml to proceed..."
+          exit 1
+
+      - name: "Setup Python"
+        uses: actions/setup-python@v5.3.0
+        with:
+          python-version: 3.9
+
+      - name: "Install ESPHome"
+        run: python -m pip install git+https://github.com/esphome/esphome.git@dev
+
+      - name: "Run ESPHome"
+        run: |-
+          echo "need to loop through files or use matrix..."
+          exit 1
+          #esphome config ${{ matrix.file }}
