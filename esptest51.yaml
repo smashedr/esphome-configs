@@ -82,11 +82,6 @@ micro_wake_word:
   models:
     - model: hey_jarvis
     - model: github://smashedr/esphome-configs/models/computer.json@master
-    #- model:
-    #    url: https://raw.githubusercontent.com/JohnnyPrimus/Custom_V2_MicroWakeWords/refs/heads/main/models/computer/computer.json
-    #    type: http
-    #- model: okay_nabu
-    #- model: hey_mycroft
     #- model: models/computer.json
   on_wake_word_detected:
     then:
@@ -110,10 +105,6 @@ microphone:
     #channel: left
     pdm: false
     #bits_per_sample: 32bit
-    #on_data:
-    #  - logger.log:
-    #      format: "Received %d bytes"
-    #      args: ["x.size()"]
 
 rtttl:
   output: rtttl_out
@@ -177,14 +168,7 @@ voice_assistant:
           blue: 0%
       - text_sensor.template.publish:
           id: va_status
-          state: "Fraiser is Live"
-
-  on_intent_start:
-    then:
-      - logger.log: "on_intent_start"
-  on_intent_end:
-    then:
-      - logger.log: "on_intent_end"
+          state: "I'm Listening..."
 
   on_stt_vad_start:
     then:
@@ -202,20 +186,27 @@ voice_assistant:
       - rtttl.play: "s:d=4,o=6,b=225:8e"
       - text_sensor.template.publish:
           id: va_status
-          state: "Thinking..."
+          state: "Contemplating..."
 
   on_stt_end:
     then:
       # STT End - We have processed what you said as text
-      - light.turn_off: rgb_led
-      - rtttl.play: "s:d=4,o=6,b=225:8e,4d"
       - lambda: |-
           ESP_LOGI("va", "on_stt_end text: %s", x.c_str());
           id(va_status).publish_state(x.c_str());
 
+  on_intent_start:
+    then:
+      - logger.log: "on_intent_start"
+  on_intent_end:
+    then:
+      - logger.log: "on_intent_end"
+
   on_tts_start:
     then:
       # TTS Start - We now have the response text from the VA
+      - rtttl.play: "s:d=4,o=6,b=225:8e,4d"
+      - script.execute: turn_off_led
       - logger.log:
           format: "on_tts_start text: %s"
           args: ["x.c_str()"]
@@ -233,20 +224,7 @@ voice_assistant:
     then:
       # DONE - We are done, restart micro_wake_word when VA is done...
       - logger.log: "on_end"
-      - wait_until:
-          not:
-            voice_assistant.is_running:
-      - micro_wake_word.start:
-      - delay: 30s
-      - if:
-          condition:
-            - not:
-                - voice_assistant.is_running:
-            - switch.is_on: enable_wake
-          then:
-            - text_sensor.template.publish:
-                id: va_status
-                state: "Fraiser is Live"
+      - script.execute: va_end
 
   on_error:
     then:
@@ -255,9 +233,9 @@ voice_assistant:
       - light.turn_on:
           id: rgb_led
           brightness: 100%
-          red: 100%
-          green: 0%
-          blue: 0%
+          red: 0%
+          green: 100%
+          blue: 100%
       - rtttl.play: "s:d=4,o=6,b=120:f#"
       # process error code/message here or pretend it didnt happen...
       - lambda: |-
@@ -272,8 +250,53 @@ voice_assistant:
 
       - delay: 3s
       # some errors stop micro_wake_word so we blindly start it to ensure its running
-      - micro_wake_word.start:
-      - light.turn_off: rgb_led
+      - script.execute: turn_off_led
+      - script.execute: va_end
+
+script:
+  - id: va_end
+    then:
+      - if:
+          condition:
+            switch.is_on: enable_wake
+          then:
+            - wait_until:
+                not:
+                  voice_assistant.is_running:
+            - micro_wake_word.start:
+      # need to run this XX seconds after va ends, but reset timer if va runs within XX seconds...
+      - delay: 30s
+      - if:
+          condition:
+            not:
+              voice_assistant.is_running:
+          then:
+            - if:
+                condition:
+                  switch.is_on: enable_wake
+                then:
+                  text_sensor.template.publish:
+                    id: va_status
+                    state: "Fraiser is Live"
+                else:
+                  text_sensor.template.publish:
+                    id: va_status
+                    state: "Fraiser Out!"
+
+  - id: turn_off_led
+    then:
+      - if:
+          condition:
+            switch.is_on: enable_wake
+          then:
+            light.turn_off: rgb_led
+          else:
+            light.turn_on:
+              id: rgb_led
+              brightness: 50%
+              red: 100%
+              green: 0%
+              blue: 0%
 
 font:
   - file: "fonts/arial.ttf"
@@ -296,7 +319,7 @@ display:
       }
 
       if (!id(va_status).state.empty()) {
-        int max_chars_per_line = 18;
+        int max_chars_per_line = 19;
         std::string text = id(va_status).state.c_str();
         std::string line1 = text.substr(0, max_chars_per_line);
         std::string line2 = text.length() > max_chars_per_line ? text.substr(max_chars_per_line) : "";
@@ -333,7 +356,8 @@ button:
   - !include { file: include/button/factory_reset.yaml }
 
   - platform: template
-    name: "Start Voice ${box_num}"
+    name: "Activate Assistant ${box_num}"
+    icon: mdi:microphone
     on_press:
       - logger.log: "voice_assistant.start"
       - voice_assistant.start:
@@ -369,13 +393,18 @@ switch:
       - micro_wake_word.stop:
       - light.turn_on:
           id: rgb_led
-          brightness: 60%
+          brightness: 50%
           red: 100%
           green: 0%
           blue: 0%
-      - text_sensor.template.publish:
-          id: va_status
-          state: "Fraiser Out!"
+      - if:
+          condition:
+            not:
+              voice_assistant.is_running:
+          then:
+            - text_sensor.template.publish:
+                id: va_status
+                state: "Fraiser Out!"
     web_server:
       sorting_group_id: sg_va
       sorting_weight: 12
@@ -455,14 +484,25 @@ binary_sensor:
     pin:
       number: 23
       mode: INPUT_PULLUP
-    on_press:
-      then:
-        - logger.log: "Touch START"
-        - switch.toggle: enable_wake
-        - rtttl.play: "s:d=4,o=6,b=100:16d"
-    on_release:
-      then:
-        - logger.log: "Touch END"
+    on_multi_click:
+      - timing:
+          - ON for at most 1.9s
+          #- OFF for at least 0.1s
+        then:
+          - logger.log: "Single Click - Start Voice"
+          - if:
+              condition:
+                - voice_assistant.is_running:
+              then:
+                - voice_assistant.stop:
+              else:
+                - voice_assistant.start:
+      - timing:
+          - ON for at least 2s
+        then:
+          - logger.log: "2 Second Touch - Toggle Wake"
+          - switch.toggle: enable_wake
+          - rtttl.play: "s:d=4,o=6,b=100:16d"
 
 sensor:
   - !include { file: include/sensor/debug.yaml }

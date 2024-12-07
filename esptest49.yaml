@@ -222,7 +222,7 @@ binary_sensor:
       then:
         - script.execute:
           id: close_fridge
-          delay_ms: Freezer
+          door: Freezer
 
   - platform: gpio
     name: "Door Refrigerator"
@@ -239,7 +239,7 @@ binary_sensor:
       then:
         - script.execute:
           id: close_fridge
-          delay_ms: Refrigerator
+          door: Refrigerator
 
   - platform: gpio
     name: "Door Front"
