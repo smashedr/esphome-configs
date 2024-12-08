@@ -13,51 +13,54 @@ substitutions:
 
 captive_portal:
 
-esphome:
-  name: "${box_name}${box_num}"
-  comment: "${type}: ${board} (${comment})"
-  on_boot:
-    priority: -100
-    then:
-      - if:
-          condition:
-            - binary_sensor.is_on: presence
-            - switch.is_on: presence_light
-          then:
-            - logger.log: "Sensor and Switch ON - Turning On: main_led"
-            - light.turn_on: main_led
+debug:
+  update_interval: 5min
+
+${type}:
+  board: "${board}"
+  framework:
+    type: esp-idf
+    version: recommended
+
+#esphome:
+#  name: "${box_name}${box_num}"
+#  comment: "${type}: ${board} (${comment})"
+#  on_boot:
+#    priority: -100
+#    then:
+#      - if:
+#          condition:
+#            - binary_sensor.is_on: presence
+#            - switch.is_on: presence_light
+#          then:
+#            - logger.log: "light.turn_on: main_led"
+#            - light.turn_on: main_led
+
+api:
+  encryption:
+    key: !secret enc_key
+  on_client_connected:
+    - logger.log:
+        format: "API Client: %s - IP: %s"
+        args: ["client_info.c_str()", "client_address.c_str()"]
+  on_client_disconnected:
+    - logger.log: "API Client disconnected!"
 
 web_server:
   port: 80
   ota: false
   version: 3
-
   sorting_groups:
-    #- !include { file: include/web/groups/device.yaml }
     - id: sg_lights
       name: "Lights"
-      sorting_weight: -1
-
-debug:
-  update_interval: 5min
+      sorting_weight: -30
 
 light:
-  - !include { file: include/light/status_led.yaml, vars: { pin: 25 } }
-
-  - platform: rgb
-    name: "RGB LED ${box_num}"
-    id: rgb_led
-    icon: mdi:lightbulb-outline
-    red: rgb_r
-    green: rgb_g
-    blue: rgb_b
-    effects: !include_dir_merge_list include/light/effects
-    web_server:
-      sorting_group_id: sg_lights
-      sorting_weight: 11
+  - !include { file: include/light/status_led.yaml, vars: { pin: 26 } }
 
   - platform: monochromatic
     name: "Monochromatic Light ${box_num}"
+    id: chromatic_led
     icon: mdi:lightbulb-outline
     output: mono_chromo
     effects: !include { file: include/light/effects/pulse.yaml }
@@ -65,88 +68,48 @@ light:
       sorting_group_id: sg_lights
       sorting_weight: 10
 
-#number:
+#switch:
 #  - platform: template
-#    name: "Presence Delay ${box_num}"
-#    id: presence_delay
-#    icon: mdi:timer
-#    unit_of_measurement: "s"
+#    name: "Presence Light ${box_num}"
+#    id: presence_light
+#    icon: mdi:alarm-light-off-outline
 #    optimistic: true
-#    restore_value: true
-#    initial_value: 15
-#    min_value: 0
-#    max_value: 300
-#    step: 1
+#    restore_mode: RESTORE_DEFAULT_OFF
+#    turn_on_action:
+#      - if:
+#          condition:
+#            - binary_sensor.is_on: presence
+#          then:
+#            - light.turn_on: mono_chromo
+#    turn_off_action:
+#      - light.turn_off: mono_chromo
 
-#button:
-#  - !include { file: include/button/identify.yaml }
-#  - !include { file: include/button/restart.yaml }
-#  - !include { file: include/button/safe_mode.yaml }
-#  - !include { file: include/button/factory_reset.yaml }
-#
-#  #- platform: template
-#  #  name: "Effect None ${box_num}"
-#  #  on_press:
-#  #    - logger.log: "light.turn_on: rgb_led: None"
-#  #    - light.turn_on:
-#  #        id: rgb_led
-#  #        effect: None
-
-switch:
-  - platform: template
-    name: "Presence Light ${box_num}"
-    id: presence_light
-    icon: mdi:alarm-light-off-outline
-    optimistic: true
-    restore_mode: RESTORE_DEFAULT_OFF
-    turn_on_action:
-      #- logger.log: "Light Enabled"
-      #- light.turn_on: rgb_led
-      - if:
-          condition:
-            - binary_sensor.is_on: presence
-          then:
-            - light.turn_on: main_led
-    turn_off_action:
-      #- logger.log: "Light Disabled"
-      #- light.turn_off: rgb_led
-      - light.turn_off: main_led
-
-  #- platform: template
-  #  name: "Light Effect ${box_num}"
-  #  turn_on_action:
-  #    - light.turn_on:
-  #        id: rgb_led
-  #        effect: strobe
-  #  turn_off_action:
-  #    - light.turn_off: rgb_led
-
-remote_receiver:
-  pin: GPIO23
-  dump: all
-  on_raw:
-    then:
-      - logger.log: "RX on_raw"
-      - light.toggle: rgb_led
+#remote_receiver:
+#  pin: GPIO23
+#  dump: all
+#  on_raw:
+#    then:
+#      - logger.log: "RX on_raw"
+#      - light.toggle: rgb_led
 
 output:
   - platform: ledc
-    id: rgb_r
-    pin: GPIO27
-    max_power: 75%
-  - platform: ledc
-    id: rgb_g
-    pin: GPIO14
-    max_power: 80%
-  - platform: ledc
-    id: rgb_b
-    pin: GPIO12
+    id: mono_chromo
+    pin: GPIO25
     max_power: 80%
 
-  - platform: ledc
-    id: mono_chromo
-    pin: GPIO33
-    max_power: 80%
+  #- platform: ledc
+  #  id: rgb_r
+  #  pin: GPIO27
+  #  max_power: 75%
+  #- platform: ledc
+  #  id: rgb_g
+  #  pin: GPIO14
+  #  max_power: 80%
+  #- platform: ledc
+  #  id: rgb_b
+  #  pin: GPIO12
+  #  max_power: 80%
 
 text_sensor:
   - !include { file: include/text/debug.yaml }
@@ -156,45 +119,35 @@ text_sensor:
 binary_sensor:
   - !include { file: include/binary/status.yaml }
 
-  - platform: gpio
-    pin: GPIO19
-    name: "Presence ${box_num}"
-    id: presence
-    #icon: mdi:motion-sensor
-    device_class: motion
-    filters:
-      - delayed_off: 60s
-      #- delayed_off: !lambda "return id(presence_delay).state;"
-      #- delayed_off: !lambda -|
-      #    int delay = id(presence_delay).state
-      #    return std::format(%ds, delay);
-    on_press:
-      then:
-        #- logger.log: "+++ PRESENCE DETECTED"
-        - if:
-            condition:
-              - switch.is_on: presence_light
-            then:
-              - light.turn_on: main_led
-    on_release:
-      then:
-        #- logger.log: "--- NO PRESENCE"
-        - light.turn_off: main_led
+  #- platform: gpio
+  #  pin: GPIO19
+  #  name: "Presence ${box_num}"
+  #  id: presence
+  #  #icon: mdi:motion-sensor
+  #  device_class: motion
+  #  #filters:
+  #  #  - delayed_off: 60s
+  #  on_press:
+  #    then:
+  #      - if:
+  #          condition:
+  #            - switch.is_on: presence_light
+  #          then:
+  #            - light.turn_on: main_led
+  #  on_release:
+  #    then:
+  #      - light.turn_off: main_led
 
   - platform: gpio
     name: "Touch 1 - ${box_num}"
     id: touch_1
     icon: mdi:gesture-tap-box
     pin:
-      number: 26
+      number: 16
       mode: INPUT_PULLUP
     on_press:
       then:
-        #- logger.log: "Touch START"
-        - switch.toggle: presence_light
-    #on_release:
-    #  then:
-    #    - logger.log: "Touch END"
+        - light.toggle: chromatic_led
 
 sensor:
   - !include { file: include/sensor/debug.yaml }

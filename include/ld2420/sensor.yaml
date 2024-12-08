@@ -1,4 +1,4 @@
 platform: ld2420
 moving_distance:
   name: "Moving Distance ${box_num}"
-  id: moving_distance
+  disabled_by_default: true

@@ -1,0 +1,13 @@
+platform: template
+name: "Night Light ${box_num}"
+id: night_light
+icon: mdi:lightbulb-night
+optimistic: true
+turn_on_action:
+  - if:
+      condition:
+        - binary_sensor.is_off: ${binary}
+      then:
+        - light.turn_on: ${light}
+turn_off_action:
+  - light.turn_off: ${light}

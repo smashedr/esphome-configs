@@ -1,0 +1,8 @@
+then:
+  - if:
+      condition:
+        - switch.is_on: night_light
+        - light.is_off: ${light}
+      then:
+        - logger.log: "No Presence"
+        - light.turn_on: ${light}
