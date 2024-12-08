@@ -1,0 +1,13 @@
+apds9960:
+  # https://esphome.io/components/sensor/apds9960
+  #id: apds_component
+  # defaults
+  address: 0x39
+  # optional
+  update_interval: 60s
+  led_drive: 100mA
+  proximity_gain: 4x
+  ambient_light_gain: 4x
+  gesture_led_drive: 100mA
+  gesture_gain: 4x
+  gesture_wait_time: 2.8ms

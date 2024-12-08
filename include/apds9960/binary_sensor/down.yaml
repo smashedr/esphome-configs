@@ -1,0 +1,11 @@
+platform: apds9960
+direction: DOWN
+name: "DOWN ${box_num}"
+icon: mdi:arrow-down-bold
+web_server:
+  sorting_group_id: sg_apds
+  sorting_weight: 12
+on_press:
+  then:
+    - lambda: |-
+        id(last_gesture).publish_state("DOWN");

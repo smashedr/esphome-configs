@@ -1,0 +1,9 @@
+platform: template
+name: "Last Gesture ${box_num}"
+id: last_gesture
+internal: true
+on_value:
+  then:
+    - logger.log:
+        format: "Direction: %s"
+        args: ["x.c_str()"]

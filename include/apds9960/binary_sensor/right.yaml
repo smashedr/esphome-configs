@@ -1,0 +1,11 @@
+platform: apds9960
+direction: RIGHT
+name: "RIGHT ${box_num}"
+icon: mdi:arrow-right-bold
+web_server:
+  sorting_group_id: sg_apds
+  sorting_weight: 14
+on_press:
+  then:
+    - lambda: |-
+        id(last_gesture).publish_state("RIGHT");

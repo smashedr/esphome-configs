@@ -1,0 +1,11 @@
+platform: apds9960
+direction: UP
+name: "UP ${box_num}"
+icon: mdi:arrow-up-bold
+web_server:
+  sorting_group_id: sg_apds
+  sorting_weight: 11
+on_press:
+  then:
+    - lambda: |-
+        id(last_gesture).publish_state("UP");
