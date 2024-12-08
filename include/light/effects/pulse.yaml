@@ -1,18 +1,13 @@
 - pulse:
     name: "Fast Pulse"
-    transition_length: 0.5s
-    update_interval: 0.5s
-    min_brightness: 10%
+    transition_length: 250ms
+    update_interval: 250ms
+    min_brightness: 60%
     max_brightness: 100%
 
 - pulse:
     name: "Slow Pulse"
     transition_length: 500ms
-    update_interval: 2s
-
-- pulse:
-    name: "Asymmetrical Pulse"
-    transition_length:
-      on_length: 1s
-      off_length: 500ms
-    update_interval: 1.5s
+    update_interval: 500ms
+    min_brightness: 50%
+    max_brightness: 100%

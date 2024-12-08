@@ -10,6 +10,12 @@ substitutions:
   force_update: "true"
 
 <<: !include { file: .common.yaml }
+<<: !include { file: include/apds9960/apds9960.yaml }
+
+captive_portal:
+
+debug:
+  update_interval: 5min
 
 #external_components:
 #  - source: github://jesserockz/esphome-components
@@ -18,10 +24,6 @@ substitutions:
 #udp_audio:
 #  ip_address: 192.168.1.20
 #  port: 6056
-
-captive_portal:
-
-<<: !include { file: include/apds9960/apds9960.yaml }
 
 ${type}:
   board: "${board}"
@@ -66,21 +68,6 @@ web_server:
       name: "Audio"
       sorting_weight: -20
 
-debug:
-  update_interval: 5min
-
-light:
-  - !include { file: include/light/status_led.yaml, vars: { pin: 26 } }
-
-  - platform: rgb
-    name: "RGB LED ${box_num}"
-    id: rgb_led
-    icon: mdi:lightbulb-outline
-    red: rgb_r
-    green: rgb_g
-    blue: rgb_b
-    effects: !include_dir_merge_list include/light/effects
-
 micro_wake_word:
   vad:
   models:
@@ -95,171 +82,17 @@ micro_wake_word:
       #- lambda: |-
       #    ESP_LOGI("micro_wake_word", "wake_word: %s", wake_word);
 
-i2s_audio:
-  id: i2s_in
-  i2s_lrclk_pin: GPIO25 # WS - blue
-  i2s_bclk_pin: GPIO32 # SCK - yellow
+light:
+  - !include { file: include/light/status_led.yaml, vars: { pin: 26 } }
 
-microphone:
-  - platform: i2s_audio
-    id: va_mic
-    i2s_audio_id: i2s_in
-    i2s_din_pin: GPIO33 # SD - green
-    adc_type: external
-    #channel: left
-    #pdm: false
-    #bits_per_sample: 32bit
-
-rtttl:
-  output: rtttl_out
-
-output:
-  - platform: ledc
-    pin: GPIO27
-    id: rtttl_out
-
-  - platform: ledc
-    id: rgb_r
-    pin: GPIO19
-    max_power: 80%
-  - platform: ledc
-    id: rgb_g
-    pin: GPIO18
-    max_power: 80%
-  - platform: ledc
-    id: rgb_b
-    pin: GPIO17
-    max_power: 80%
-
-i2c:
-  sda: GPIO21
-  scl: GPIO22
-  scan: false
-  frequency: 400kHz
-
-voice_assistant:
-  id: va
-  microphone: va_mic
-  #speaker: va_speaker
-  #media_player: va_media
-  auto_gain: 31dBFS
-  noise_suppression_level: 2
-  volume_multiplier: 2.0
-  #conversation_timeout : 300s
-  #use_wake_word: false
-
-  on_client_connected:
-    then:
-      - logger.log: "on_client_connected"
-  on_client_disconnected:
-    then:
-      - logger.log: "on_client_disconnected"
-
-  on_idle:
-    then:
-      - logger.log: "on_idle "
-
-  on_wake_word_detected:
-    then:
-      - logger.log: "on_wake_word_detected"
-
-  on_start:
-    then:
-      - logger.log: "on_start"
-
-  on_listening:
-    then:
-      # Listening - We are listening to what you are saying for processing
-      - logger.log: "on_listening"
-      - rtttl.play: "s:d=4,o=6,b=225:8d,4e"
-      - light.turn_on:
-          id: rgb_led
-          brightness: 100%
-          red: 0%
-          green: 100%
-          blue: 0%
-      - text_sensor.template.publish:
-          id: va_status
-          state: "I'm Listening..."
-
-  on_stt_vad_start:
-    then:
-      - logger.log: "on_stt_vad_start"
-  on_stt_vad_end:
-    then:
-      # STT Start - We are done listening and starting to process stt
-      - logger.log: "on_stt_vad_end"
-      - light.turn_on:
-          id: rgb_led
-          brightness: 100%
-          red: 0%
-          green: 0%
-          blue: 100%
-      - rtttl.play: "s:d=4,o=6,b=225:8e"
-      - text_sensor.template.publish:
-          id: va_status
-          state: "Contemplating..."
-
-  on_stt_end:
-    then:
-      # STT End - We have processed what you said as text
-      - lambda: |-
-          ESP_LOGI("va", "on_stt_end text: %s", x.c_str());
-          id(va_status).publish_state(x.c_str());
-
-  on_intent_start:
-    then:
-      - logger.log: "on_intent_start"
-  on_intent_end:
-    then:
-      - logger.log: "on_intent_end"
-
-  on_tts_start:
-    then:
-      # TTS Start - We now have the response text from the VA
-      - logger.log:
-          format: "on_tts_start text: %s"
-          args: ["x.c_str()"]
-      - lambda: |-
-          ESP_LOGI("va", "on_tts_start text: %s", x.c_str());
-          id(va_status).publish_state(x.c_str());
-  on_tts_end:
-    then:
-      # TTS End - We now have a URL to the response audio from the VA
-      - logger.log:
-          format: "on_tts_end url: %s"
-          args: ["x.c_str()"]
-
-  on_end:
-    then:
-      # DONE - We are done, restart micro_wake_word when VA is done...
-      - logger.log: "on_end"
-      - script.execute: va_end
-
-  on_error:
-    then:
-      # ERROR - You fucked up Chuck!
-      - logger.log: "on_error"
-      - light.turn_on:
-          id: rgb_led
-          brightness: 100%
-          red: 0%
-          green: 100%
-          blue: 100%
-      - rtttl.play: "s:d=4,o=6,b=120:f#"
-      # process error code/message here or pretend it didnt happen...
-      - lambda: |-
-          ESP_LOGW("va", "code: %s", code.c_str());
-          ESP_LOGW("va", "message: %s", message.c_str());
-
-          char formatted_message[128];
-          snprintf(formatted_message, sizeof(formatted_message), "Error[%s]: %s", code.c_str(), message.c_str());
-
-          ESP_LOGD("va", "formatted_message: %s", formatted_message);
-          id(va_status).publish_state(formatted_message);
-
-      - delay: 3s
-      - script.execute: va_end
+  - platform: rgb
+    name: "RGB LED ${box_num}"
+    id: rgb_led
+    icon: mdi:lightbulb-outline
+    red: rgb_r
+    green: rgb_g
+    blue: rgb_b
+    effects: !include_dir_merge_list include/light/effects
 
 script:
   - id: va_start
@@ -337,13 +170,129 @@ script:
               green: 0%
               blue: 0%
 
-font:
-  - file: "fonts/arial.ttf"
-    id: font1
-    size: 14
-  - file: "fonts/arial.ttf"
-    id: font2
-    size: 14
+voice_assistant:
+  id: va
+  microphone: va_mic
+  #speaker: va_speaker
+  #media_player: va_media
+  auto_gain: 31dBFS
+  noise_suppression_level: 2
+  volume_multiplier: 2.0
+  #conversation_timeout : 300s
+  #use_wake_word: false
+
+  on_client_connected:
+    then:
+      - logger.log: "on_client_connected"
+  on_client_disconnected:
+    then:
+      - logger.log: "on_client_disconnected"
+
+  on_idle:
+    then:
+      - logger.log: "on_idle "
+
+  on_wake_word_detected:
+    then:
+      - logger.log: "on_wake_word_detected"
+
+  on_start:
+    then:
+      - logger.log: "on_start"
+
+  on_listening:
+    then:
+      # Listening - We are listening to what you are saying for processing
+      - logger.log: "on_listening"
+      - rtttl.play: "s:d=4,o=6,b=225:8d,4e"
+      - light.turn_on:
+          id: rgb_led
+          #brightness: 100%
+          red: 0%
+          green: 100%
+          blue: 0%
+          effect: Slow Pulse
+      - text_sensor.template.publish:
+          id: va_status
+          state: "I'm Listening..."
+
+  on_stt_vad_start:
+    then:
+      - logger.log: "on_stt_vad_start"
+  on_stt_vad_end:
+    then:
+      # STT Start - We are done listening and starting to process stt
+      - logger.log: "on_stt_vad_end"
+      - light.turn_on:
+          id: rgb_led
+          #brightness: 100%
+          red: 0%
+          green: 0%
+          blue: 100%
+          effect: Fast Pulse
+      - rtttl.play: "s:d=4,o=6,b=225:8e"
+      - text_sensor.template.publish:
+          id: va_status
+          state: "Contemplating..."
+
+  on_stt_end:
+    then:
+      # STT End - We have processed what you said as text
+      - lambda: |-
+          ESP_LOGI("va", "on_stt_end text: %s", x.c_str());
+          id(va_status).publish_state(x.c_str());
+
+  on_intent_start:
+    then:
+      - logger.log: "on_intent_start"
+  on_intent_end:
+    then:
+      - logger.log: "on_intent_end"
+
+  on_tts_start:
+    then:
+      # TTS Start - We now have the response text from the VA
+      - lambda: |-
+          ESP_LOGI("va", "on_tts_start text: %s", x.c_str());
+          id(va_status).publish_state(x.c_str());
+  on_tts_end:
+    then:
+      # TTS End - We now have a URL to the response audio from the VA
+      - logger.log:
+          format: "on_tts_end url: %s"
+          args: ["x.c_str()"]
+          level: INFO
+
+  on_end:
+    then:
+      # DONE - We are done, restart micro_wake_word when VA is done...
+      - logger.log: "on_end"
+      - script.execute: va_end
+
+  on_error:
+    then:
+      # ERROR - You fucked up Chuck!
+      - logger.log: "on_error"
+      - light.turn_on:
+          id: rgb_led
+          brightness: 100%
+          red: 0%
+          green: 100%
+          blue: 100%
+      - rtttl.play: "s:d=4,o=6,b=120:f#"
+      # process error code/message here or pretend it didnt happen...
+      - lambda: |-
+          ESP_LOGW("va", "code: %s", code.c_str());
+          ESP_LOGW("va", "message: %s", message.c_str());
+
+          char formatted_message[128];
+          snprintf(formatted_message, sizeof(formatted_message), "Error[%s]: %s", code.c_str(), message.c_str());
+
+          ESP_LOGD("va", "formatted_message: %s", formatted_message);
+          id(va_status).publish_state(formatted_message);
+
+      - delay: 3s
+      - script.execute: va_end
 
 display:
   - platform: ssd1306_i2c
@@ -363,13 +312,61 @@ display:
         std::string line1 = text.substr(0, max_chars_per_line);
         std::string line2 = text.length() > max_chars_per_line ? text.substr(max_chars_per_line) : "";
 
-        it.printf(0, 23, id(font2), "%s", line1.c_str());
+        it.printf(0, 23, id(font1), "%s", line1.c_str());
         if (!line2.empty()) {
-          it.printf(0, 46, id(font2), "%s", line2.c_str());
+          it.printf(0, 46, id(font1), "%s", line2.c_str());
         }
       } else {
         it.printf(0, 23, id(font1), "VA Status Unknown!");
       }
+
+font:
+  #- file: "fonts/arial.ttf"
+  - file: "gfonts://Red+Hat+Text"
+    id: font1
+    size: 14
+
+microphone:
+  - platform: i2s_audio
+    id: va_mic
+    i2s_audio_id: i2s_in
+    i2s_din_pin: GPIO33 # SD - green
+    adc_type: external
+    #channel: left
+    #pdm: false
+    #bits_per_sample: 32bit
+
+rtttl:
+  output: rtttl_out
+
+output:
+  - platform: ledc
+    pin: GPIO27
+    id: rtttl_out
+
+  - platform: ledc
+    id: rgb_r
+    pin: GPIO19
+    max_power: 80%
+  - platform: ledc
+    id: rgb_g
+    pin: GPIO18
+    max_power: 80%
+  - platform: ledc
+    id: rgb_b
+    pin: GPIO17
+    max_power: 80%
+
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+  scan: false
+  frequency: 400kHz
+
+i2s_audio:
+  id: i2s_in
+  i2s_lrclk_pin: GPIO25 # WS - blue
+  i2s_bclk_pin: GPIO32 # SCK - yellow
 
 text:
   - platform: template
