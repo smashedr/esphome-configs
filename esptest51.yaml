@@ -102,6 +102,7 @@ script:
             - voice_assistant.is_running:
           then:
             - logger.log: "va_start: voice_assistant.stop"
+            # TODO: verify that voice_assistant.stop does not trigger on_end which runs va_end
             - voice_assistant.stop:
             - script.execute: va_end
             - script.execute: set_text
@@ -113,9 +114,6 @@ script:
                   not:
                     microphone.is_capturing:
                 timeout: 250ms
-            # need a wait_until condition for this...
-            #- logger.log: "delay: 100ms"
-            #- delay: 100ms
             - logger.log: "va_start: voice_assistant.start"
             - voice_assistant.start:
 
@@ -190,7 +188,7 @@ voice_assistant:
 
   on_idle:
     then:
-      - logger.log: "on_idle "
+      - logger.log: "on_idle"
 
   on_wake_word_detected:
     then:
@@ -207,11 +205,11 @@ voice_assistant:
       - rtttl.play: "s:d=4,o=6,b=225:8d,4e"
       - light.turn_on:
           id: rgb_led
-          #brightness: 100%
+          brightness: 100%
           red: 0%
           green: 100%
           blue: 0%
-          effect: Slow Pulse
+          #effect: Slow Pulse
       - text_sensor.template.publish:
           id: va_status
           state: "I'm Listening..."
@@ -229,11 +227,11 @@ voice_assistant:
           red: 0%
           green: 0%
           blue: 100%
-          effect: Fast Pulse
+          effect: Normal Pulse
       - rtttl.play: "s:d=4,o=6,b=225:8e"
       - text_sensor.template.publish:
           id: va_status
-          state: "Contemplating..."
+          state: "Thinking..."
 
   on_stt_end:
     then:
@@ -280,7 +278,6 @@ voice_assistant:
           green: 100%
           blue: 100%
       - rtttl.play: "s:d=4,o=6,b=120:f#"
-      # process error code/message here or pretend it didnt happen...
       - lambda: |-
           ESP_LOGW("va", "code: %s", code.c_str());
           ESP_LOGW("va", "message: %s", message.c_str());
@@ -288,7 +285,7 @@ voice_assistant:
           char formatted_message[128];
           snprintf(formatted_message, sizeof(formatted_message), "Error[%s]: %s", code.c_str(), message.c_str());
 
-          ESP_LOGD("va", "formatted_message: %s", formatted_message);
+          ESP_LOGI("va", "formatted_message: %s", formatted_message);
           id(va_status).publish_state(formatted_message);
 
       - delay: 3s
@@ -301,30 +298,43 @@ display:
     address: 0x3C
     lambda: |-
       if (!global_api_server->is_connected() ) {
-        it.printf(0, 0, id(font1), "Connecting to HA...");
+        it.printf(0, 0, id(red_hat), "Connecting to HA...");
       } else {
-        it.printf(0, 0, id(font1), "Connected.");
+        it.printf(0, 0, id(red_hat), "Connected.");
       }
 
       if (!id(va_status).state.empty()) {
-        int max_chars_per_line = 19;
+        int max_chars_per_line = 20;
         std::string text = id(va_status).state.c_str();
         std::string line1 = text.substr(0, max_chars_per_line);
         std::string line2 = text.length() > max_chars_per_line ? text.substr(max_chars_per_line) : "";
 
-        it.printf(0, 23, id(font1), "%s", line1.c_str());
+        it.printf(0, 23, id(red_hat), "%s", line1.c_str());
         if (!line2.empty()) {
-          it.printf(0, 46, id(font1), "%s", line2.c_str());
+          it.printf(0, 46, id(red_hat), "%s", line2.c_str());
         }
       } else {
-        it.printf(0, 23, id(font1), "VA Status Unknown!");
+        it.printf(0, 23, id(red_hat), "VA Status Unknown!");
       }
 
 font:
-  #- file: "fonts/arial.ttf"
-  - file: "gfonts://Red+Hat+Text"
-    id: font1
+  - file:
+      type: gfonts
+      family: "Red Hat Text"
+      #italic : false
+      #weight: 400
+    id: red_hat
     size: 14
+    #bpp: 1
+    glyphsets:
+      - GF_Latin_Core
+
+  #- file: "fonts/arial.ttf"
+  #  id: arial_ttf
+  #  size: 14
+  #  bpp: 1
+  #  glyphsets:
+  #    - GF_Latin_Core
 
 microphone:
   - platform: i2s_audio
@@ -358,8 +368,8 @@ output:
     max_power: 80%
 
 i2c:
-  sda: GPIO21
-  scl: GPIO22
+  sda: GPIO21 # green
+  scl: GPIO22 # blue
   scan: false
   frequency: 400kHz
 
