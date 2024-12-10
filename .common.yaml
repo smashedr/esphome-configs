@@ -1,23 +1,29 @@
 ${type}:
+  # https://esphome.io/#supported-microcontrollers
   board: "${board}"
 
 esphome:
+  # https://esphome.io/components/esphome
   name: "${box_name}${box_num}"
   comment: "${type}: ${board} (${comment})"
 
 logger:
+  # https://esphome.io/components/logger
   level: DEBUG
 
 api:
+  # https://esphome.io/components/api
   encryption:
     key: !secret enc_key
 
 ota:
+  # https://esphome.io/components/ota/esphome
   platform: esphome
   password: !secret ota_pass
   id: ota_one
 
 wifi:
+  # https://esphome.io/components/wifi
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
   domain: !secret local_domain
@@ -32,7 +38,8 @@ wifi:
     password: !secret host_pass
 
 button:
-  - !include { file: include/button/identify.yaml }
+  # https://esphome.io/#button-components
+  - !include { file: include/button/identify.yaml, vars: { light: main_led } }
   - !include { file: include/button/restart.yaml }
   - !include { file: include/button/factory_reset.yaml }
   - !include { file: include/button/safe_mode.yaml }

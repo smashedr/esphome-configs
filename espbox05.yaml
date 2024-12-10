@@ -53,6 +53,12 @@ text_sensor:
   - !include { file: include/text/version.yaml }
   - !include { file: include/text/wifi_info.yaml }
 
+button:
+  - !include { file: include/button/identify.yaml, vars: { light: green_led } }
+  - !include { file: include/button/restart.yaml }
+  - !include { file: include/button/factory_reset.yaml }
+  - !include { file: include/button/safe_mode.yaml }
+
 binary_sensor:
   - !include { file: include/binary/status.yaml }
 

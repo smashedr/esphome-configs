@@ -49,7 +49,7 @@ select:
   - !include { file: include/ld2420/select.yaml }
 
 button:
-  - !include { file: include/button/identify.yaml }
+  - !include { file: include/button/identify.yaml, vars: { light: main_led } }
   - !include { file: include/button/restart.yaml }
   - !include { file: include/button/safe_mode.yaml }
   - !include { file: include/button/factory_reset.yaml }

@@ -17,6 +17,14 @@ captive_portal:
 debug:
   update_interval: 5min
 
+${type}:
+  board: "${board}"
+  framework:
+    type: esp-idf
+    version: recommended
+    sdkconfig_options:
+      CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
+
 esphome:
   name: "${box_name}${box_num}"
   comment: "${type}: ${board} (${comment})"
@@ -45,7 +53,7 @@ select:
   - !include { file: include/ld2420/select.yaml }
 
 button:
-  - !include { file: include/button/identify.yaml }
+  - !include { file: include/button/identify.yaml, vars: { light: main_led } }
   - !include { file: include/button/restart.yaml }
   - !include { file: include/button/safe_mode.yaml }
   - !include { file: include/button/factory_reset.yaml }

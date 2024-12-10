@@ -15,6 +15,7 @@ substitutions:
 captive_portal:
 
 debug:
+  # https://esphome.io/components/debug
   update_interval: 5min
 
 #external_components:
@@ -26,12 +27,16 @@ debug:
 #  port: 6056
 
 ${type}:
+  # https://esphome.io/#supported-microcontrollers
   board: "${board}"
   framework:
     type: esp-idf
     version: recommended
+    sdkconfig_options:
+      CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
 
 esphome:
+  # https://esphome.io/components/esphome
   name: "${box_name}${box_num}"
   comment: "${type}: ${board} (${comment})"
   on_boot:
@@ -39,23 +44,34 @@ esphome:
       then:
         - logger.log: "Boot 600"
         - rtttl.play: !lambda "return id(tune_text).state;"
-    # Switch state runs before we can enable micro_wake_word, for now always enable at start
     - priority: -100
       then:
         - logger.log: "Boot -100"
-        - switch.turn_on: enable_wake
+        #- wait_until:
+        #    - api.connected:
+        - if:
+            condition:
+              - switch.is_on: enable_wake
+            then:
+              - script.execute: micro_wake_enable
 
 api:
+  # https://esphome.io/components/api
   encryption:
     key: !secret enc_key
   on_client_connected:
     - logger.log:
-        format: "API Client: %s - IP: %s"
+        format: "Client Connected: %s (%s)"
         args: ["client_info.c_str()", "client_address.c_str()"]
+        level: INFO
   on_client_disconnected:
-    - logger.log: "API Client disconnected!"
+    - logger.log:
+        format: "Client Disconnected: %s (%s)"
+        args: ["client_info.c_str()", "client_address.c_str()"]
+        level: INFO
 
 web_server:
+  # https://esphome.io/components/web_server
   port: 80
   ota: false
   version: 3
@@ -69,6 +85,7 @@ web_server:
       sorting_weight: -20
 
 micro_wake_word:
+  # https://esphome.io/components/micro_wake_word
   vad:
   models:
     - model: hey_jarvis
@@ -89,14 +106,17 @@ light:
     name: "RGB LED ${box_num}"
     id: rgb_led
     icon: mdi:lightbulb-outline
+    disabled_by_default: true
     red: rgb_r
     green: rgb_g
     blue: rgb_b
     effects: !include_dir_merge_list include/light/effects
 
 script:
+  # https://esphome.io/components/script
   - id: va_start
     then:
+      - logger.log: "Running script: va_start"
       - if:
           condition:
             - voice_assistant.is_running:
@@ -113,15 +133,16 @@ script:
                 condition:
                   not:
                     microphone.is_capturing:
-                timeout: 250ms
+                timeout: 500ms
             - logger.log: "va_start: voice_assistant.start"
             - voice_assistant.start:
 
   - id: va_end
     mode: restart
     then:
-      - rtttl.play: "s:d=4,o=6,b=225:8e,4d"
+      - logger.log: "Running script: va_end"
       - script.execute: turn_off_led
+      - rtttl.play: "s:d=4,o=6,b=225:8e,4d"
       - if:
           condition:
             switch.is_on: enable_wake
@@ -138,23 +159,24 @@ script:
           then:
             - script.execute: set_text
 
-  - id: set_text
+  - id: micro_wake_enable
     then:
+      - logger.log: "Enable Micro Wake Word"
       - if:
           condition:
-            switch.is_on: enable_wake
+            not:
+              voice_assistant.is_running:
           then:
-            text_sensor.template.publish:
-              id: va_status
-              state: "Frasier is Live"
-          else:
-            text_sensor.template.publish:
-              id: va_status
-              state: "Frasier Out!"
+            - micro_wake_word.start:
+            - light.turn_off: rgb_led
+            - text_sensor.template.publish:
+                id: va_text
+                state: "Frasier is Live..."
 
   - id: turn_off_led
     mode: restart
     then:
+      - logger.log: "Running script: turn_off_led"
       - if:
           condition:
             switch.is_on: enable_wake
@@ -168,7 +190,23 @@ script:
               green: 0%
               blue: 0%
 
+  - id: set_text
+    then:
+      - logger.log: "Running script: set_text"
+      - if:
+          condition:
+            switch.is_on: enable_wake
+          then:
+            text_sensor.template.publish:
+              id: va_text
+              state: "Frasier is Live"
+          else:
+            text_sensor.template.publish:
+              id: va_text
+              state: "Frasier Out!"
+
 voice_assistant:
+  # https://esphome.io/components/voice_assistant
   id: va
   microphone: va_mic
   #speaker: va_speaker
@@ -179,16 +217,16 @@ voice_assistant:
   #conversation_timeout : 300s
   #use_wake_word: false
 
+  on_idle:
+    then:
+      - logger.log: "on_idle"
+
   on_client_connected:
     then:
       - logger.log: "on_client_connected"
   on_client_disconnected:
     then:
       - logger.log: "on_client_disconnected"
-
-  on_idle:
-    then:
-      - logger.log: "on_idle"
 
   on_wake_word_detected:
     then:
@@ -209,9 +247,9 @@ voice_assistant:
           red: 0%
           green: 100%
           blue: 0%
-          #effect: Slow Pulse
+          #effect: "Slow Pulse"
       - text_sensor.template.publish:
-          id: va_status
+          id: va_text
           state: "I'm Listening..."
 
   on_stt_vad_start:
@@ -227,10 +265,10 @@ voice_assistant:
           red: 0%
           green: 0%
           blue: 100%
-          effect: Normal Pulse
+          effect: "Normal Pulse"
       - rtttl.play: "s:d=4,o=6,b=225:8e"
       - text_sensor.template.publish:
-          id: va_status
+          id: va_text
           state: "Thinking..."
 
   on_stt_end:
@@ -238,7 +276,7 @@ voice_assistant:
       # STT End - We have processed what you said as text
       - lambda: |-
           ESP_LOGI("va", "on_stt_end text: %s", x.c_str());
-          id(va_status).publish_state(x.c_str());
+          id(va_text).publish_state(x.c_str());
 
   on_intent_start:
     then:
@@ -252,7 +290,7 @@ voice_assistant:
       # TTS Start - We now have the response text from the VA
       - lambda: |-
           ESP_LOGI("va", "on_tts_start text: %s", x.c_str());
-          id(va_status).publish_state(x.c_str());
+          id(va_text).publish_state(x.c_str());
   on_tts_end:
     then:
       # TTS End - We now have a URL to the response audio from the VA
@@ -286,12 +324,13 @@ voice_assistant:
           snprintf(formatted_message, sizeof(formatted_message), "Error[%s]: %s", code.c_str(), message.c_str());
 
           ESP_LOGI("va", "formatted_message: %s", formatted_message);
-          id(va_status).publish_state(formatted_message);
+          id(va_text).publish_state(formatted_message);
 
       - delay: 3s
       - script.execute: va_end
 
 display:
+  # https://esphome.io/#display-components
   - platform: ssd1306_i2c
     id: main_display
     model: "SSD1306 128x64"
@@ -303,9 +342,9 @@ display:
         it.printf(0, 0, id(red_hat), "Connected.");
       }
 
-      if (!id(va_status).state.empty()) {
+      if (!id(va_text).state.empty()) {
         int max_chars_per_line = 20;
-        std::string text = id(va_status).state.c_str();
+        std::string text = id(va_text).state.c_str();
         std::string line1 = text.substr(0, max_chars_per_line);
         std::string line2 = text.length() > max_chars_per_line ? text.substr(max_chars_per_line) : "";
 
@@ -318,6 +357,7 @@ display:
       }
 
 font:
+  # https://esphome.io/components/font
   - file:
       type: gfonts
       family: "Red Hat Text"
@@ -336,7 +376,12 @@ font:
   #  glyphsets:
   #    - GF_Latin_Core
 
+rtttl:
+  # https://esphome.io/components/rtttl
+  output: rtttl_out
+
 microphone:
+  # https://esphome.io/components/microphone/
   - platform: i2s_audio
     id: va_mic
     i2s_audio_id: i2s_in
@@ -346,10 +391,21 @@ microphone:
     #pdm: false
     #bits_per_sample: 32bit
 
-rtttl:
-  output: rtttl_out
+i2s_audio:
+  # https://esphome.io/components/microphone/i2s_audio
+  id: i2s_in
+  i2s_lrclk_pin: GPIO25 # WS - blue
+  i2s_bclk_pin: GPIO32 # SCK - yellow
+
+i2c:
+  # https://esphome.io/components/i2c
+  sda: GPIO21 # green
+  scl: GPIO22 # blue
+  scan: false
+  frequency: 400kHz
 
 output:
+  # https://esphome.io/components/output/
   - platform: ledc
     pin: GPIO27
     id: rtttl_out
@@ -367,18 +423,8 @@ output:
     pin: GPIO17
     max_power: 80%
 
-i2c:
-  sda: GPIO21 # green
-  scl: GPIO22 # blue
-  scan: false
-  frequency: 400kHz
-
-i2s_audio:
-  id: i2s_in
-  i2s_lrclk_pin: GPIO25 # WS - blue
-  i2s_bclk_pin: GPIO32 # SCK - yellow
-
 text:
+  # https://esphome.io/#text-components
   - platform: template
     name: "Tune ${box_num}"
     id: tune_text
@@ -396,7 +442,8 @@ text:
       sorting_weight: 14
 
 button:
-  - !include { file: include/button/identify.yaml }
+  # https://esphome.io/#button-components
+  - !include { file: include/button/identify.yaml, vars: { light: main_led } }
   - !include { file: include/button/restart.yaml }
   - !include { file: include/button/safe_mode.yaml }
   - !include { file: include/button/factory_reset.yaml }
@@ -421,35 +468,42 @@ button:
       sorting_weight: 12
 
 switch:
+  # https://esphome.io/#switch-components
   - platform: template
     name: "Enable Wake ${box_num}"
     id: enable_wake
     icon: mdi:account-voice
     optimistic: true
-    #restore_mode: RESTORE_DEFAULT_ON
+    restore_mode: RESTORE_DEFAULT_ON
     turn_on_action:
-      - logger.log: "micro_wake_word.start"
-      - micro_wake_word.start:
-      - light.turn_off: rgb_led
-      - text_sensor.template.publish:
-          id: va_status
-          state: "Frasier is Live"
+      - logger.log: "Enable Micro Wake Word"
+      - script.execute: micro_wake_enable
+      #- if:
+      #    condition:
+      #      not:
+      #        voice_assistant.is_running:
+      #    then:
+      #      - micro_wake_word.start:
+      #      - light.turn_off: rgb_led
+      #      - text_sensor.template.publish:
+      #          id: va_text
+      #          state: "Frasier is Live..."
     turn_off_action:
-      - logger.log: "micro_wake_word.stop"
+      - logger.log: "Disable Micro Wake Word"
       - micro_wake_word.stop:
-      - light.turn_on:
-          id: rgb_led
-          brightness: 50%
-          red: 100%
-          green: 0%
-          blue: 0%
       - if:
           condition:
             not:
               voice_assistant.is_running:
           then:
+            - light.turn_on:
+                id: rgb_led
+                brightness: 50%
+                red: 100%
+                green: 0%
+                blue: 0%
             - text_sensor.template.publish:
-                id: va_status
+                id: va_text
                 state: "Frasier Out!"
     web_server:
       sorting_group_id: sg_va
@@ -496,38 +550,8 @@ switch:
   #    sorting_group_id: sg_va
   #    sorting_weight: 16
 
-text_sensor:
-  - !include { file: include/text/debug.yaml }
-  - !include { file: include/text/version.yaml }
-  - !include { file: include/text/wifi_info.yaml }
-
-  - platform: template
-    name: "VA Status"
-    id: va_status
-    internal: true
-    on_value:
-      then:
-        - component.update: main_display
-        #- lambda: |-
-        #    ESP_LOGI("va", "New Status: %s", x.c_str());
-        #    id(main_display).update();
-
-  - platform: template
-    name: "Last Gesture ${box_num}"
-    id: last_gesture
-    internal: true
-    on_value:
-      then:
-        - logger.log:
-            format: "Direction: %s"
-            args: ["x.c_str()"]
-        - script.execute: va_start
-        #- rtttl.play: "s:d=4,o=6,b=100:16d"
-        #- light.turn_on: main_led
-        #- delay: 100ms
-        #- light.turn_off: main_led
-
 binary_sensor:
+  # https://esphome.io/#binary-sensor-components
   - !include { file: include/binary/status.yaml }
 
   - !include { file: include/apds9960/binary_sensor/up.yaml }
@@ -555,7 +579,40 @@ binary_sensor:
           - rtttl.play: "s:d=4,o=6,b=100:16d"
           - switch.toggle: enable_wake
 
+text_sensor:
+  # https://esphome.io/#text-sensor-components
+  - !include { file: include/text/debug.yaml }
+  - !include { file: include/text/version.yaml }
+  - !include { file: include/text/wifi_info.yaml }
+
+  - platform: template
+    name: "VA Text ${box_num}"
+    id: va_text
+    internal: true
+    on_value:
+      then:
+        - component.update: main_display
+        #- lambda: |-
+        #    ESP_LOGI("va", "New Status: %s", x.c_str());
+        #    id(main_display).update();
+
+  - platform: template
+    name: "Last Gesture ${box_num}"
+    id: last_gesture
+    internal: true
+    on_value:
+      then:
+        - logger.log:
+            format: "Direction: %s"
+            args: ["x.c_str()"]
+        - script.execute: va_start
+        #- rtttl.play: "s:d=4,o=6,b=100:16d"
+        #- light.turn_on: main_led
+        #- delay: 100ms
+        #- light.turn_off: main_led
+
 sensor:
+  # https://esphome.io/#sensor-components
   - !include { file: include/sensor/debug.yaml }
   - !include { file: include/sensor/internal_temperature.yaml }
   - !include { file: include/sensor/uptime.yaml }

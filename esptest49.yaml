@@ -221,8 +221,8 @@ binary_sensor:
     on_release:
       then:
         - script.execute:
-          id: close_fridge
-          door: Freezer
+            id: close_fridge
+            door: Freezer
 
   - platform: gpio
     name: "Door Refrigerator"
@@ -238,8 +238,8 @@ binary_sensor:
     on_release:
       then:
         - script.execute:
-          id: close_fridge
-          door: Refrigerator
+            id: close_fridge
+            door: Refrigerator
 
   - platform: gpio
     name: "Door Front"

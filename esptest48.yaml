@@ -154,3 +154,10 @@ sensor:
   - !include { file: include/sensor/internal_temperature.yaml }
   - !include { file: include/sensor/uptime.yaml }
   - !include { file: include/sensor/wifi_signal.yaml }
+
+  - platform: adc
+    name: "Photoresistor ${box_num}"
+    pin: GPIO36
+    attenuation: 12db
+    update_interval: 1s
+    disabled_by_default: true

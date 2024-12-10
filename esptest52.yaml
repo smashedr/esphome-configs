@@ -14,6 +14,7 @@ substitutions:
 captive_portal:
 
 debug:
+  # https://esphome.io/components/debug
   update_interval: 5min
 
 #external_components:
@@ -25,32 +26,87 @@ debug:
 #  port: 6056
 
 ${type}:
+  # https://esphome.io/#supported-microcontrollers
   board: "${board}"
   framework:
     type: esp-idf
     version: recommended
+    sdkconfig_options:
+      CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
+
+#globals:
+#  - id: wake_word_status
+#    type: bool
+#    restore_value: yes
+#    initial_value: "false"
 
 esphome:
+  # https://esphome.io/components/esphome
   name: "${box_name}${box_num}"
   comment: "${type}: ${board} (${comment})"
   on_boot:
+    - priority: 600
+      then:
+        - logger.log: "Boot 600"
+        - light.turn_on:
+            id: main_led
+            effect: "Full Pulse"
+        #- switch.turn_on: buzzer
+        #- delay: 75ms
+        #- switch.turn_off: buzzer
     - priority: -100
       then:
         - logger.log: "Boot -100"
-        #- micro_wake_word.start:
-        #- switch.turn_on: enable_wake
+        - if:
+            condition:
+              - switch.is_on: enable_wake
+            then:
+              - script.execute: micro_wake_enable
+              #- logger.log: "Enabling Micro Wake Word..."
+              #- micro_wake_word.start:
+        - wait_until:
+            - api.connected:
+        - light.turn_off: main_led
 
 api:
+  # https://esphome.io/components/api
   encryption:
     key: !secret enc_key
   on_client_connected:
-    - logger.log:
-        format: "API Client: %s - IP: %s"
-        args: ["client_info.c_str()", "client_address.c_str()"]
+    - lambda: |-
+        if (client_info.find("Home Assistant") != std::string::npos) {
+          ESP_LOGI("api", "API Connected: Home Assistant (%s)", client_address.c_str());
+        } else {
+          ESP_LOGI("api", "Client Connected: %s (%s)", client_info.c_str(), client_address.c_str());
+        }
+    #- if:
+    #    condition:
+    #      api.connected:
+    #    then:
+    #      - light.turn_on:
+    #          id: main_led
+    #          effect: "Full Pulse"
   on_client_disconnected:
-    - logger.log: "API Client disconnected!"
+    - lambda: |-
+        if (client_info.find("Home Assistant") != std::string::npos) {
+          ESP_LOGW("api", "API Disconnected: Home Assistant (%s)", client_address.c_str());
+        } else {
+          ESP_LOGI("api", "Client Disconnected: %s (%s)", client_info.c_str(), client_address.c_str());
+        }
+    #- if:
+    #    condition:
+    #      not:
+    #        api.connected:
+    #    then:
+    #      - logger.log:
+    #          format: "API Disconnected!"
+    #          level: WARN
+    #      - light.turn_on:
+    #          id: main_led
+    #          effect: "Full Pulse"
 
 web_server:
+  # https://esphome.io/components/web_server
   port: 80
   ota: false
   version: 3
@@ -63,6 +119,7 @@ web_server:
       sorting_weight: -20
 
 micro_wake_word:
+  # https://esphome.io/components/micro_wake_word
   vad:
   models:
     - model: hey_jarvis
@@ -75,9 +132,20 @@ micro_wake_word:
       #    ESP_LOGI("micro_wake_word", "wake_word: %s", wake_word);
 
 light:
-  - !include { file: include/light/status_led.yaml, vars: { pin: 26 } }
+  #- !include { file: include/light/status_led.yaml, vars: { pin: 26 } }
+  - platform: monochromatic
+    name: "Monochromatic Light ${box_num}"
+    id: main_led
+    icon: mdi:lightbulb-outline
+    disabled_by_default: true
+    output: main_ledc
+    effects: !include { file: include/light/effects/pulse.yaml }
+    #web_server:
+    #  sorting_group_id: sg_lights
+    #  sorting_weight: 10
 
 script:
+  # https://esphome.io/components/script
   - id: va_start
     then:
       - if:
@@ -95,7 +163,7 @@ script:
                 condition:
                   not:
                     microphone.is_capturing:
-                timeout: 250ms
+                timeout: 500ms
             - logger.log: "va_start: voice_assistant.start"
             - voice_assistant.start:
 
@@ -103,6 +171,9 @@ script:
     mode: restart
     then:
       - light.turn_off: main_led
+      #- switch.turn_on: buzzer
+      #- delay: 50ms
+      #- switch.turn_off: buzzer
       - if:
           condition:
             switch.is_on: enable_wake
@@ -112,7 +183,18 @@ script:
                   voice_assistant.is_running:
             - micro_wake_word.start:
 
+  - id: micro_wake_enable
+    then:
+      - logger.log: "Enable Micro Wake Word"
+      - if:
+          condition:
+            not:
+              voice_assistant.is_running:
+          then:
+            - micro_wake_word.start:
+
 voice_assistant:
+  # https://esphome.io/components/voice_assistant
   id: va
   microphone: va_mic
   #speaker: va_speaker
@@ -123,16 +205,16 @@ voice_assistant:
   #conversation_timeout : 300s
   #use_wake_word: false
 
-  on_client_connected:
-    then:
-      - logger.log: "on_client_connected"
-  on_client_disconnected:
-    then:
-      - logger.log: "on_client_disconnected"
-
   on_idle:
     then:
       - logger.log: "on_idle"
+
+  on_client_connected:
+    then:
+      - logger.log: "va: on_client_connected"
+  on_client_disconnected:
+    then:
+      - logger.log: "va: on_client_disconnected"
 
   on_wake_word_detected:
     then:
@@ -146,7 +228,13 @@ voice_assistant:
     then:
       # Listening - We are listening to what you are saying for processing
       - logger.log: "on_listening"
-      - light.turn_on: main_led
+      - light.turn_on:
+          id: main_led
+          brightness: 75%
+          transition_length: 0s
+      #- switch.turn_on: buzzer
+      #- delay: 75ms
+      #- switch.turn_off: buzzer
 
   on_stt_vad_start:
     then:
@@ -155,6 +243,9 @@ voice_assistant:
     then:
       # STT Start - We are done listening and starting to process stt
       - logger.log: "on_stt_vad_end"
+      - light.turn_on:
+          id: main_led
+          effect: "Fast Pulse"
 
   on_stt_end:
     then:
@@ -174,6 +265,23 @@ voice_assistant:
       # TTS Start - We now have the response text from the VA
       - lambda: |-
           ESP_LOGI("va", "on_tts_start text: %s", x.c_str());
+      #- homeassistant.action:
+      #    action: notify.alexa_media
+      #    data:
+      #      target: media_player.desk
+      #      message: "!lambda return x.c_str();"
+      #      data:
+      #        type: tts
+      - homeassistant.action:
+          action: notify.alexa_media
+          data:
+            target: media_player.desk
+          data_template:
+            message: "{{ message }}"
+          variables:
+            message: |-
+              return x.c_str();
+
   on_tts_end:
     then:
       # TTS End - We now have a URL to the response audio from the VA
@@ -203,26 +311,32 @@ voice_assistant:
       - script.execute: va_end
 
 microphone:
+  # https://esphome.io/components/microphone/
   - platform: i2s_audio
     id: va_mic
     i2s_audio_id: i2s_in
     i2s_din_pin: GPIO33 # SD - green
     adc_type: external
     #channel: left
-    pdm: false
+    #pdm: false
     #bits_per_sample: 32bit
-    #on_data:
-    #  - logger.log:
-    #      format: "Received %d bytes"
-    #      args: ["x.size()"]
 
 i2s_audio:
+  # https://esphome.io/components/microphone/i2s_audio
   id: i2s_in
   i2s_lrclk_pin: GPIO25 # WS - blue
   i2s_bclk_pin: GPIO32 # SCK - yellow
 
+output:
+  # https://esphome.io/components/output/
+  - platform: ledc
+    id: main_ledc
+    pin: GPIO26
+    max_power: 80%
+
 button:
-  - !include { file: include/button/identify.yaml }
+  # https://esphome.io/#button-components
+  - !include { file: include/button/identify.yaml, vars: { light: main_led } }
   - !include { file: include/button/restart.yaml }
   - !include { file: include/button/safe_mode.yaml }
   - !include { file: include/button/factory_reset.yaml }
@@ -237,18 +351,42 @@ button:
       sorting_group_id: sg_va
       sorting_weight: 16
 
+#  - platform: template
+#    name: "DEBUG BUTTON ${box_num}"
+#    icon: mdi:bug-play
+#    disabled_by_default: true
+#    on_press:
+#      - logger.log: "debug button press, please fasten your seat belt..."
+#      - if:
+#          condition:
+#            - lambda: "return id(wake_word_status);"
+#          then:
+#            - logger.log: "TRUE: id(wake_word_status)"
+#      - if:
+#          condition:
+#            - lambda: "return id(wake_word_status) == 'true';"
+#          then:
+#            - logger.log: "TRUE: id(wake_word_status) == 'true'"
+
 switch:
+  # https://esphome.io/#switch-components
   - platform: template
     name: "Enable Wake ${box_num}"
     id: enable_wake
     icon: mdi:account-voice
     optimistic: true
-    #restore_mode: RESTORE_DEFAULT_ON
+    restore_mode: RESTORE_DEFAULT_ON
     turn_on_action:
-      - logger.log: "micro_wake_word.start"
-      - micro_wake_word.start:
+      - logger.log: "Enable Micro Wake Word"
+      - script.execute: micro_wake_enable
+      #- if:
+      #    condition:
+      #      not:
+      #        voice_assistant.is_running:
+      #    then:
+      #      - micro_wake_word.start:
     turn_off_action:
-      - logger.log: "micro_wake_word.stop"
+      - logger.log: "Disable Micro Wake Word"
       - micro_wake_word.stop:
     web_server:
       sorting_group_id: sg_va
@@ -293,14 +431,42 @@ switch:
       - light.turn_off: main_led
     web_server:
       sorting_group_id: sg_audio
-      sorting_weight: 13
+      sorting_weight: 12
+
+  - platform: gpio
+    name: "Buzzer ${box_num}"
+    id: buzzer
+    pin: 27
+    icon: "mdi:volume-high"
+    disabled_by_default: true
+    web_server:
+      sorting_group_id: sg_audio
+      sorting_weight: 14
+
+binary_sensor:
+  # https://esphome.io/#binary-sensor-components
+  - platform: status
+    name: "Status ${box_num}"
+    icon: mdi:check-network-outline
+    on_press:
+      then:
+        - logger.log:
+            format: "API Connected..."
+            level: INFO
+    on_release:
+      then:
+        - logger.log:
+            format: "API Disconnected!"
+            level: WARN
 
 text_sensor:
+  # https://esphome.io/#text-sensor-components
   - !include { file: include/text/debug.yaml }
   - !include { file: include/text/version.yaml }
   - !include { file: include/text/wifi_info.yaml }
 
 sensor:
+  # https://esphome.io/#sensor-components
   - !include { file: include/sensor/debug.yaml }
   - !include { file: include/sensor/internal_temperature.yaml }
   - !include { file: include/sensor/uptime.yaml }
