@@ -1,5 +1,0 @@
-platform: ld2450
-factory_reset:
-  name: "LD2450 Factory Reset"
-reboot:
-  name: "LD2450 Reboot"

@@ -1,0 +1,5 @@
+platform: ld2450
+factory_reset:
+  name: "LD2450 Factory Reset ${box_num}"
+reboot:
+  name: "LD2450 Reboot ${box_num}"
