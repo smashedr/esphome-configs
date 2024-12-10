@@ -77,32 +77,48 @@ This combines the `status_led` platform with an `identify` button.
 status_led: !include
   file: include/status_led.yaml
   vars:
-    pin: GPIO18
-    status_led: your_led_id_name
+    pin: GPIO18 # required
+    status_led: name_for_id
 ```
 
 ### pmsx003
 
 - https://esphome.io/components/sensor/pmsx003
 
-**WIP - NOT FINISHED**
-
-| Variable | Type   | Description           |
-| -------- | ------ | --------------------- |
-| rx_pin   | string | PIN for `rx_pin`      |
-| tx_pin   | string | PIN used for `tx_pin` |
+| Variable     | Default | Type   | Description                   |
+| ------------ | ------- | ------ | ----------------------------- |
+| pms_num      | 01      | string | Number Appended to `name`(s)  |
+| rx_pin       | GPIO16  | string | PIN for `rx_pin`              |
+| tx_pin       | GPIO17  | string | PIN for `tx_pin`              |
+| force_update | true    | string | Set `force_update` for sensor |
 
 ```yaml
 pmsx003: !include
   file: include/pmsx003/pmsx003.yaml
   vars:
+    pms_num: 01
     rx_pin: GPIO16
     tx_pin: GPIO17
+    force_update: true
+```
+
+You may want to extend the sensor for `on_value` automations:
+
+```yaml
+sensor:
+  - id: !extend pm_sensor
+    pm_2_5:
+      on_value_range:
 ```
 
 ### apds9960
 
 - https://esphome.io/components/sensor/apds9960
+
+| Variable       | Default | Type   | Description                                 |
+| -------------- | ------- | ------ | ------------------------------------------- |
+| box_num        | 01      | string | Number Appended to `name`(s)                |
+| sorting_weight | 50      | string | web_server: sorting_group: `sorting_weight` |
 
 This package captures each gesture and publishes them to a text sensor with the last value, UP, DOWN, RIGHT, or LEFT.
 
@@ -129,10 +145,11 @@ web_server: !disable
 
 - https://esphome.io/components/sensor/ld2420
 
-| Variable | Type   | Description           |
-| -------- | ------ | --------------------- |
-| rx_pin   | string | PIN for `rx_pin`      |
-| tx_pin   | string | PIN used for `tx_pin` |
+| Variable | Default | Type   | Description                  |
+| -------- | ------- | ------ | ---------------------------- |
+| box_num  | 01      | string | Number Appended to `name`(s) |
+| rx_pin   | GPIO16  | string | PIN for `rx_pin`             |
+| tx_pin   | GPIO17  | string | PIN for `tx_pin`             |
 
 ```yaml
 ld2420: !include
@@ -166,10 +183,11 @@ _Note: If you palan to extend the `uart:` definition, the `ld2420:` definition m
 
 - https://github.com/uncle-yura/esphome-ld2450
 
-| Variable | Type   | Description           |
-| -------- | ------ | --------------------- |
-| rx_pin   | string | PIN for `rx_pin`      |
-| tx_pin   | string | PIN used for `tx_pin` |
+| Variable | Default | Type   | Description                  |
+| -------- | ------- | ------ | ---------------------------- |
+| box_num  | 01      | string | Number Appended to `name`(s) |
+| rx_pin   | GPIO16  | string | PIN for `rx_pin`             |
+| tx_pin   | GPIO17  | string | PIN for `tx_pin`             |
 
 ```yaml
 ld2450: !include

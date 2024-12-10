@@ -1,9 +1,16 @@
+# ld2450: !include { file: include/ld2450/ld2450.yaml }
 # ld2450: !include
 #   file: include/ld2450/ld2450.yaml
 #   vars:
+#     box_num: 01
 #     rx_pin: GPIO16
 #     tx_pin: GPIO17
 # https://github.com/uncle-yura/esphome-ld2450
+
+substitutions:
+  box_num: "01"
+  rx_pin: "GPIO16"
+  tx_pin: "GPIO17"
 
 external_components:
   - source:

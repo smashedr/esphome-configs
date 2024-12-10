@@ -1,8 +1,17 @@
 # apds9960: !include { file: include/apds9960/apds9960.yaml }
+# apds9960: !include
+#   file: include/apds9960/apds9960.yaml
+#   vars:
+#     box_num: 01
+#     sorting_weight: 50
 # https://esphome.io/components/sensor/apds9960
 
+substitutions:
+  box_num: "01"
+  sorting_weight: "50"
+
 apds9960:
-  #id: apds_component
+  id: apds_component
   # defaults
   address: 0x39
   # optional

@@ -1,5 +1,4 @@
 # PM Sensor - Living Room
-# TODO: WIP: Make pmsx003 package...
 
 substitutions:
   # https://esphome.io/components/substitutions
@@ -8,7 +7,6 @@ substitutions:
   type: "esp32"
   board: "nodemcu-32s"
   comment: "38-pin narrow"
-  pms_num: "01"
 
 packages:
   # https://esphome.io/components/packages.html
@@ -18,11 +16,13 @@ packages:
     vars:
       pin: GPIO25
       status_led: green_led
-  #pmsx003: !include
-  #  file: include/pmsx003/pmsx003.yaml
-  #  vars:
-  #    rx_pin: GPIO16
-  #    tx_pin: GPIO17
+  pmsx003: !include
+    file: include/pmsx003/pmsx003.yaml
+    vars:
+      pms_num: "01"
+      #rx_pin: GPIO16
+      #tx_pin: GPIO17
+      #force_update: true
 
 light:
   # https://esphome.io/components/light/
@@ -34,6 +34,7 @@ light:
     output: yellow_o
 
 output:
+  # https://esphome.io/components/output/
   - platform: gpio
     id: red_o
     pin: 32
@@ -41,28 +42,9 @@ output:
     id: yellow_o
     pin: 33
 
-uart:
-  rx_pin: 16
-  tx_pin: 17
-  baud_rate: 9600
-  #debug:
-  #  direction: BOTH
-  #  dummy_receiver: false
-  #  after:
-  #    delimiter: "\n"
-  #  sequence:
-  #    - lambda: UARTDebug::log_string(direction, bytes);
-
 sensor:
-  - platform: pmsx003
-    type: PMSX003
-    update_interval: 2.5min
-    pm_1_0:
-      name: "PM 1.0 ${pms_num}"
-      force_update: ${force_update}
+  - id: !extend pm_sensor
     pm_2_5:
-      name: "PM 2.5 ${pms_num}"
-      force_update: ${force_update}
       on_value_range:
         - below: 150
           then:
@@ -80,6 +62,3 @@ sensor:
             - light.turn_on: red_led
             - light.turn_off: green_led
             - light.turn_off: yellow_led
-    pm_10_0:
-      name: "PM 10.0 ${pms_num}"
-      force_update: ${force_update}
