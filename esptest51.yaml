@@ -14,8 +14,7 @@ packages:
     file: include/status_led.yaml
     vars:
       pin: GPIO26
-
-<<: !include { file: include/apds9960/apds9960.yaml }
+  apds9960: !include { file: include/apds9960/apds9960.yaml }
 
 #external_components:
 #  - source: github://jesserockz/esphome-components
@@ -55,7 +54,6 @@ web_server:
     - id: sg_va
       name: "Voice Assistant"
       sorting_weight: -30
-    - !include { file: include/apds9960/sg.yaml, vars: { sorting_weight: -25 } }
     - id: sg_audio
       name: "Audio"
       sorting_weight: -20
@@ -520,12 +518,6 @@ switch:
   #    sorting_weight: 16
 
 binary_sensor:
-  # https://esphome.io/#binary-sensor-components
-  - !include { file: include/apds9960/binary_sensor/up.yaml }
-  - !include { file: include/apds9960/binary_sensor/down.yaml }
-  - !include { file: include/apds9960/binary_sensor/left.yaml }
-  - !include { file: include/apds9960/binary_sensor/right.yaml }
-
   - platform: gpio
     name: "Touch 1 - ${box_num}"
     id: touch_1
@@ -560,9 +552,7 @@ text_sensor:
         #    id(main_display).update();
 
   - platform: template
-    name: "Last Gesture ${box_num}"
-    id: last_gesture
-    internal: true
+    id: !extend last_gesture
     on_value:
       then:
         - logger.log:
