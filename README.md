@@ -6,6 +6,7 @@
 
 - [General](#general)
 - [Substitutions](#substitutions)
+- [Voice Assistant](#voice-assistant)
 - [Micro Wake Word](#micro-wake-word)
 
 ESPHome: https://esphome.io/
@@ -34,6 +35,14 @@ substitutions:
   force_update: "true" # Used to define force_update for many of the included sensors.
 ```
 
+## Voice Assistant
+
+- https://esphome.io/components/voice_assistant
+
+This is a WIP but already looking very good!
+
+Current Progress: [esptest51.yaml](esptest51.yaml)
+
 ## Micro Wake Word
 
 - https://github.com/kahrendt/microWakeWord
@@ -58,7 +67,7 @@ micro_wake_word:
       - voice_assistant.start:
 ```
 
-Tip: Micro Wake Word will respond faster with increased CPU frequency on ESP32:
+Tip: Micro Wake Word will respond slightly faster with increased CPU frequency on ESP32:
 
 ```yaml
 esp32:
