@@ -17,6 +17,12 @@ esphome:
   name: "${box_name}${box_num}"
   comment: "${type}: ${board} (${comment})"
 
+ota:
+  # https://esphome.io/components/ota/esphome
+  platform: esphome
+  password: !secret ota_pass
+  id: ota_one
+
 logger:
   # https://esphome.io/components/logger
   level: DEBUG
@@ -25,12 +31,16 @@ api:
   # https://esphome.io/components/api
   encryption:
     key: !secret enc_key
-
-ota:
-  # https://esphome.io/components/ota/esphome
-  platform: esphome
-  password: !secret ota_pass
-  id: ota_one
+  on_client_connected:
+    - logger.log:
+        format: "Client Connected: %s (%s)"
+        args: ["client_info.c_str()", "client_address.c_str()"]
+        level: INFO
+  on_client_disconnected:
+    - logger.log:
+        format: "Client Disconnected: %s (%s)"
+        args: ["client_info.c_str()", "client_address.c_str()"]
+        level: INFO
 
 wifi:
   # https://esphome.io/components/wifi

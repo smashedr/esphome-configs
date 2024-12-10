@@ -6,16 +6,10 @@ substitutions:
   type: "esp32"
   board: "esp32dev"
   comment: "38-pin"
-  update_interval: "1min"
-  force_update: "true"
 
-<<: !include { file: .common.yaml }
-
-captive_portal:
-
-debug:
-  # https://esphome.io/components/debug
-  update_interval: 5min
+packages:
+  debug: !include { file: include/debug.yaml }
+  common: !include { file: include/common.yaml }
 
 #external_components:
 #  - source: github://jesserockz/esphome-components
@@ -27,10 +21,7 @@ debug:
 
 ${type}:
   # https://esphome.io/#supported-microcontrollers
-  board: "${board}"
   framework:
-    type: esp-idf
-    version: recommended
     sdkconfig_options:
       CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
 
@@ -42,8 +33,6 @@ ${type}:
 
 esphome:
   # https://esphome.io/components/esphome
-  name: "${box_name}${box_num}"
-  comment: "${type}: ${board} (${comment})"
   on_boot:
     - priority: 600
       then:
@@ -70,8 +59,6 @@ esphome:
 
 api:
   # https://esphome.io/components/api
-  encryption:
-    key: !secret enc_key
   on_client_connected:
     - lambda: |-
         if (client_info.find("Home Assistant") != std::string::npos) {
@@ -107,9 +94,6 @@ api:
 
 web_server:
   # https://esphome.io/components/web_server
-  port: 80
-  ota: false
-  version: 3
   sorting_groups:
     - id: sg_va
       name: "Voice Assistant"
@@ -132,7 +116,6 @@ micro_wake_word:
       #    ESP_LOGI("micro_wake_word", "wake_word: %s", wake_word);
 
 light:
-  #- !include { file: include/light/status_led.yaml, vars: { pin: 26 } }
   - platform: monochromatic
     name: "Monochromatic Light ${box_num}"
     id: main_led
@@ -336,11 +319,6 @@ output:
 
 button:
   # https://esphome.io/#button-components
-  - !include { file: include/button/identify.yaml, vars: { light: main_led } }
-  - !include { file: include/button/restart.yaml }
-  - !include { file: include/button/safe_mode.yaml }
-  - !include { file: include/button/factory_reset.yaml }
-
   - platform: template
     name: "Activate Assistant ${box_num}"
     icon: mdi:microphone
@@ -442,32 +420,3 @@ switch:
     web_server:
       sorting_group_id: sg_audio
       sorting_weight: 14
-
-binary_sensor:
-  # https://esphome.io/#binary-sensor-components
-  - platform: status
-    name: "Status ${box_num}"
-    icon: mdi:check-network-outline
-    on_press:
-      then:
-        - logger.log:
-            format: "API Connected..."
-            level: INFO
-    on_release:
-      then:
-        - logger.log:
-            format: "API Disconnected!"
-            level: WARN
-
-text_sensor:
-  # https://esphome.io/#text-sensor-components
-  - !include { file: include/text/debug.yaml }
-  - !include { file: include/text/version.yaml }
-  - !include { file: include/text/wifi_info.yaml }
-
-sensor:
-  # https://esphome.io/#sensor-components
-  - !include { file: include/sensor/debug.yaml }
-  - !include { file: include/sensor/internal_temperature.yaml }
-  - !include { file: include/sensor/uptime.yaml }
-  - !include { file: include/sensor/wifi_signal.yaml }

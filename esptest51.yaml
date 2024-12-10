@@ -6,17 +6,16 @@ substitutions:
   type: "esp32"
   board: "nodemcu-32s"
   comment: "38-pin (narrow)"
-  update_interval: "1min"
-  force_update: "true"
 
-<<: !include { file: .common.yaml }
+packages:
+  debug: !include { file: include/debug.yaml }
+  common: !include { file: include/common.yaml }
+  status_led: !include
+    file: include/status_led.yaml
+    vars:
+      pin: GPIO26
+
 <<: !include { file: include/apds9960/apds9960.yaml }
-
-captive_portal:
-
-debug:
-  # https://esphome.io/components/debug
-  update_interval: 5min
 
 #external_components:
 #  - source: github://jesserockz/esphome-components
@@ -28,17 +27,12 @@ debug:
 
 ${type}:
   # https://esphome.io/#supported-microcontrollers
-  board: "${board}"
   framework:
-    type: esp-idf
-    version: recommended
     sdkconfig_options:
       CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
 
 esphome:
   # https://esphome.io/components/esphome
-  name: "${box_name}${box_num}"
-  comment: "${type}: ${board} (${comment})"
   on_boot:
     - priority: 600
       then:
@@ -55,26 +49,8 @@ esphome:
             then:
               - script.execute: micro_wake_enable
 
-api:
-  # https://esphome.io/components/api
-  encryption:
-    key: !secret enc_key
-  on_client_connected:
-    - logger.log:
-        format: "Client Connected: %s (%s)"
-        args: ["client_info.c_str()", "client_address.c_str()"]
-        level: INFO
-  on_client_disconnected:
-    - logger.log:
-        format: "Client Disconnected: %s (%s)"
-        args: ["client_info.c_str()", "client_address.c_str()"]
-        level: INFO
-
 web_server:
   # https://esphome.io/components/web_server
-  port: 80
-  ota: false
-  version: 3
   sorting_groups:
     - id: sg_va
       name: "Voice Assistant"
@@ -100,8 +76,6 @@ micro_wake_word:
       #    ESP_LOGI("micro_wake_word", "wake_word: %s", wake_word);
 
 light:
-  - !include { file: include/light/status_led.yaml, vars: { pin: 26 } }
-
   - platform: rgb
     name: "RGB LED ${box_num}"
     id: rgb_led
@@ -443,11 +417,6 @@ text:
 
 button:
   # https://esphome.io/#button-components
-  - !include { file: include/button/identify.yaml, vars: { light: main_led } }
-  - !include { file: include/button/restart.yaml }
-  - !include { file: include/button/safe_mode.yaml }
-  - !include { file: include/button/factory_reset.yaml }
-
   - platform: template
     name: "Activate Assistant ${box_num}"
     icon: mdi:microphone
@@ -552,8 +521,6 @@ switch:
 
 binary_sensor:
   # https://esphome.io/#binary-sensor-components
-  - !include { file: include/binary/status.yaml }
-
   - !include { file: include/apds9960/binary_sensor/up.yaml }
   - !include { file: include/apds9960/binary_sensor/down.yaml }
   - !include { file: include/apds9960/binary_sensor/left.yaml }
@@ -581,10 +548,6 @@ binary_sensor:
 
 text_sensor:
   # https://esphome.io/#text-sensor-components
-  - !include { file: include/text/debug.yaml }
-  - !include { file: include/text/version.yaml }
-  - !include { file: include/text/wifi_info.yaml }
-
   - platform: template
     name: "VA Text ${box_num}"
     id: va_text
@@ -610,10 +573,3 @@ text_sensor:
         #- light.turn_on: main_led
         #- delay: 100ms
         #- light.turn_off: main_led
-
-sensor:
-  # https://esphome.io/#sensor-components
-  - !include { file: include/sensor/debug.yaml }
-  - !include { file: include/sensor/internal_temperature.yaml }
-  - !include { file: include/sensor/uptime.yaml }
-  - !include { file: include/sensor/wifi_signal.yaml }
