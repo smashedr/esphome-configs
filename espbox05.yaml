@@ -7,7 +7,6 @@ substitutions:
   board: "nodemcu-32s"
   comment: "38-pin narrow"
   pms_num: "01"
-  status_led: "green_led"
 
 packages:
   common: !include { file: include/common.yaml }
@@ -15,6 +14,7 @@ packages:
     file: include/status_led.yaml
     vars:
       pin: GPIO25
+      status_led: green_led
 
 light:
   - platform: binary

@@ -17,12 +17,13 @@ ESPHome: https://esphome.io/
 
 This is a WIP but very powerful!
 
-| Package    | File                                             | URL |
-| ---------- | ------------------------------------------------ | --- |
-| Common     | [include/common.yaml](include/common.yaml)       | WIP |
-| Debug      | [include/debug.yaml](include/debug.yaml)         | WIP |
-| Status LED | [include/debug.yaml](include/status_led.yaml)    | WIP |
-| ld2420     | [include/debug.yaml](include/ld2420/ld2420.yaml) | WIP |
+| Package    | File                                                             | URL |
+| ---------- | ---------------------------------------------------------------- | --- |
+| Common     | [include/common.yaml](include/common.yaml)                       | WIP |
+| Debug      | [include/debug.yaml](include/debug.yaml)                         | WIP |
+| Status LED | [include/status_led.yaml](include/status_led.yaml)               | WIP |
+| ld2420     | [include/ld2420/ld2420.yaml](include/ld2420/ld2420.yaml)         | WIP |
+| apds9960   | [include/apds9960/apds9960.yaml](include/apds9960/apds9960.yaml) | WIP |
 
 ### ld2420
 
