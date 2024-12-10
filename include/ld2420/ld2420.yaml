@@ -28,6 +28,13 @@ select:
 button:
   - !include { file: button.yaml }
 
+binary_sensor:
+  - platform: ld2420
+    id: presence_sensor
+    has_target:
+      name: "Presence ${box_num}"
+      id: presence
+
 text_sensor:
   - !include { file: text_sensor.yaml }
 

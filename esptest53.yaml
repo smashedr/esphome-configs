@@ -50,10 +50,8 @@ switch:
     entity_id: light.bedroom_light
 
 binary_sensor:
-  - platform: ld2420
+  - id: !extend presence_sensor
     has_target:
-      name: "Presence ${box_num}"
-      id: presence
       on_press:
         !include {
           file: include/ld2420/on_press_night_light.yaml,
