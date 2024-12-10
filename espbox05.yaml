@@ -6,24 +6,20 @@ substitutions:
   type: "esp32"
   board: "nodemcu-32s"
   comment: "38-pin narrow"
-  update_interval: "1min"
-  force_update: "true"
   pms_num: "01"
+  status_led: "green_led"
 
-<<: !include { file: .common.yaml }
-<<: !include { file: include/web/web_server.yaml, vars: { version: 3 } }
-
-captive_portal:
+packages:
+  common: !include { file: include/common.yaml }
+  status_led: !include
+    file: include/status_led.yaml
+    vars:
+      pin: GPIO25
 
 light:
-  - platform: status_led
-    id: green_led
-    pin: 25
-
   - platform: binary
     id: red_led
     output: red_o
-
   - platform: binary
     id: yellow_led
     output: yellow_o
@@ -32,7 +28,6 @@ output:
   - platform: gpio
     id: red_o
     pin: 32
-
   - platform: gpio
     id: yellow_o
     pin: 33
@@ -49,24 +44,7 @@ uart:
   #  sequence:
   #    - lambda: UARTDebug::log_string(direction, bytes);
 
-text_sensor:
-  - !include { file: include/text/version.yaml }
-  - !include { file: include/text/wifi_info.yaml }
-
-button:
-  - !include { file: include/button/identify.yaml, vars: { light: green_led } }
-  - !include { file: include/button/restart.yaml }
-  - !include { file: include/button/factory_reset.yaml }
-  - !include { file: include/button/safe_mode.yaml }
-
-binary_sensor:
-  - !include { file: include/binary/status.yaml }
-
 sensor:
-  - !include { file: include/sensor/internal_temperature.yaml }
-  - !include { file: include/sensor/uptime.yaml }
-  - !include { file: include/sensor/wifi_signal.yaml }
-
   - platform: pmsx003
     type: PMSX003
     update_interval: 2.5min

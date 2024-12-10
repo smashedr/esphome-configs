@@ -6,28 +6,17 @@ substitutions:
   type: "esp32"
   board: "esp32dev"
   comment: "38-pin"
-  update_interval: "1min"
-  force_update: "true"
 
-<<: !include { file: .common.yaml }
-<<: !include { file: include/web/web_server.yaml, vars: { version: 3 } }
-
-captive_portal:
-
-light:
-  - !include { file: include/light/status_led.yaml, vars: { pin: 27 } }
-
-text_sensor:
-  - !include { file: include/text/version.yaml }
-  - !include { file: include/text/wifi_info.yaml }
+packages:
+  common: !include { file: include/common.yaml }
+  status_led: !include
+    file: include/status_led.yaml
+    vars:
+      pin: GPIO27
 
 binary_sensor:
-  - !include { file: include/binary/status.yaml }
   - !include { file: include/binary/btn_light_reset.yaml, vars: { pin: 18 } }
 
 sensor:
-  - !include { file: include/sensor/internal_temperature.yaml }
-  - !include { file: include/sensor/uptime.yaml }
-  - !include { file: include/sensor/wifi_signal.yaml }
   - !include { file: include/sensor/dht22.yaml, vars: { pin: 33 } }
   - !include { file: include/sensor/absolute_humidity_dht22.yaml }
