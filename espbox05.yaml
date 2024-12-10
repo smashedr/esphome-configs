@@ -1,6 +1,8 @@
 # PM Sensor - Living Room
+# TODO: Make pmsx003 package...
 
 substitutions:
+  # https://esphome.io/components/substitutions
   box_num: "05"
   box_name: "espbox"
   type: "esp32"
@@ -9,6 +11,7 @@ substitutions:
   pms_num: "01"
 
 packages:
+  # https://esphome.io/components/packages.html
   common: !include { file: include/common.yaml }
   status_led: !include
     file: include/status_led.yaml
@@ -17,6 +20,7 @@ packages:
       status_led: green_led
 
 light:
+  # https://esphome.io/components/light/
   - platform: binary
     id: red_led
     output: red_o

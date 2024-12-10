@@ -1,6 +1,7 @@
 # Refrigerator/Front Door - Kitchen
 
 substitutions:
+  # https://esphome.io/components/substitutions
   box_num: "49"
   box_name: "esptest"
   type: "esp32"
@@ -8,6 +9,7 @@ substitutions:
   comment: "38-pin (narrow)"
 
 packages:
+  # https://esphome.io/components/packages.html
   debug: !include { file: include/debug.yaml }
   common: !include { file: include/common.yaml }
   status_led: !include
@@ -16,6 +18,7 @@ packages:
       pin: GPIO32
 
 esphome:
+  # https://esphome.io/components/esphome
   on_boot:
     - priority: 600
       then:
@@ -52,6 +55,7 @@ esphome:
     #          - light.turn_on: red_led
 
 api:
+  # https://esphome.io/components/api
   services:
     - service: play_rtttl
       variables:
@@ -61,6 +65,7 @@ api:
             rtttl: !lambda "return song_str;"
 
 script:
+  # https://esphome.io/components/script
   - id: close_fridge
     parameters:
       door: string
@@ -76,6 +81,7 @@ script:
             - light.turn_off: main_led
 
 light:
+  # https://esphome.io/components/light/
   - platform: binary
     name: "Red LED ${box_num}"
     id: red_led
@@ -116,6 +122,7 @@ light:
 #              - light.turn_on: main_led
 
 font:
+  # https://esphome.io/components/font
   - file: "fonts/arial.ttf"
     id: font1
     size: 14
@@ -124,6 +131,7 @@ font:
     size: 16
 
 display:
+  # https://esphome.io/#display-components
   - platform: ssd1306_i2c
     model: "SSD1306 128x64"
     address: 0x3C

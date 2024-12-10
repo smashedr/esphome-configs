@@ -1,6 +1,7 @@
 # BENCHED - VA TEST
 
 substitutions:
+  # https://esphome.io/components/substitutions
   box_num: "51"
   box_name: "esptest"
   type: "esp32"
@@ -8,6 +9,7 @@ substitutions:
   comment: "38-pin (narrow)"
 
 packages:
+  # https://esphome.io/components/packages.html
   debug: !include { file: include/debug.yaml }
   common: !include { file: include/common.yaml }
   status_led: !include
@@ -74,6 +76,7 @@ micro_wake_word:
       #    ESP_LOGI("micro_wake_word", "wake_word: %s", wake_word);
 
 light:
+  # https://esphome.io/components/light/
   - platform: rgb
     name: "RGB LED ${box_num}"
     id: rgb_led

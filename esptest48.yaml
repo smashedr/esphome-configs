@@ -1,6 +1,7 @@
 # PIR - BENCHED
 
 substitutions:
+  # https://esphome.io/components/substitutions
   box_num: "48"
   box_name: "esptest"
   type: "esp32"
@@ -8,6 +9,7 @@ substitutions:
   comment: "38-pin (narrow)"
 
 packages:
+  # https://esphome.io/components/packages.html
   debug: !include { file: include/debug.yaml }
   common: !include { file: include/common.yaml }
   status_led: !include
@@ -16,12 +18,14 @@ packages:
       pin: GPIO26
 
 web_server:
+  # https://esphome.io/components/web_server
   sorting_groups:
     - id: sg_lights
       name: "Lights"
       sorting_weight: -30
 
 light:
+  # https://esphome.io/components/light/
   - platform: monochromatic
     name: "Monochromatic Light ${box_num}"
     id: chromatic_led

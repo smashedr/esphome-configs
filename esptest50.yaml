@@ -1,6 +1,7 @@
 # ld2420 - Bathroom
 
 substitutions:
+  # https://esphome.io/components/substitutions
   box_num: "50"
   box_name: "esptest"
   type: "esp8266"
@@ -8,6 +9,7 @@ substitutions:
   comment: "full"
 
 packages:
+  # https://esphome.io/components/packages.html
   #debug: !include { file: include/debug.yaml }
   common: !include { file: include/common.yaml }
   status_led: !include
@@ -21,13 +23,16 @@ packages:
       rx_pin: GPIO3
 
 ${type}:
+  # https://esphome.io/#supported-microcontrollers
   framework:
     type: !remove
 
 logger:
+  # https://esphome.io/components/logger
   baud_rate: 0
 
 esphome:
+  # https://esphome.io/components/esphome
   on_boot:
     - priority: -100
       then:

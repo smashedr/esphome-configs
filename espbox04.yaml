@@ -1,6 +1,7 @@
 # Temp/Humidity - Kitchen
 
 substitutions:
+  # https://esphome.io/components/substitutions
   box_num: "04"
   box_name: "espbox"
   type: "esp32"
@@ -8,6 +9,7 @@ substitutions:
   comment: "38-pin"
 
 packages:
+  # https://esphome.io/components/packages.html
   common: !include { file: include/common.yaml }
   status_led: !include
     file: include/status_led.yaml

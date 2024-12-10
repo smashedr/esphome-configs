@@ -1,6 +1,7 @@
 # ld2450 - Kitchen
 
 substitutions:
+  # https://esphome.io/components/substitutions
   box_num: "47"
   box_name: "esptest"
   type: "esp32"
@@ -8,6 +9,7 @@ substitutions:
   comment: "38-pin (narrow)"
 
 packages:
+  # https://esphome.io/components/packages.html
   debug: !include { file: include/debug.yaml }
   common: !include { file: include/common.yaml }
   status_led: !include
@@ -21,6 +23,7 @@ packages:
       rx_pin: GPIO16
 
 logger:
+  # https://esphome.io/components/logger
   logs:
     sensor: INFO
     component: ERROR

@@ -4,7 +4,7 @@
 
 # ESPHome Configs
 
-- [Packages](#packages)
+- [Packages](#packages) <-- this is a **MUST SEE!**
 - [Substitutions](#substitutions)
 - [Voice Assistant](#voice-assistant)
 - [Micro Wake Word](#micro-wake-word)
@@ -15,7 +15,7 @@ ESPHome: https://esphome.io/
 
 - https://esphome.io/components/substitutions
 
-This is now a WIP with Packages coming soon...
+This is now a WIP with Packages coming soon, but seems stable...
 
 To see how these substitutions are used, see: [.common.yaml](include/common.yaml)
 
@@ -36,16 +36,49 @@ substitutions:
 
 - https://esphome.io/components/packages.html
 
-This is a WIP but very powerful! See below table for more information on each package...
+This is a **WIP** but **very powerful!**
 
-| Package               | File                                                             | URL |
-| --------------------- | ---------------------------------------------------------------- | --- |
-| common                | [include/common.yaml](include/common.yaml)                       | WIP |
-| debug                 | [include/debug.yaml](include/debug.yaml)                         | WIP |
-| status_led            | [include/status_led.yaml](include/status_led.yaml)               | WIP |
-| [apds9960](#apds9960) | [include/apds9960/apds9960.yaml](include/apds9960/apds9960.yaml) | WIP |
-| [ld2420](#ld2420)     | [include/ld2420/ld2420.yaml](include/ld2420/ld2420.yaml)         | WIP |
-| [ld2450](#ld2450)     | [include/ld2450/ld2450.yaml](include/ld2450/ld2450.yaml)         | WIP |
+Click on the package name for info on using the package and the file name for full details.
+
+| Package                   | File                                                             | URL |
+| ------------------------- | ---------------------------------------------------------------- | --- |
+| [common](#common)         | [include/common.yaml](include/common.yaml)                       | WIP |
+| [debug](#debug)           | [include/debug.yaml](include/debug.yaml)                         | WIP |
+| [status_led](#status_led) | [include/status_led.yaml](include/status_led.yaml)               | WIP |
+| [apds9960](#apds9960)     | [include/apds9960/apds9960.yaml](include/apds9960/apds9960.yaml) | WIP |
+| [ld2420](#ld2420)         | [include/ld2420/ld2420.yaml](include/ld2420/ld2420.yaml)         | WIP |
+| [ld2450](#ld2450)         | [include/ld2450/ld2450.yaml](include/ld2450/ld2450.yaml)         | WIP |
+
+**Note:** All components included in a package can be `removed` or `extended` as desired...
+
+### common
+
+These are my common configurations shared with all boxes. You probably don't want to use these without modification.
+
+### debug
+
+- https://esphome.io/components/debug
+
+Use this to easily enable the `debug` platform on ESPHome.
+
+### status_led
+
+- https://esphome.io/components/status_led
+
+| Variable   | Default      | Type   | Description               |
+| ---------- | ------------ | ------ | ------------------------- |
+| pin        | **required** | string | PIN for LED Binary Output |
+| status_led | `main_led`   | string | ID of the `status_led`    |
+
+This combines the `status_led` platform with an `identify` button.
+
+```yaml
+status_led: !include
+  file: include/status_led.yaml
+  vars:
+    pin: GPIO18
+    status_led: your_led_id_name
+```
 
 ### apds9960
 
@@ -66,6 +99,12 @@ text_sensor:
             args: ["x.c_str()"]
 ```
 
+This also adds a `sorting_group` to the `web_server`. If you don't use `web_server` 3 this can be disabled:
+
+```yaml
+web_server: !disable
+```
+
 ### ld2420
 
 - https://esphome.io/components/sensor/ld2420
@@ -80,10 +119,10 @@ binary_sensor:
       id: presence
       on_press:
         then:
-          - ...
+          - logger.log: "Presence Detected"
       on_release:
         then:
-          - ...
+          - logger.log: "No Presence"
 ```
 
 Attempting to include this in the package then overriding it throws a duplicate ID error on `presence`.
@@ -94,20 +133,20 @@ _Note: If you palan to extend the `uart:` definition, the `ld2420:` definition m
 
 - https://github.com/uncle-yura/esphome-ld2450
 
-The `Presence` binary_sensor needs to be added manually and optionally moving/still:
+The `presence` binary_sensor needs to be added manually and optionally moving/still:
 
 ```yaml
 binary_sensor:
   - platform: ld2450
     has_target:
       name: "Presence ${box_num}"
-      #id: presence
+      id: presence
       on_press:
         then:
-          - ...
+          - logger.log: "Presence Detected"
       on_release:
         then:
-          - ...
+          - logger.log: "No Presence"
     has_moving_target:
       name: "Moving Target ${box_num}"
     has_still_target:

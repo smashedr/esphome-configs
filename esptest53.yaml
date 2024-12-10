@@ -1,6 +1,7 @@
 # ld2420 - Bedroom
 
 substitutions:
+  # https://esphome.io/components/substitutions
   box_num: "53"
   box_name: "esptest"
   type: "esp32"
@@ -8,6 +9,7 @@ substitutions:
   comment: "38-pin (narrow)"
 
 packages:
+  # https://esphome.io/components/packages.html
   debug: !include { file: include/debug.yaml }
   common: !include { file: include/common.yaml }
   status_led: !include
@@ -21,11 +23,13 @@ packages:
       rx_pin: GPIO16
 
 ${type}:
+  # https://esphome.io/#supported-microcontrollers
   framework:
     sdkconfig_options:
       CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
 
 esphome:
+  # https://esphome.io/components/esphome
   on_boot:
     - priority: -100
       then:
