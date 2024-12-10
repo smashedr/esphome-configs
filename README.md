@@ -4,12 +4,11 @@
 
 # ESPHome Configs
 
+- [General](#general)
+- [Substitutions](#substitutions)
+- [Micro Wake Word](#micro-wake-word)
+
 ESPHome: https://esphome.io/
-
-Useful Topics:
-
-- Substitutions: https://esphome.io/components/substitutions
-- Packages _(New)_: https://esphome.io/components/packages
 
 ## General
 
@@ -19,6 +18,8 @@ Configs:
 - [include](include) - All sensors and entities used more than once.
 
 ## Substitutions
+
+- https://esphome.io/components/substitutions
 
 To see how these substitutions are used, see: [.common.yaml](.common.yaml)
 
@@ -33,7 +34,10 @@ substitutions:
   force_update: "true" # Used to define force_update for many of the included sensors.
 ```
 
-## microWakeWord Models
+## Micro Wake Word
+
+- https://github.com/kahrendt/microWakeWord
+- https://esphome.io/components/micro_wake_word
 
 | Wake Word     | File                                  | URL for Model                                          |
 | ------------- | ------------------------------------- | ------------------------------------------------------ |
@@ -54,4 +58,17 @@ micro_wake_word:
       - voice_assistant.start:
 ```
 
-Reference: https://esphome.io/components/micro_wake_word
+Tip: Micro Wake Word will respond faster with increased CPU frequency on ESP32:
+
+```yaml
+esp32:
+  board: "${board}"
+  framework:
+    type: esp-idf
+    version: recommended
+    sdkconfig_options:
+      CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
+```
+
+_Reference: https://esphome.io/components/esp32_  
+_Reference: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/kconfig-reference.html_
