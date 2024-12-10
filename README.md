@@ -17,10 +17,11 @@ ESPHome: https://esphome.io/
 
 This is a WIP but very powerful!
 
-| Package              | File                                       | URL |
-| -------------------- | ------------------------------------------ | --- |
-| Common configuration | [include/common.yaml](include/common.yaml) | WIP |
-| Debug configuration  | [include/debug.yaml](include/debug.yaml)   | WIP |
+| Package    | File                                          | URL |
+| ---------- | --------------------------------------------- | --- |
+| Common     | [include/common.yaml](include/common.yaml)    | WIP |
+| Debug      | [include/debug.yaml](include/debug.yaml)      | WIP |
+| Status LED | [include/debug.yaml](include/status_led.yaml) | WIP |
 
 ## Substitutions
 
@@ -32,13 +33,17 @@ To see how these substitutions are used, see: [.common.yaml](include/common.yaml
 
 ```yaml
 substitutions:
+  # required
   box_num: "01" # Box number appended to box_name used for hostname and IP address.
   box_name: "espbox" # Box name prepended to box_num used for hostname.
   type: "esp32" # Platform, see: https://esphome.io/#supported-microcontrollers
   board: "esp32dev" # Board, see: https://esphome.io/#supported-microcontrollers
   comment: "38-pin" # Just a comment to show in ESPHome.
+  # common package
   update_interval: "1min" # Used to define update_interval for many of the included sensors.
   force_update: "true" # Used to define force_update for many of the included sensors.
+  # status_led package
+  status_led: "main_led"
 ```
 
 ## Voice Assistant

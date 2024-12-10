@@ -4,7 +4,6 @@ substitutions:
   # https://esphome.io/components/substitutions
   update_interval: "1min"
   force_update: "true"
-  led_id: "main_led"
 
 ${type}:
   # https://esphome.io/#supported-microcontrollers
@@ -56,13 +55,8 @@ web_server:
   ota: false
   version: 3
 
-light:
-  # https://esphome.io/components/light/
-  - !include { file: light/status_led.yaml }
-
 button:
   # https://esphome.io/#button-components
-  - !include { file: button/identify.yaml }
   - !include { file: button/restart.yaml }
   - !include { file: button/factory_reset.yaml }
   - !include { file: button/safe_mode.yaml }
