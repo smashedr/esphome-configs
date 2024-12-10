@@ -8,8 +8,8 @@ substitutions:
   comment: "38-pin (narrow)"
 
 packages:
-  common: !include { file: include/common.yaml }
   debug: !include { file: include/debug.yaml }
+  common: !include { file: include/common.yaml }
   status_led: !include
     file: include/status_led.yaml
     vars:

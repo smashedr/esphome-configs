@@ -17,11 +17,16 @@ ESPHome: https://esphome.io/
 
 This is a WIP but very powerful!
 
-| Package    | File                                          | URL |
-| ---------- | --------------------------------------------- | --- |
-| Common     | [include/common.yaml](include/common.yaml)    | WIP |
-| Debug      | [include/debug.yaml](include/debug.yaml)      | WIP |
-| Status LED | [include/debug.yaml](include/status_led.yaml) | WIP |
+| Package    | File                                             | URL |
+| ---------- | ------------------------------------------------ | --- |
+| Common     | [include/common.yaml](include/common.yaml)       | WIP |
+| Debug      | [include/debug.yaml](include/debug.yaml)         | WIP |
+| Status LED | [include/debug.yaml](include/status_led.yaml)    | WIP |
+| ld2420     | [include/debug.yaml](include/ld2420/ld2420.yaml) | WIP |
+
+### ld2420
+
+Note: If you palan to extend the `uart:` definition, the `ld2420:` definition must come before it!
 
 ## Substitutions
 
