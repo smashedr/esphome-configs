@@ -1,0 +1,43 @@
+platform: ld2450
+target_count:
+  name: "Targets ${box_num}"
+
+person_0:
+  position_x:
+    name: "P0 Position X"
+    disabled_by_default: true
+  position_y:
+    name: "P0 Position Y"
+    disabled_by_default: true
+  speed:
+    name: "P0 Speed"
+    disabled_by_default: true
+  resolution:
+    name: "P0 Resolution"
+    disabled_by_default: true
+#person_1:
+#  position_x:
+#    name: "P1 Position X"
+#    disabled_by_default: true
+#  position_y:
+#    name: "P1 Position Y"
+#    disabled_by_default: true
+#  speed:
+#    name: "P1 Speed"
+#    disabled_by_default: true
+#  resolution:
+#    name: "P1 Resolution"
+#    disabled_by_default: true
+#person_2:
+#  position_x:
+#    name: "P2 Position X"
+#    disabled_by_default: true
+#  position_y:
+#    name: "P2 Position Y"
+#    disabled_by_default: true
+#  speed:
+#    name: "P2 Speed"
+#    disabled_by_default: true
+#  resolution:
+#    name: "P2 Resolution"
+#    disabled_by_default: true

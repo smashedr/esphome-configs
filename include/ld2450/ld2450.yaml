@@ -1,5 +1,159 @@
+external_components:
+  - source:
+      type: git
+      url: https://github.com/uncle-yura/esphome-ld2450
+      ref: master
+    components: [ld2450]
+
+uart:
+  id: uart_bus
+  tx_pin: ${tx_pin}
+  rx_pin: ${rx_pin}
+  baud_rate: 256000
+  parity: NONE
+  stop_bits: 1
+
 ld2450:
   uart_id: uart_bus
   update_interval: 1s
   invert_y: false
   invert_x: false
+
+number:
+  - platform: ld2450
+    rotate:
+      restore_value: true
+      initial_value: 0
+      name: "Rotate Angle ${box_num}"
+    presence_timeout:
+      name: "Presence Timeout ${box_num}"
+
+    entry_points:
+      - x: 0
+        y: 0
+
+    region_0:
+      x0:
+        name: R0X0
+        disabled_by_default: true
+      y0:
+        name: R0Y0
+        disabled_by_default: true
+      x1:
+        name: R0X1
+        disabled_by_default: true
+      y1:
+        name: R0Y1
+        disabled_by_default: true
+
+    region_1:
+      x0:
+        name: R1X0
+        disabled_by_default: true
+      y0:
+        name: R1Y0
+        disabled_by_default: true
+      x1:
+        name: R1X1
+        disabled_by_default: true
+      y1:
+        name: R1Y1
+        disabled_by_default: true
+
+    region_2:
+      x0:
+        name: R2X0
+        disabled_by_default: true
+      y0:
+        name: R2Y0
+        disabled_by_default: true
+      x1:
+        name: R2X1
+        disabled_by_default: true
+      y1:
+        name: R2Y1
+        disabled_by_default: true
+
+button:
+  - platform: ld2450
+    factory_reset:
+      name: "LD2450 Factory Reset ${box_num}"
+    reboot:
+      name: "LD2450 Reboot ${box_num}"
+
+switch:
+  - platform: ld2450
+    single_target:
+      name: "Single Target ${box_num}"
+    bluetooth:
+      name: "Bluetooth ${box_num}"
+
+select:
+  - platform: ld2450
+    baud_rate:
+      name: "Baud Rate ${box_num}"
+    regions_type:
+      name: "Regions Type ${box_num}"
+
+binary_sensor:
+  - platform: ld2450
+    has_target:
+      name: "Presence ${box_num}"
+    has_moving_target:
+      name: "Moving Target ${box_num}"
+    has_still_target:
+      name: "Still Target ${box_num}"
+
+text_sensor:
+  - platform: ld2450
+    version:
+      name: "LD2450 Firmware ${box_num}"
+    mac_address:
+      name: "LD2450 MAC ${box_num}"
+
+sensor:
+  - platform: ld2450
+    target_count:
+      name: "Targets ${box_num}"
+
+    #person_0:
+    #  position_x:
+    #    name: "P0 Position X"
+    #    disabled_by_default: true
+    #  position_y:
+    #    name: "P0 Position Y"
+    #    disabled_by_default: true
+    #  speed:
+    #    name: "P0 Speed"
+    #    disabled_by_default: true
+    #  resolution:
+    #    name: "P0 Resolution"
+    #    disabled_by_default: true
+
+    #person_1:
+    #  position_x:
+    #    name: "P1 Position X"
+    #    disabled_by_default: true
+    #  position_y:
+    #    name: "P1 Position Y"
+    #    disabled_by_default: true
+    #  speed:
+    #    name: "P1 Speed"
+    #    disabled_by_default: true
+    #  resolution:
+    #    name: "P1 Resolution"
+    #    disabled_by_default: true
+
+    #person_2:
+    #  position_x:
+    #    name: "P2 Position X"
+    #    disabled_by_default: true
+    #  position_y:
+    #    name: "P2 Position Y"
+    #    disabled_by_default: true
+    #  speed:
+    #    name: "P2 Speed"
+    #    disabled_by_default: true
+    #  resolution:
+    #    name: "P2 Resolution"
+    #    disabled_by_default: true
