@@ -6,58 +6,19 @@ substitutions:
   type: "esp32"
   board: "nodemcu-32s"
   comment: "38-pin (narrow)"
-  update_interval: "1min"
-  force_update: "true"
+  led_pin: "26"
 
-<<: !include { file: .common.yaml }
-
-captive_portal:
-
-debug:
-  update_interval: 5min
-
-${type}:
-  board: "${board}"
-  framework:
-    type: esp-idf
-    version: recommended
-
-#esphome:
-#  name: "${box_name}${box_num}"
-#  comment: "${type}: ${board} (${comment})"
-#  on_boot:
-#    priority: -100
-#    then:
-#      - if:
-#          condition:
-#            - binary_sensor.is_on: presence
-#            - switch.is_on: presence_light
-#          then:
-#            - logger.log: "light.turn_on: main_led"
-#            - light.turn_on: main_led
-
-api:
-  encryption:
-    key: !secret enc_key
-  on_client_connected:
-    - logger.log:
-        format: "API Client: %s - IP: %s"
-        args: ["client_info.c_str()", "client_address.c_str()"]
-  on_client_disconnected:
-    - logger.log: "API Client disconnected!"
+packages:
+  common: !include { file: include/common.yaml }
+  debug: !include { file: include/debug.yaml }
 
 web_server:
-  port: 80
-  ota: false
-  version: 3
   sorting_groups:
     - id: sg_lights
       name: "Lights"
       sorting_weight: -30
 
 light:
-  - !include { file: include/light/status_led.yaml, vars: { pin: 26 } }
-
   - platform: monochromatic
     name: "Monochromatic Light ${box_num}"
     id: chromatic_led
@@ -111,13 +72,17 @@ output:
   #  pin: GPIO12
   #  max_power: 80%
 
-text_sensor:
-  - !include { file: include/text/debug.yaml }
-  - !include { file: include/text/version.yaml }
-  - !include { file: include/text/wifi_info.yaml }
-
 binary_sensor:
-  - !include { file: include/binary/status.yaml }
+  - platform: gpio
+    name: "Touch 1 - ${box_num}"
+    id: touch_1
+    icon: mdi:gesture-tap-box
+    pin:
+      number: 16
+      mode: INPUT_PULLUP
+    on_press:
+      then:
+        - light.toggle: chromatic_led
 
   #- platform: gpio
   #  pin: GPIO19
@@ -138,23 +103,7 @@ binary_sensor:
   #    then:
   #      - light.turn_off: main_led
 
-  - platform: gpio
-    name: "Touch 1 - ${box_num}"
-    id: touch_1
-    icon: mdi:gesture-tap-box
-    pin:
-      number: 16
-      mode: INPUT_PULLUP
-    on_press:
-      then:
-        - light.toggle: chromatic_led
-
 sensor:
-  - !include { file: include/sensor/debug.yaml }
-  - !include { file: include/sensor/internal_temperature.yaml }
-  - !include { file: include/sensor/uptime.yaml }
-  - !include { file: include/sensor/wifi_signal.yaml }
-
   - platform: adc
     name: "Photoresistor ${box_num}"
     pin: GPIO36

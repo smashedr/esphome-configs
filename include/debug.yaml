@@ -1,0 +1,10 @@
+# debug: !include { file: include/debug.yaml }
+
+debug:
+  update_interval: 5min
+
+text_sensor:
+  - !include { file: text/debug.yaml }
+
+sensor:
+  - !include { file: sensor/debug.yaml }

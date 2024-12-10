@@ -4,25 +4,31 @@
 
 # ESPHome Configs
 
-- [General](#general)
+- [Packages](#packages)
 - [Substitutions](#substitutions)
 - [Voice Assistant](#voice-assistant)
 - [Micro Wake Word](#micro-wake-word)
 
 ESPHome: https://esphome.io/
 
-## General
+## Packages
 
-Configs:
+- https://esphome.io/components/packages.html
 
-- [.common.yaml](.common.yaml) - Common configuration used by all devices.
-- [include](include) - All sensors and entities used more than once.
+This is a WIP but very powerful!
+
+| Package              | File                                       | URL |
+| -------------------- | ------------------------------------------ | --- |
+| Common configuration | [include/common.yaml](include/common.yaml) | WIP |
+| Debug configuration  | [include/debug.yaml](include/debug.yaml)   | WIP |
 
 ## Substitutions
 
 - https://esphome.io/components/substitutions
 
-To see how these substitutions are used, see: [.common.yaml](.common.yaml)
+This is now a WIP with Packages coming soon...
+
+To see how these substitutions are used, see: [.common.yaml](include/common.yaml)
 
 ```yaml
 substitutions:
@@ -39,6 +45,8 @@ substitutions:
 
 - https://esphome.io/components/voice_assistant
 
+Packages coming soon...
+
 This is a WIP but already looking very good!
 
 Current Progress: [esptest51.yaml](esptest51.yaml)
@@ -47,6 +55,8 @@ Current Progress: [esptest51.yaml](esptest51.yaml)
 
 - https://github.com/kahrendt/microWakeWord
 - https://esphome.io/components/micro_wake_word
+
+Packages coming soon...
 
 | Wake Word     | File                                  | URL for Model                                          |
 | ------------- | ------------------------------------- | ------------------------------------------------------ |
