@@ -1,3 +1,8 @@
+# ld2420: !include
+#   file: include/ld2420/ld2420.yaml
+#   vars:
+#     tx_pin: GPIO17
+#     rx_pin: GPIO16
 # https://esphome.io/components/sensor/ld2420
 
 uart:

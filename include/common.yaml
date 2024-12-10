@@ -58,6 +58,7 @@ wifi:
     password: !secret host_pass
 
 captive_portal:
+  # https://esphome.io/components/captive_portal
 
 web_server:
   # https://esphome.io/components/web_server

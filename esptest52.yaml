@@ -1,6 +1,7 @@
 # BENCHED - MIC TEST
 
 substitutions:
+  # https://esphome.io/components/substitutions
   box_num: "52"
   box_name: "esptest"
   type: "esp32"
@@ -8,6 +9,7 @@ substitutions:
   comment: "38-pin"
 
 packages:
+  # https://esphome.io/components/packages.html
   debug: !include { file: include/debug.yaml }
   common: !include { file: include/common.yaml }
 
@@ -116,6 +118,7 @@ micro_wake_word:
       #    ESP_LOGI("micro_wake_word", "wake_word: %s", wake_word);
 
 light:
+  # https://esphome.io/components/light/
   - platform: monochromatic
     name: "Monochromatic Light ${box_num}"
     id: main_led

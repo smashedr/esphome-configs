@@ -11,40 +11,6 @@
 
 ESPHome: https://esphome.io/
 
-## Packages
-
-- https://esphome.io/components/packages.html
-
-This is a WIP but very powerful!
-
-| Package    | File                                                             | URL |
-| ---------- | ---------------------------------------------------------------- | --- |
-| Common     | [include/common.yaml](include/common.yaml)                       | WIP |
-| Debug      | [include/debug.yaml](include/debug.yaml)                         | WIP |
-| Status LED | [include/status_led.yaml](include/status_led.yaml)               | WIP |
-| ld2420     | [include/ld2420/ld2420.yaml](include/ld2420/ld2420.yaml)         | WIP |
-| apds9960   | [include/apds9960/apds9960.yaml](include/apds9960/apds9960.yaml) | WIP |
-
-### ld2420
-
-This needs to be added manually:
-
-```yaml
-binary_sensor:
-  - platform: ld2420
-    has_target:
-      name: "Presence ${box_num}"
-      id: presence
-      on_press:
-        - ...
-      on_release:
-        - ...
-```
-
-Attempting to include this in the package then overriding it throws a duplicate ID error on `presence`.
-
-_Note: If you palan to extend the `uart:` definition, the `ld2420:` definition must come before it!_
-
 ## Substitutions
 
 - https://esphome.io/components/substitutions
@@ -61,11 +27,91 @@ substitutions:
   type: "esp32" # Platform, see: https://esphome.io/#supported-microcontrollers
   board: "esp32dev" # Board, see: https://esphome.io/#supported-microcontrollers
   comment: "38-pin" # Just a comment to show in ESPHome.
-  # common package
+  # provided by package: common
   update_interval: "1min" # Used to define update_interval for many of the included sensors.
   force_update: "true" # Used to define force_update for many of the included sensors.
-  # status_led package
-  status_led: "main_led"
+```
+
+## Packages
+
+- https://esphome.io/components/packages.html
+
+This is a WIP but very powerful! See below table for more information on each package...
+
+| Package               | File                                                             | URL |
+| --------------------- | ---------------------------------------------------------------- | --- |
+| common                | [include/common.yaml](include/common.yaml)                       | WIP |
+| debug                 | [include/debug.yaml](include/debug.yaml)                         | WIP |
+| status_led            | [include/status_led.yaml](include/status_led.yaml)               | WIP |
+| [apds9960](#apds9960) | [include/apds9960/apds9960.yaml](include/apds9960/apds9960.yaml) | WIP |
+| [ld2420](#ld2420)     | [include/ld2420/ld2420.yaml](include/ld2420/ld2420.yaml)         | WIP |
+| [ld2450](#ld2450)     | [include/ld2450/ld2450.yaml](include/ld2450/ld2450.yaml)         | WIP |
+
+### apds9960
+
+- https://esphome.io/components/sensor/apds9960
+
+This package captures each gesture and publishes them to a text sensor with the last value, UP, DOWN, RIGHT, or LEFT.
+
+You will probably want to extend the `last_gesture` sensor to add automation for the `on_value`:
+
+```yaml
+text_sensor:
+  - platform: template
+    id: !extend last_gesture
+    on_value:
+      then:
+        - logger.log:
+            format: "Direction: %s"
+            args: ["x.c_str()"]
+```
+
+### ld2420
+
+- https://esphome.io/components/sensor/ld2420
+
+This needs to be added manually:
+
+```yaml
+binary_sensor:
+  - platform: ld2420
+    has_target:
+      name: "Presence ${box_num}"
+      id: presence
+      on_press:
+        then:
+          - ...
+      on_release:
+        then:
+          - ...
+```
+
+Attempting to include this in the package then overriding it throws a duplicate ID error on `presence`.
+
+_Note: If you palan to extend the `uart:` definition, the `ld2420:` definition must come before it!_
+
+### ld2450
+
+- https://github.com/uncle-yura/esphome-ld2450
+
+The `Presence` binary_sensor needs to be added manually and optionally moving/still:
+
+```yaml
+binary_sensor:
+  - platform: ld2450
+    has_target:
+      name: "Presence ${box_num}"
+      #id: presence
+      on_press:
+        then:
+          - ...
+      on_release:
+        then:
+          - ...
+    has_moving_target:
+      name: "Moving Target ${box_num}"
+    has_still_target:
+      name: "Still Target ${box_num}"
 ```
 
 ## Voice Assistant
@@ -80,10 +126,10 @@ Current Progress: [esptest51.yaml](esptest51.yaml)
 
 ## Micro Wake Word
 
-- https://github.com/kahrendt/microWakeWord
 - https://esphome.io/components/micro_wake_word
+- https://github.com/kahrendt/microWakeWord
 
-Packages coming soon...
+Packages coming soon... Micro Wake Word Models coming soon...
 
 | Wake Word     | File                                  | URL for Model                                          |
 | ------------- | ------------------------------------- | ------------------------------------------------------ |

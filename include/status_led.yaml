@@ -1,8 +1,10 @@
+# status_led: !include { file: include/status_led.yaml }
+# https://esphome.io/components/status_led
+
 substitutions:
   status_led: "main_led"
 
 light:
-  # https://esphome.io/components/status_led
   - platform: status_led
     name: "Status LED ${box_num}"
     id: ${status_led}

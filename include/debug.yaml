@@ -1,4 +1,5 @@
 # debug: !include { file: include/debug.yaml }
+# https://esphome.io/components/debug
 
 debug:
   update_interval: 5min

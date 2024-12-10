@@ -1,5 +1,7 @@
+# apds9960: !include { file: include/apds9960/apds9960.yaml }
+# https://esphome.io/components/sensor/apds9960
+
 apds9960:
-  # https://esphome.io/components/sensor/apds9960
   #id: apds_component
   # defaults
   address: 0x39
