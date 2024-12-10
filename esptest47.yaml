@@ -9,23 +9,16 @@ substitutions:
   update_interval: "1min"
   force_update: "true"
 
-<<: !include { file: .common.yaml }
-<<: !include { file: include/web/web_server.yaml, vars: { version: 3 } }
+packages:
+  debug: !include { file: include/debug.yaml }
+  common: !include { file: include/common.yaml }
+  status_led: !include
+    file: include/status_led.yaml
+    vars:
+      pin: GPIO33
 
-captive_portal:
-
-logger:
-  level: DEBUG
-  baud_rate: 0
-  logs:
-    sensor: INFO
-    component: ERROR
-
-debug:
-  update_interval: 5min
-
-light:
-  - !include { file: include/light/status_led.yaml, vars: { pin: 33 } }
+#external_components:
+#  - source: github://TillFleisch/ESPHome-HLK-LD2450@main
 
 external_components:
   - source:
@@ -34,8 +27,10 @@ external_components:
       ref: master
     components: [ld2450]
 
-#external_components:
-#  - source: github://TillFleisch/ESPHome-HLK-LD2450@main
+logger:
+  logs:
+    sensor: INFO
+    component: ERROR
 
 #uart:
 #  id: uart_bus
@@ -56,10 +51,8 @@ external_components:
 
 uart:
   id: uart_bus
-  tx_pin:
-    number: GPIO17
-  rx_pin:
-    number: GPIO16
+  tx_pin: GPIO17
+  rx_pin: GPIO16
   baud_rate: 256000
   parity: NONE
   stop_bits: 1
@@ -198,11 +191,6 @@ ld2450:
   invert_x: false
 
 button:
-  - !include { file: include/button/identify.yaml, vars: { light: main_led } }
-  - !include { file: include/button/restart.yaml }
-  - !include { file: include/button/safe_mode.yaml }
-  - !include { file: include/button/factory_reset.yaml }
-
   - platform: ld2450
     factory_reset:
       name: "LD2450 Factory Reset"
@@ -274,10 +262,6 @@ number:
     #    name: R2Y1
 
 text_sensor:
-  - !include { file: include/text/debug.yaml }
-  - !include { file: include/text/version.yaml }
-  - !include { file: include/text/wifi_info.yaml }
-
   - platform: ld2450
     version:
       name: "LD2450 Firmware ${box_num}"
@@ -285,8 +269,6 @@ text_sensor:
       name: "LD2450 MAC ${box_num}"
 
 binary_sensor:
-  - !include { file: include/binary/status.yaml }
-
   - platform: ld2450
     has_target:
       name: "Presence ${box_num}"
@@ -305,11 +287,6 @@ binary_sensor:
     #    region_id: presence_region_0
 
 sensor:
-  - !include { file: include/sensor/debug.yaml }
-  - !include { file: include/sensor/internal_temperature.yaml }
-  - !include { file: include/sensor/uptime.yaml }
-  - !include { file: include/sensor/wifi_signal.yaml }
-
   - platform: ld2450
     target_count:
       name: "Targets ${box_num}"
