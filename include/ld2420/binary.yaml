@@ -1,6 +1,0 @@
-# this needs to be manually added...
-
-platform: ld2420
-has_target:
-  name: "Presence ${box_num}"
-  id: presence

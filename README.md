@@ -26,7 +26,23 @@ This is a WIP but very powerful!
 
 ### ld2420
 
-Note: If you palan to extend the `uart:` definition, the `ld2420:` definition must come before it!
+This needs to be added manually:
+
+```yaml
+binary_sensor:
+  - platform: ld2420
+    has_target:
+      name: "Presence ${box_num}"
+      id: presence
+      on_press:
+        - ...
+      on_release:
+        - ...
+```
+
+Attempting to include this in the package then overriding it throws a duplicate ID error on `presence`.
+
+_Note: If you palan to extend the `uart:` definition, the `ld2420:` definition must come before it!_
 
 ## Substitutions
 

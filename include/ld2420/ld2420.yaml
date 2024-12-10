@@ -19,8 +19,5 @@ button:
 text_sensor:
   - !include { file: text_sensor.yaml }
 
-#binary_sensor:
-#  - !include { file: binary.yaml }
-
 sensor:
   - !include { file: sensor.yaml }
