@@ -159,14 +159,12 @@ ld2420: !include
     tx_pin: GPIO17
 ```
 
-This needs to be added manually:
+You may want to extend the presence sensor for `on_press` automations:
 
 ```yaml
 binary_sensor:
-  - platform: ld2420
+  - id: !extend presence_sensor
     has_target:
-      name: "Presence ${box_num}"
-      id: presence
       on_press:
         then:
           - logger.log: "Presence Detected"
@@ -216,6 +214,8 @@ binary_sensor:
     has_still_target:
       name: "Still Target ${box_num}"
 ```
+
+_Note: This is because this is a custom component and does not allow assigning an ID to the platform._
 
 ## Voice Assistant
 

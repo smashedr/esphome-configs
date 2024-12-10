@@ -43,3 +43,12 @@ binary_sensor:
       name: "Moving Target ${box_num}"
     has_still_target:
       name: "Still Target ${box_num}"
+
+  #- id: !extend ld2450_binary_sensor
+  #  has_target:
+  #    on_press:
+  #      then:
+  #        - light.turn_on: main_led
+  #    on_release:
+  #      then:
+  #        - light.turn_off: main_led
