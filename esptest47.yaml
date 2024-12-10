@@ -19,8 +19,8 @@ packages:
   ld2450: !include
     file: include/ld2450/ld2450.yaml
     vars:
-      tx_pin: GPIO17
       rx_pin: GPIO16
+      tx_pin: GPIO17
 
 logger:
   # https://esphome.io/components/logger

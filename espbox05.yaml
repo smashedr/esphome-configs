@@ -1,5 +1,5 @@
 # PM Sensor - Living Room
-# TODO: Make pmsx003 package...
+# TODO: WIP: Make pmsx003 package...
 
 substitutions:
   # https://esphome.io/components/substitutions
@@ -18,6 +18,11 @@ packages:
     vars:
       pin: GPIO25
       status_led: green_led
+  #pmsx003: !include
+  #  file: include/pmsx003/pmsx003.yaml
+  #  vars:
+  #    rx_pin: GPIO16
+  #    tx_pin: GPIO17
 
 light:
   # https://esphome.io/components/light/

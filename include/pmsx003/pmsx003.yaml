@@ -1,0 +1,35 @@
+# pmsx003: !include
+# file: include/pmsx003/pmsx003.yaml
+# vars:
+#   rx_pin: GPIO16
+#   tx_pin: GPIO17
+# https://esphome.io/components/sensor/pmsx003
+
+uart:
+  rx_pin: ${rx_pin}
+  tx_pin: ${tx_pin}
+  baud_rate: 9600
+  #debug:
+  #  direction: BOTH
+  #  dummy_receiver: false
+  #  after:
+  #    delimiter: "\n"
+  #  sequence:
+  #    - lambda: UARTDebug::log_string(direction, bytes);
+
+sensor:
+  - platform: pmsx003
+    type: PMSX003
+    update_interval: 2.5min
+    pm_1_0:
+      name: "PM 1.0 ${pms_num}"
+      id: pms_1
+      force_update: ${force_update}
+    pm_2_5:
+      name: "PM 2.5 ${pms_num}"
+      id: pms_25
+      force_update: ${force_update}
+    pm_10_0:
+      name: "PM 10.0 ${pms_num}"
+      id: pms_10
+      force_update: ${force_update}

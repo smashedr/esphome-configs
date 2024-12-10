@@ -45,6 +45,7 @@ Click on the package name for info on using the package and the file name for fu
 | [common](#common)         | [include/common.yaml](include/common.yaml)                       | WIP |
 | [debug](#debug)           | [include/debug.yaml](include/debug.yaml)                         | WIP |
 | [status_led](#status_led) | [include/status_led.yaml](include/status_led.yaml)               | WIP |
+| [pmsx003](#pmsx003)       | [include/pmsx003/pmsx003.yaml](include/pmsx003/pmsx003.yaml)     | WIP |
 | [apds9960](#apds9960)     | [include/apds9960/apds9960.yaml](include/apds9960/apds9960.yaml) | WIP |
 | [ld2420](#ld2420)         | [include/ld2420/ld2420.yaml](include/ld2420/ld2420.yaml)         | WIP |
 | [ld2450](#ld2450)         | [include/ld2450/ld2450.yaml](include/ld2450/ld2450.yaml)         | WIP |
@@ -65,12 +66,12 @@ Use this to easily enable the `debug` platform on ESPHome.
 
 - https://esphome.io/components/status_led
 
+This combines the `status_led` platform with an `identify` button.
+
 | Variable   | Default      | Type   | Description               |
 | ---------- | ------------ | ------ | ------------------------- |
 | pin        | **required** | string | PIN for LED Binary Output |
 | status_led | `main_led`   | string | ID of the `status_led`    |
-
-This combines the `status_led` platform with an `identify` button.
 
 ```yaml
 status_led: !include
@@ -78,6 +79,25 @@ status_led: !include
   vars:
     pin: GPIO18
     status_led: your_led_id_name
+```
+
+### pmsx003
+
+- https://esphome.io/components/sensor/pmsx003
+
+**WIP - NOT FINISHED**
+
+| Variable | Type   | Description           |
+| -------- | ------ | --------------------- |
+| rx_pin   | string | PIN for `rx_pin`      |
+| tx_pin   | string | PIN used for `tx_pin` |
+
+```yaml
+pmsx003: !include
+  file: include/pmsx003/pmsx003.yaml
+  vars:
+    rx_pin: GPIO16
+    tx_pin: GPIO17
 ```
 
 ### apds9960
@@ -109,6 +129,19 @@ web_server: !disable
 
 - https://esphome.io/components/sensor/ld2420
 
+| Variable | Type   | Description           |
+| -------- | ------ | --------------------- |
+| rx_pin   | string | PIN for `rx_pin`      |
+| tx_pin   | string | PIN used for `tx_pin` |
+
+```yaml
+ld2420: !include
+  file: include/ld2420/ld2420.yaml
+  vars:
+    rx_pin: GPIO16
+    tx_pin: GPIO17
+```
+
 This needs to be added manually:
 
 ```yaml
@@ -132,6 +165,19 @@ _Note: If you palan to extend the `uart:` definition, the `ld2420:` definition m
 ### ld2450
 
 - https://github.com/uncle-yura/esphome-ld2450
+
+| Variable | Type   | Description           |
+| -------- | ------ | --------------------- |
+| rx_pin   | string | PIN for `rx_pin`      |
+| tx_pin   | string | PIN used for `tx_pin` |
+
+```yaml
+ld2450: !include
+  file: include/ld2450/ld2450.yaml
+  vars:
+    rx_pin: GPIO16
+    tx_pin: GPIO17
+```
 
 The `presence` binary_sensor needs to be added manually and optionally moving/still:
 

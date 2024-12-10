@@ -19,8 +19,8 @@ packages:
   ld2420: !include
     file: include/ld2420/ld2420.yaml
     vars:
-      tx_pin: GPIO1
       rx_pin: GPIO3
+      tx_pin: GPIO1
 
 ${type}:
   # https://esphome.io/#supported-microcontrollers
