@@ -74,11 +74,12 @@ This combines the `status_led` platform with an `identify` button.
 | status_led | `main_led`   | string | ID of the `status_led`    |
 
 ```yaml
-status_led: !include
-  file: include/status_led.yaml
-  vars:
-    pin: GPIO18 # required
-    status_led: name_for_id
+packages:
+  status_led: !include
+    file: include/status_led.yaml
+    vars:
+      pin: GPIO18 # required
+      status_led: name_for_id
 ```
 
 ### pmsx003
@@ -93,13 +94,14 @@ status_led: !include
 | force_update | true    | string | Set `force_update` for sensor |
 
 ```yaml
-pmsx003: !include
-  file: include/pmsx003/pmsx003.yaml
-  vars:
-    pms_num: 01
-    rx_pin: GPIO16
-    tx_pin: GPIO17
-    force_update: true
+packages:
+  pmsx003: !include
+    file: include/pmsx003/pmsx003.yaml
+    vars:
+      pms_num: 01
+      rx_pin: GPIO16
+      tx_pin: GPIO17
+      force_update: true
 ```
 
 You may want to extend the sensor for `on_value` automations:
@@ -121,6 +123,15 @@ sensor:
 | sorting_weight | 50      | string | web_server: sorting_group: `sorting_weight` |
 
 This package captures each gesture and publishes them to a text sensor with the last value, UP, DOWN, RIGHT, or LEFT.
+
+```yaml
+packages:
+  apds9960: !include
+    file: include/apds9960/apds9960.yaml
+    vars:
+      box_num: 01
+      sorting_weight: 50
+```
 
 You will probably want to extend the `last_gesture` sensor to add automation for the `on_value`:
 
@@ -152,11 +163,12 @@ web_server: !disable
 | tx_pin   | GPIO17  | string | PIN for `tx_pin`             |
 
 ```yaml
-ld2420: !include
-  file: include/ld2420/ld2420.yaml
-  vars:
-    rx_pin: GPIO16
-    tx_pin: GPIO17
+packages:
+  ld2420: !include
+    file: include/ld2420/ld2420.yaml
+    vars:
+      rx_pin: GPIO16
+      tx_pin: GPIO17
 ```
 
 You may want to extend the presence sensor for `on_press` automations:
@@ -188,11 +200,12 @@ _Note: If you palan to extend the `uart:` definition, the `ld2420:` definition m
 | tx_pin   | GPIO17  | string | PIN for `tx_pin`             |
 
 ```yaml
-ld2450: !include
-  file: include/ld2450/ld2450.yaml
-  vars:
-    rx_pin: GPIO16
-    tx_pin: GPIO17
+packages:
+  ld2450: !include
+    file: include/ld2450/ld2450.yaml
+    vars:
+      rx_pin: GPIO16
+      tx_pin: GPIO17
 ```
 
 The `presence` binary_sensor needs to be added manually and optionally moving/still:
