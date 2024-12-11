@@ -17,7 +17,7 @@ ESPHome: https://esphome.io/
 
 This is now a WIP with Packages coming soon, but seems stable...
 
-To see how these substitutions are used, see: [.common.yaml](include/common.yaml)
+To see how these substitutions are used, see: [include/common.yaml](include/common.yaml)
 
 ```yaml
 substitutions:
