@@ -22,6 +22,12 @@ packages:
       rx_pin: GPIO16
       tx_pin: GPIO17
 
+${type}:
+  # https://esphome.io/#supported-microcontrollers
+  framework:
+    sdkconfig_options:
+      CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
+
 logger:
   # https://esphome.io/components/logger
   logs:
@@ -41,8 +47,10 @@ binary_sensor:
           - light.turn_off: main_led
     has_moving_target:
       name: "Moving Target ${box_num}"
+      disabled_by_default: true
     has_still_target:
       name: "Still Target ${box_num}"
+      disabled_by_default: true
 
   #- id: !extend ld2450_binary_sensor
   #  has_target:
