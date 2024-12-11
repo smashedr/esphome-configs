@@ -14,3 +14,26 @@ on_press:
 web_server:
   #sorting_group_id: sg_device
   sorting_weight: -26
+#
+#- lambda: |-
+#    // Save the current state of the light
+#    auto light_state = id(status_led).current_values;
+#    auto was_on = id(status_led).state;
+#    auto brightness = light_state.get_brightness();
+#    auto effect = light_state.get_effect();
+#
+#    // Turn on the light with the "Flash" effect
+#    id(status_led).turn_on();
+#    id(status_led).set_effect("Flash");
+#
+#    // Delay for 20 seconds
+#    delay(20000);
+#
+#    // Restore the previous state
+#    if (was_on) {
+#      id(status_led).turn_on();
+#      id(status_led).set_brightness(brightness);
+#      id(status_led).set_effect(effect);
+#    } else {
+#      id(status_led).turn_off();
+#    }
