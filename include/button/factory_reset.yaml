@@ -3,5 +3,5 @@ platform: factory_reset
 name: "Factory Reset ${box_num}"
 id: btn_factory_reset
 web_server:
-  #sorting_group_id: sg_device
-  sorting_weight: -22
+  sorting_group_id: sg_device
+  sorting_weight: -26

@@ -1,0 +1,22 @@
+platform: template
+name: "API Connected"
+id: api_connected
+icon: mdi:home-assistant
+disabled_by_default: true
+entity_category: diagnostic
+condition:
+  api.connected:
+on_press:
+  then:
+    - logger.log:
+        format: "API Connected..."
+        level: INFO
+on_release:
+  then:
+    - number.increment: disconnect_count
+    - logger.log:
+        format: "API Disconnected!"
+        level: WARN
+#web_server:
+#  sorting_group_id: sg_device
+#  sorting_weight: -30

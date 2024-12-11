@@ -12,8 +12,8 @@ on_press:
   - delay: 20s
   - light.turn_off: ${status_led}
 web_server:
-  #sorting_group_id: sg_device
-  sorting_weight: -26
+  sorting_group_id: sg_device
+  sorting_weight: -30
 #
 #- lambda: |-
 #    // Save the current state of the light

@@ -17,6 +17,35 @@ packages:
     vars:
       pin: GPIO26
 
+logger:
+  on_message:
+    level: ERROR
+    then:
+      - number.increment: error_count
+
+esphome:
+  on_boot:
+    - priority: -200
+      then:
+        - logger.log: "Boot -200"
+
+api:
+  # https://esphome.io/components/api
+  on_client_connected:
+    - lambda: |-
+        if (client_info.find("Home Assistant") != std::string::npos) {
+          ESP_LOGI("api", "API Connected: Home Assistant (%s)", client_address.c_str());
+        } else {
+          ESP_LOGI("api", "Client Connected: %s (%s)", client_info.c_str(), client_address.c_str());
+        }
+  on_client_disconnected:
+    - lambda: |-
+        if (client_info.find("Home Assistant") != std::string::npos) {
+          ESP_LOGW("api", "API Disconnected: Home Assistant (%s)", client_address.c_str());
+        } else {
+          ESP_LOGI("api", "Client Disconnected: %s (%s)", client_info.c_str(), client_address.c_str());
+        }
+
 web_server:
   # https://esphome.io/components/web_server
   sorting_groups:
@@ -35,6 +64,34 @@ light:
     web_server:
       sorting_group_id: sg_lights
       sorting_weight: 10
+
+number:
+  - platform: template
+    name: "Error Count ${box_num}"
+    id: error_count
+    icon: mdi:alert-plus
+    entity_category: diagnostic
+    optimistic: true
+    restore_value: false
+    initial_value: 0
+    min_value: 0
+    max_value: 999
+    step: 1
+    #web_server:
+    #  sorting_group_id: sg_device
+    #  sorting_weight: -24
+
+  - platform: template
+    name: "Disconnect Count ${box_num}"
+    id: disconnect_count
+    icon: mdi:web-plus
+    entity_category: diagnostic
+    optimistic: true
+    restore_value: false
+    initial_value: 0
+    min_value: 0
+    max_value: 999
+    step: 1
 
 #switch:
 #  - platform: template
@@ -61,6 +118,7 @@ light:
 #      - light.toggle: rgb_led
 
 output:
+  # https://esphome.io/components/output/
   - platform: ledc
     id: mono_chromo
     pin: GPIO25
@@ -91,16 +149,20 @@ binary_sensor:
       then:
         - light.toggle: chromatic_led
 
-  - platform: status
-    name: "Status ${box_num}"
-    id: api_status
-    icon: mdi:check-network-outline
+  #- !include { file: include/binary/api_connected.yaml }
+
+  - id: !extend api_status
     on_press:
       then:
-        - logger.log: "+++ API Connected..."
+        - logger.log:
+            format: "API Connected..."
+            level: INFO
     on_release:
       then:
-        - logger.log: "--- API DISCONNECTED!"
+        - number.increment: disconnect_count
+        - logger.log:
+            format: "API Disconnected!"
+            level: WARN
 
   #- platform: gpio
   #  pin: GPIO19
@@ -126,5 +188,5 @@ sensor:
     name: "Photoresistor ${box_num}"
     pin: GPIO36
     attenuation: 12db
-    update_interval: 1s
+    update_interval: 5s
     disabled_by_default: true

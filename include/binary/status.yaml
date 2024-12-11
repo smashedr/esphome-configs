@@ -1,3 +1,4 @@
+# https://esphome.io/components/binary_sensor/status
 platform: status
 name: "Status ${box_num}"
 id: api_status

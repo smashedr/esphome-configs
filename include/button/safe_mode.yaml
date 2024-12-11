@@ -4,5 +4,5 @@ name: "Reboot Safe Mode ${box_num}"
 id: btn_safe_mode
 disabled_by_default: true
 web_server:
-  #sorting_group_id: sg_device
-  sorting_weight: -20
+  sorting_group_id: sg_device
+  sorting_weight: -22

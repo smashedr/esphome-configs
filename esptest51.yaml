@@ -160,10 +160,11 @@ script:
           else:
             light.turn_on:
               id: rgb_led
-              brightness: 50%
+              brightness: 40%
               red: 100%
               green: 0%
               blue: 0%
+              effect: None
 
   - id: set_text
     then:
@@ -194,34 +195,36 @@ voice_assistant:
 
   on_idle:
     then:
-      - logger.log: "on_idle"
+      - logger.log: "voice_assistant on_idle"
 
   on_client_connected:
     then:
-      - logger.log: "on_client_connected"
+      - logger.log: "voice_assistant on_client_connected"
   on_client_disconnected:
     then:
-      - logger.log: "on_client_disconnected"
+      - logger.log: "voice_assistant on_client_disconnected"
 
   on_wake_word_detected:
     then:
-      - logger.log: "on_wake_word_detected"
+      - logger.log: "voice_assistant on_wake_word_detected"
 
   on_start:
     then:
-      - logger.log: "on_start"
+      - logger.log: "voice_assistant on_start"
 
   on_listening:
     then:
       # Listening - We are listening to what you are saying for processing
-      - logger.log: "on_listening"
-      - rtttl.play: "s:d=4,o=6,b=225:8d,4e"
+      - logger.log: "voice_assistant on_listening"
+      #- rtttl.play: "s:d=4,o=6,b=225:8d,4e"
+      - rtttl.play: "s:d=4,o=6,b=225:8d"
       - light.turn_on:
           id: rgb_led
-          brightness: 100%
+          brightness: 80%
           red: 0%
-          green: 100%
-          blue: 0%
+          green: 0%
+          blue: 100%
+          transition_length: 0s
           #effect: "Slow Pulse"
       - text_sensor.template.publish:
           id: va_text
@@ -229,19 +232,20 @@ voice_assistant:
 
   on_stt_vad_start:
     then:
-      - logger.log: "on_stt_vad_start"
+      - logger.log: "voice_assistant on_stt_vad_start"
   on_stt_vad_end:
     then:
       # STT Start - We are done listening and starting to process stt
-      - logger.log: "on_stt_vad_end"
+      - logger.log: "voice_assistant on_stt_vad_end"
       - light.turn_on:
           id: rgb_led
-          #brightness: 100%
+          brightness: 80%
           red: 0%
-          green: 0%
-          blue: 100%
-          effect: "Normal Pulse"
-      - rtttl.play: "s:d=4,o=6,b=225:8e"
+          green: 100%
+          blue: 0%
+          #transition_length: 0s
+          effect: "Fast Pulse"
+      #- rtttl.play: "s:d=4,o=6,b=225:8e"
       - text_sensor.template.publish:
           id: va_text
           state: "Thinking..."
@@ -250,34 +254,36 @@ voice_assistant:
     then:
       # STT End - We have processed what you said as text
       - lambda: |-
-          ESP_LOGI("va", "on_stt_end text: %s", x.c_str());
+          ESP_LOGI("va", "voice_assistant on_stt_end text: %s", x.c_str());
           id(va_text).publish_state(x.c_str());
 
   on_intent_start:
     then:
-      - logger.log: "on_intent_start"
+      - logger.log: "voice_assistant on_intent_start"
   on_intent_end:
     then:
-      - logger.log: "on_intent_end"
+      - logger.log: "voice_assistant on_intent_end"
 
   on_tts_start:
     then:
       # TTS Start - We now have the response text from the VA
       - lambda: |-
-          ESP_LOGI("va", "on_tts_start text: %s", x.c_str());
+          ESP_LOGI("va", "voice_assistant on_tts_start text: %s", x.c_str());
           id(va_text).publish_state(x.c_str());
   on_tts_end:
     then:
       # TTS End - We now have a URL to the response audio from the VA
       - logger.log:
-          format: "on_tts_end url: %s"
+          format: "voice_assistant on_tts_end url: %s"
           args: ["x.c_str()"]
           level: INFO
 
   on_end:
     then:
       # DONE - We are done, restart micro_wake_word when VA is done...
-      - logger.log: "on_end"
+      - logger.log:
+          format: "voice_assistant on_end"
+          level: INFO
       - script.execute: va_end
 
   on_error:

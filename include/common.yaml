@@ -65,6 +65,10 @@ web_server:
   port: 80
   ota: false
   version: 3
+  sorting_groups:
+    - id: sg_device
+      name: "Device"
+      sorting_weight: 1
 
 button:
   # https://esphome.io/#button-components
