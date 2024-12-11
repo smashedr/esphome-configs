@@ -27,7 +27,7 @@ light:
               duration: 1000ms
     web_server:
       #sorting_group_id: sg_device
-      sorting_weight: 20
+      sorting_weight: -28
 
 button:
   - !include { file: button/identify.yaml }

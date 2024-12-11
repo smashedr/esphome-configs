@@ -12,7 +12,7 @@ on_multi_click:
       - ON for at least 3s
     then:
       - logger.log: "3 Second Reset"
-      - button.press: reboot_device
+      - button.press: btn_restart
   - timing:
       - ON for at most 2.9s
       - OFF for at least 0.1s

@@ -1,5 +1,7 @@
+# https://esphome.io/components/sensor/wifi_signal.html
 platform: wifi_signal
 name: "WiFi Signal ${box_num}"
+id: wifi_info_signal
 update_interval: 5min
 force_update: ${force_update}
 icon: mdi:wifi-arrow-up-down

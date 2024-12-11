@@ -1,5 +1,6 @@
 platform: template
 name: "Identify ${box_num}"
+id: btn_identify
 icon: mdi:crosshairs-question
 entity_category: config
 device_class: identify
@@ -12,4 +13,4 @@ on_press:
   - light.turn_off: ${status_led}
 web_server:
   #sorting_group_id: sg_device
-  sorting_weight: 22
+  sorting_weight: -26

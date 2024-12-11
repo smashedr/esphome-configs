@@ -72,7 +72,8 @@ script:
     then:
       - logger.log:
           format: "Closed: %s"
-          args: ["door"]
+          args: ["door.c_str()"]
+      - rtttl.play: "one:d=4,o=4,b=240:6e6"
       - if:
           condition:
             - binary_sensor.is_off: door_sensor_1
@@ -123,63 +124,73 @@ light:
 
 font:
   # https://esphome.io/components/font
-  - file: "fonts/arial.ttf"
-    id: font1
+  #- file: "fonts/arial.ttf"
+  #  id: font1
+  #  size: 14
+  #- file: "fonts/arial.ttf"
+  #  id: font2
+  #  size: 16
+  - file:
+      type: gfonts
+      family: "Red Hat Text"
+      #italic : false
+      #weight: 400
+    id: red_hat1
     size: 14
-  - file: "fonts/arial.ttf"
-    id: font2
+    #bpp: 1
+    glyphsets:
+      - GF_Latin_Core
+  - file:
+      type: gfonts
+      family: "Red Hat Text"
+      #italic : false
+      #weight: 400
+    id: red_hat2
     size: 16
+    #bpp: 1
+    glyphsets:
+      - GF_Latin_Core
 
 display:
   # https://esphome.io/#display-components
   - platform: ssd1306_i2c
+    id: main_display
     model: "SSD1306 128x64"
     address: 0x3C
     #reset_pin: D0
     #update_interval: 5s
     lambda: |-
       if (!global_api_server->is_connected() ) {
-        it.printf(0, 0, id(font1), "Connecting to HA...");
-        it.printf(0, 23, id(font1), "IP:");
-        it.printf(128, 23, id(font1), TextAlign::RIGHT, "%s", WiFi.localIP().toString().c_str());
+        it.printf(0, 0, id(red_hat1), "Connecting to HA...");
 
+        it.printf(0, 23, id(red_hat2), "IP:");
+        it.printf(128, 23, id(red_hat2), TextAlign::RIGHT, "%s",
+            static_cast<const char*>(id(wifi_info_ip).state.c_str()));
       } else {
-        it.printf(0, 0, id(font1), "IP:");
-        it.printf(128, 0, id(font1), TextAlign::RIGHT, "%s", WiFi.localIP().toString().c_str());
-
-        it.printf(0, 23, id(font2), "Doors:");
-        if (id(door_sensor_1).state) {
-          it.printf(128, 23, id(font2), TextAlign::RIGHT, "FREEZER");
+        it.printf(0, 0, id(red_hat1), "IP:");
+        it.printf(128, 0, id(red_hat1), TextAlign::RIGHT, "%s",
+            static_cast<const char*>(id(wifi_info_ip).state.c_str()));
+        
+        it.printf(0, 23, id(red_hat2), "Doors:");
+        if ( id(door_sensor_1).state ) {
+          it.printf(128, 23, id(red_hat2), TextAlign::RIGHT, "FREEZER");
         } else if (id(door_sensor_2).state) {
-          it.printf(128, 23, id(font2), TextAlign::RIGHT, "FRIDGE");
+          it.printf(128, 23, id(red_hat2), TextAlign::RIGHT, "FRIDGE");
         } else if (id(door_sensor_3).state) {
-          it.printf(128, 23, id(font2), TextAlign::RIGHT, "FRONT");
+          it.printf(128, 23, id(red_hat2), TextAlign::RIGHT, "FRONT");
         } else {
-          it.printf(128, 23, id(font2), TextAlign::RIGHT, "Closed");
+          it.printf(128, 23, id(red_hat2), TextAlign::RIGHT, "Closed");
         }
-
-        it.printf(0, 46, id(font2), "Alarm:");
-        // it.printf(128, 46, id(font2), TextAlign::RIGHT, "%s", id(alarm_active));
-        if (id(alarm_active).state) {
-          it.printf(128, 46, id(font2), TextAlign::RIGHT, "%s", "ACTIVE");
+        
+        it.printf(0, 46, id(red_hat2), "Alarm:");
+        if ( id(alarm_active).state ) {
+          it.printf(128, 46, id(red_hat2), TextAlign::RIGHT, "%s", "ACTIVE");
         } else if (id(alarm_arm).state) {
-          it.printf(128, 46, id(font2), TextAlign::RIGHT, "%s", "ARMED");
+          it.printf(128, 46, id(red_hat2), TextAlign::RIGHT, "%s", "ARMED");
         } else {
-          it.printf(128, 46, id(font2), TextAlign::RIGHT, "%s", "Disarmed");
+          it.printf(128, 46, id(red_hat2), TextAlign::RIGHT, "%s", "Disarmed");
         }
-
-        // it.printf(0, 0, id(font1), "IP:");
-        // it.printf(128, 0, id(font1), TextAlign::RIGHT, "%s", id(wifi_ip).state.c_str());
-
-        // it.printf(0, 23, id(font2), "Fridge:");
-        // it.printf(128, 23, id(font2), TextAlign::RIGHT, "%.1f°F", id(temp1).state * 1.8 + 32);
-
-        // it.printf(0, 46, id(font2), "Freezer:");
-        // it.printf(128, 46, id(font2), TextAlign::RIGHT, "%.1f°F", id(temp2).state * 1.8 + 32);
       }
-
-      // it.printf(0, 23, id(font1), "IP:");
-      // it.printf(128, 23, id(font1), TextAlign::RIGHT, "%s", WiFi.localIP().toString().c_str());
 
 i2c:
   sda: GPIO21
@@ -207,6 +218,9 @@ binary_sensor:
     pin:
       number: 19
       mode: INPUT_PULLUP
+    on_state:
+      then:
+        - component.update: main_display
     on_press:
       then:
         - logger.log: "Opened: Freezer"
@@ -224,6 +238,9 @@ binary_sensor:
     pin:
       number: 18
       mode: INPUT_PULLUP
+    on_state:
+      then:
+        - component.update: main_display
     on_press:
       then:
         - logger.log: "Opened: Refrigerator"
@@ -241,6 +258,9 @@ binary_sensor:
     pin:
       number: 5
       mode: INPUT_PULLUP
+    on_state:
+      then:
+        - component.update: main_display
     on_press:
       then:
         - logger.log: "Open: Front Door"
@@ -248,7 +268,7 @@ binary_sensor:
             condition:
               - binary_sensor.is_off: alarm_active
             then:
-              - rtttl.play: "HiLoLong:d=4,o=6,b=200:e,8d,2e"
+              - rtttl.play: "two:d=4,o=4,b=250:e6,16p,e6"
     on_release:
       then:
         - logger.log: "Closed: Front Door"
@@ -256,7 +276,7 @@ binary_sensor:
             condition:
               - binary_sensor.is_off: alarm_active
             then:
-              - rtttl.play: "EBeep:d=1,o=5,b=100:8e6"
+              - rtttl.play: "onel:d=1,o=5,b=100:8e6"
 
   - platform: homeassistant
     id: alarm_arm
