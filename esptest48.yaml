@@ -91,6 +91,17 @@ binary_sensor:
       then:
         - light.toggle: chromatic_led
 
+  - platform: status
+    name: "Status ${box_num}"
+    id: api_status
+    icon: mdi:check-network-outline
+    on_press:
+      then:
+        - logger.log: "+++ API Connected..."
+    on_release:
+      then:
+        - logger.log: "--- API DISCONNECTED!"
+
   #- platform: gpio
   #  pin: GPIO19
   #  name: "Presence ${box_num}"

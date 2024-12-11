@@ -32,6 +32,8 @@ light:
   - platform: binary
     id: yellow_led
     output: yellow_o
+  - id: !extend green_led
+    internal: true
 
 output:
   # https://esphome.io/components/output/
@@ -41,6 +43,9 @@ output:
   - platform: gpio
     id: yellow_o
     pin: 33
+
+button:
+  - id: !disable btn_identify
 
 sensor:
   - id: !extend pm_sensor
