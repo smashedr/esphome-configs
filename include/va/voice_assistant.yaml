@@ -1,0 +1,113 @@
+# WIP - NOT READY FOR USE !!!
+# https://esphome.io/components/voice_assistant
+
+substitutions:
+  microphone: "va_mic"
+  script_va_start: "va_start"
+  sorting_weight: "-30"
+
+web_server:
+  sorting_groups:
+    - id: sg_va
+      name: "Voice Assistant"
+      sorting_weight: ${sorting_weight}
+
+voice_assistant:
+  id: va
+  microphone: ${microphone}
+  #speaker: va_speaker
+  #media_player: va_media
+  auto_gain: 31dBFS
+  noise_suppression_level: 2
+  volume_multiplier: 2.0
+  #conversation_timeout : 300s
+  #use_wake_word: false
+
+  on_idle:
+    then:
+      - logger.log: "voice_assistant on_idle"
+
+  on_client_connected:
+    then:
+      - logger.log: "voice_assistant on_client_connected"
+  on_client_disconnected:
+    then:
+      - logger.log: "voice_assistant on_client_disconnected"
+
+  on_wake_word_detected:
+    then:
+      - logger.log: "voice_assistant on_wake_word_detected"
+
+  on_start:
+    then:
+      - logger.log: "voice_assistant on_start"
+
+  on_listening:
+    then:
+      # Listening - We are listening to what you are saying for processing
+      - logger.log: "voice_assistant on_listening"
+
+  on_stt_vad_start:
+    then:
+      - logger.log: "voice_assistant on_stt_vad_start"
+  on_stt_vad_end:
+    then:
+      # STT Start - We are done listening and starting to process stt
+      - logger.log: "voice_assistant on_stt_vad_end"
+
+  on_stt_end:
+    then:
+      # STT End - We have processed what you said as text
+      - logger.log:
+          format: "voice_assistant on_stt_end text: %s"
+          args: ["x.c_str()"]
+          level: INFO
+
+  on_intent_start:
+    then:
+      - logger.log: "voice_assistant on_intent_start"
+  on_intent_end:
+    then:
+      - logger.log: "voice_assistant on_intent_end"
+
+  on_tts_start:
+    then:
+      # TTS Start - We now have the response text from the VA
+      - logger.log:
+          format: "voice_assistant on_tts_start text: %s"
+          args: ["x.c_str()"]
+          level: INFO
+  on_tts_end:
+    then:
+      # TTS End - We now have a URL to the response audio from the VA
+      - logger.log:
+          format: "voice_assistant on_tts_end url: %s"
+          args: ["x.c_str()"]
+          level: INFO
+
+  on_end:
+    then:
+      # DONE - We are done, restart micro_wake_word when VA is done...
+      - logger.log:
+          format: "voice_assistant on_end"
+          level: INFO
+
+  on_error:
+    then:
+      # ERROR - You fucked up Chuck!
+      - lambda: |-
+          ESP_LOGW("va", "voice_assistant on_error");
+          ESP_LOGW("va", "code: %s", code.c_str());
+          ESP_LOGW("va", "message: %s", message.c_str());
+
+button:
+  - platform: template
+    name: "Activate Assistant ${box_num}"
+    id: btn_va_activate
+    icon: mdi:microphone
+    on_press:
+      - logger.log: "script.execute: ${script_va_start}"
+      - script.execute: ${script_va_start}
+    web_server:
+      sorting_group_id: sg_va
+      sorting_weight: -20

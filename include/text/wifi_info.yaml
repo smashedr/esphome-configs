@@ -1,18 +1,19 @@
+# https://esphome.io/components/wifi
 platform: wifi_info
 ip_address:
   name: "WiFi IP ${box_num}"
-  #id: wifi_ip
+  id: wifi_info_ip
   icon: mdi:wifi
   #icon: mdi:ip-outline
 ssid:
   name: "WiFi SSID ${box_num}"
-  #id: wifi_ssid
+  id: wifi_info_ssid
   icon: mdi:wifi-marker
   #icon: mdi:rename-box-outline
   disabled_by_default: true
 mac_address:
   name: "WiFi MAC ${box_num}"
-  #id: wifi_mac
+  id: wifi_info_mac
   icon: mdi:wifi-cog
   #icon: mdi:identifier
   disabled_by_default: true

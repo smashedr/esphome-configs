@@ -1,0 +1,42 @@
+# ld2420: !include { file: include/ld2420/ld2420.yaml }
+# ld2420: !include
+#   file: include/ld2420/ld2420.yaml
+#   vars:
+#     box_num: 01
+#     rx_pin: GPIO16
+#     tx_pin: GPIO17
+# https://esphome.io/components/sensor/ld2420
+
+substitutions:
+  box_num: "01"
+  rx_pin: "GPIO16"
+  tx_pin: "GPIO17"
+
+uart:
+  rx_pin: ${rx_pin}
+  tx_pin: ${tx_pin}
+  baud_rate: 115200
+
+ld2420:
+
+number:
+  - !include { file: number.yaml }
+
+select:
+  - !include { file: select.yaml }
+
+button:
+  - !include { file: button.yaml }
+
+binary_sensor:
+  - platform: ld2420
+    id: presence_sensor
+    has_target:
+      name: "Presence ${box_num}"
+      id: presence
+
+text_sensor:
+  - !include { file: text_sensor.yaml }
+
+sensor:
+  - !include { file: sensor.yaml }

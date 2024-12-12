@@ -1,15 +1,39 @@
 platform: template
 name: "Identify ${box_num}"
+id: btn_identify
 icon: mdi:crosshairs-question
 entity_category: config
 device_class: identify
 on_press:
   - logger.log: "Flashing Main LED For 20 Seconds..."
   - light.turn_on:
-      id: ${light}
+      id: ${status_led}
       effect: "Flash"
   - delay: 20s
-  - light.turn_off: ${light}
+  - light.turn_off: ${status_led}
 web_server:
-  #sorting_group_id: sg_device
-  sorting_weight: 22
+  sorting_group_id: sg_device
+  sorting_weight: -30
+#
+#- lambda: |-
+#    // Save the current state of the light
+#    auto light_state = id(status_led).current_values;
+#    auto was_on = id(status_led).state;
+#    auto brightness = light_state.get_brightness();
+#    auto effect = light_state.get_effect();
+#
+#    // Turn on the light with the "Flash" effect
+#    id(status_led).turn_on();
+#    id(status_led).set_effect("Flash");
+#
+#    // Delay for 20 seconds
+#    delay(20000);
+#
+#    // Restore the previous state
+#    if (was_on) {
+#      id(status_led).turn_on();
+#      id(status_led).set_brightness(brightness);
+#      id(status_led).set_effect(effect);
+#    } else {
+#      id(status_led).turn_off();
+#    }

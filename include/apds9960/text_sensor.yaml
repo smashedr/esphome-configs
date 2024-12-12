@@ -1,7 +1,10 @@
 platform: template
 name: "Last Gesture ${box_num}"
 id: last_gesture
-internal: true
+#disabled_by_default: true
+web_server:
+  sorting_group_id: sg_apds
+  sorting_weight: 10
 on_value:
   then:
     - logger.log:

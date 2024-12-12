@@ -2,6 +2,7 @@ platform: apds9960
 direction: RIGHT
 name: "RIGHT ${box_num}"
 icon: mdi:arrow-right-bold
+disabled_by_default: true
 web_server:
   sorting_group_id: sg_apds
   sorting_weight: 14

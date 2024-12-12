@@ -1,0 +1,32 @@
+# status_led: !include
+#   file: include/status_led.yaml
+#   vars:
+#     pin: GPIO18
+#     status_led: name_for_id
+# https://esphome.io/components/status_led
+
+substitutions:
+  status_led: "main_led"
+
+light:
+  - platform: status_led
+    name: "Status LED ${box_num}"
+    id: ${status_led}
+    icon: mdi:alarm-light-outline
+    entity_category: config
+    pin: ${pin}
+    restore_mode: RESTORE_DEFAULT_ON
+    effects:
+      - strobe:
+          name: "Flash"
+          colors:
+            - state: true
+              duration: 1000ms
+            - state: false
+              duration: 1000ms
+    web_server:
+      sorting_group_id: sg_device
+      sorting_weight: -32
+
+button:
+  - !include { file: button/identify.yaml }

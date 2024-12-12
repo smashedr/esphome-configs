@@ -1,0 +1,18 @@
+# debug: !include { file: include/debug.yaml }
+# debug: !include
+#   file: include/debug.yaml
+#   vars:
+#     box_num: 01
+# https://esphome.io/components/debug
+
+substitutions:
+  box_num: "01"
+
+debug:
+  update_interval: 5min
+
+text_sensor:
+  - !include { file: text/debug.yaml }
+
+sensor:
+  - !include { file: sensor/debug.yaml }

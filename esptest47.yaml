@@ -1,295 +1,44 @@
 # ld2450 - Kitchen
 
 substitutions:
+  # https://esphome.io/components/substitutions
   box_num: "47"
   box_name: "esptest"
   type: "esp32"
   board: "nodemcu-32s"
   comment: "38-pin (narrow)"
-  update_interval: "1min"
-  force_update: "true"
 
-<<: !include { file: .common.yaml }
-<<: !include { file: include/web/web_server.yaml, vars: { version: 3 } }
+packages:
+  # https://esphome.io/components/packages.html
+  debug: !include { file: include/debug.yaml }
+  common: !include { file: include/common.yaml }
+  status_led: !include
+    file: include/status_led.yaml
+    vars:
+      pin: GPIO33
+  ld2450: !include
+    file: include/ld2450/ld2450.yaml
+    vars:
+      rx_pin: GPIO16
+      tx_pin: GPIO17
 
-captive_portal:
+${type}:
+  # https://esphome.io/#supported-microcontrollers
+  framework:
+    sdkconfig_options:
+      CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
 
 logger:
-  level: DEBUG
-  baud_rate: 0
+  # https://esphome.io/components/logger
   logs:
     sensor: INFO
     component: ERROR
 
-debug:
-  update_interval: 5min
-
-light:
-  - !include { file: include/light/status_led.yaml, vars: { pin: 33 } }
-
-external_components:
-  - source:
-      type: git
-      url: https://github.com/uncle-yura/esphome-ld2450
-      ref: master
-    components: [ld2450]
-
-#external_components:
-#  - source: github://TillFleisch/ESPHome-HLK-LD2450@main
-
-#uart:
-#  id: uart_bus
-#  rx_pin:
-#    number: GPIO16
-#    mode:
-#      input: true
-#      pullup: true
-#  tx_pin:
-#    number: GPIO17
-#    mode:
-#      input: true
-#      pullup: true
-#  baud_rate: 256000
-#  parity: NONE
-#  stop_bits: 1
-#  data_bits: 8
-
-uart:
-  id: uart_bus
-  tx_pin:
-    number: GPIO17
-  rx_pin:
-    number: GPIO16
-  baud_rate: 256000
-  parity: NONE
-  stop_bits: 1
-
-#LD2450:
-#  uart_id: uart_bus
-#  #fast_off_detection: true
-#  #flip_x_axis: true
-#  #max_detection_tilt_angle:
-#  #  name: "Max Tilt Angle"
-#  #  initial_value: 40°
-#  #min_detection_tilt_angle:
-#  #  name: "Min Tilt Angle"
-#  #  initial_value: -40°
-#  #max_detection_distance:
-#  #  name: "Max Distance"
-#  #  initial_value: 4m
-#  #max_distance_margin: 30cm
-#
-#  occupancy:
-#    name: "Occupancy ${box_num}"
-#    id: occupancy
-#    on_press:
-#      then:
-#        - light.turn_on: main_led
-#    on_release:
-#      then:
-#        - light.turn_off: main_led
-#
-#  target_count:
-#    name: "Target Count ${box_num}"
-#
-#  restart_button:
-#    name: "Restart Sensor ${box_num}"
-#  factory_reset_button:
-#    name: "Factory Reset Sensor ${box_num}"
-#
-#  tracking_mode_switch:
-#    name: "Multiple Target Tracking ${box_num}"
-#  #bluetooth_switch:
-#  #  name: "Sensor Bluetooth ${box_num}"
-#
-#  targets:
-#    - target:
-#        name: "Target 1 - ${box_num}"
-#        id: t1
-#        debug: true
-#        x_position:
-#          id: t1_xpos
-#        y_position:
-#          id: t1_ypos
-#        speed:
-#          id: t1_speed
-#        distance_resolution:
-#          id: t1_res
-#        angle:
-#          id: t1_angle
-#        distance:
-#          id: t1_distance
-#    - target:
-#        name: "Target 2 - ${box_num}"
-#        id: t2
-#        x_position:
-#          id: t2_xpos
-#        y_position:
-#          id: t2_ypos
-#        speed:
-#          id: t2_speed
-#        distance_resolution:
-#          id: t2_res
-#        angle:
-#          id: t2_angle
-#        distance:
-#          id: t2_distance
-#    #- target:
-#    #    name: "Target 3 - ${box_num}"
-#    #    id: t3
-#    #    x_position:
-#    #      id: t3_xpos
-#    #    y_position:
-#    #      id: t3_ypos
-#    #    speed:
-#    #      id: t3_speed
-#    #    distance_resolution:
-#    #      id: t3_res
-#    #    angle:
-#    #      id: t3_angle
-#    #    distance:
-#    #      id: t3_distance
-#
-#  #zones:
-#  #  - zone:
-#  #      name: "Office Right"
-#  #      polygon:
-#  #        - point:
-#  #            x: 0m
-#  #            y: 0m
-#  #        - point:
-#  #            x: 0m
-#  #            y: 600cm
-#  #        - point:
-#  #            x: 6m
-#  #            y: 6m
-#  #        - point:
-#  #            x: 6m
-#  #            y: 0m
-#  #      occupancy:
-#  #        id: z1_occupancy
-#  #      target_count:
-#  #        id: z1_target_count
-#  #  - zone:
-#  #      name: "Office Left"
-#  #      margin: 0.4m
-#  #      polygon:
-#  #        - point:
-#  #            x: -0m
-#  #            y: 0m
-#  #        - point:
-#  #            x: -0m
-#  #            y: 6m
-#  #        - point:
-#  #            x: -6m
-#  #            y: 6m
-#  #        - point:
-#  #            x: -6m
-#  #            y: 0m
-#  #      occupancy:
-#  #        id: z2_occupancy
-#  #      target_count:
-#  #        id: z2_target_count
-
-ld2450:
-  uart_id: uart_bus
-  update_interval: 1s
-  invert_y: false
-  invert_x: false
-
-button:
-  - !include { file: include/button/identify.yaml, vars: { light: main_led } }
-  - !include { file: include/button/restart.yaml }
-  - !include { file: include/button/safe_mode.yaml }
-  - !include { file: include/button/factory_reset.yaml }
-
-  - platform: ld2450
-    factory_reset:
-      name: "LD2450 Factory Reset"
-    reboot:
-      name: "LD2450 Reboot"
-
-switch:
-  - platform: ld2450
-    single_target:
-      name: "Single Target ${box_num}"
-    bluetooth:
-      name: "Bluetooth ${box_num}"
-
-select:
-  - platform: ld2450
-    baud_rate:
-      name: "Baud Rate ${box_num}"
-    regions_type:
-      name: "Regions Type ${box_num}"
-
-number:
-  - platform: ld2450
-    rotate:
-      restore_value: true
-      initial_value: 0
-      name: "Rotate Angle ${box_num}"
-    presence_timeout:
-      name: "Presence Timeout ${box_num}"
-
-    #presence_regions:
-    #  - x0: 100
-    #    y0: 100
-    #    x1: 200
-    #    y1: 200
-    #    id: presence_region_0
-
-    entry_points:
-      - x: 0
-        y: 0
-
-    region_0:
-      x0:
-        name: R0X0
-      y0:
-        name: R0Y0
-      x1:
-        name: R0X1
-      y1:
-        name: R0Y1
-
-    #region_1:
-    #  x0:
-    #    name: R1X0
-    #  y0:
-    #    name: R1Y0
-    #  x1:
-    #    name: R1X1
-    #  y1:
-    #    name: R1Y1
-
-    #region_2:
-    #  x0:
-    #    name: R2X0
-    #  y0:
-    #    name: R2Y0
-    #  x1:
-    #    name: R2X1
-    #  y1:
-    #    name: R2Y1
-
-text_sensor:
-  - !include { file: include/text/debug.yaml }
-  - !include { file: include/text/version.yaml }
-  - !include { file: include/text/wifi_info.yaml }
-
-  - platform: ld2450
-    version:
-      name: "LD2450 Firmware ${box_num}"
-    mac_address:
-      name: "LD2450 MAC ${box_num}"
-
 binary_sensor:
-  - !include { file: include/binary/status.yaml }
-
   - platform: ld2450
     has_target:
       name: "Presence ${box_num}"
+      #id: presence
       on_press:
         then:
           - light.turn_on: main_led
@@ -298,48 +47,16 @@ binary_sensor:
           - light.turn_off: main_led
     has_moving_target:
       name: "Moving Target ${box_num}"
+      disabled_by_default: true
     has_still_target:
       name: "Still Target ${box_num}"
-    #presence_regions:
-    #  - name: "Custom Presence Region 0 - ${box_num}"
-    #    region_id: presence_region_0
+      disabled_by_default: true
 
-sensor:
-  - !include { file: include/sensor/debug.yaml }
-  - !include { file: include/sensor/internal_temperature.yaml }
-  - !include { file: include/sensor/uptime.yaml }
-  - !include { file: include/sensor/wifi_signal.yaml }
-
-  - platform: ld2450
-    target_count:
-      name: "Targets ${box_num}"
-
-    person_0:
-      position_x:
-        name: "P0 Position X"
-      position_y:
-        name: "P0 Position Y"
-      speed:
-        name: "P0 Speed"
-      resolution:
-        name: "P0 Resolution"
-
-    #person_1:
-    #  position_x:
-    #    name: "P1 Position X"
-    #  position_y:
-    #    name: "P1 Position Y"
-    #  speed:
-    #    name: "P1 Speed"
-    #  resolution:
-    #    name: "P1 Resolution"
-
-    #person_2:
-    #  position_x:
-    #    name: "P2 Position X"
-    #  position_y:
-    #    name: "P2 Position Y"
-    #  speed:
-    #    name: "P2 Speed"
-    #  resolution:
-    #    name: "P2 Resolution"
+  #- id: !extend ld2450_binary_sensor
+  #  has_target:
+  #    on_press:
+  #      then:
+  #        - light.turn_on: main_led
+  #    on_release:
+  #      then:
+  #        - light.turn_off: main_led

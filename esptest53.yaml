@@ -1,33 +1,35 @@
 # ld2420 - Bedroom
 
 substitutions:
+  # https://esphome.io/components/substitutions
   box_num: "53"
   box_name: "esptest"
   type: "esp32"
   board: "nodemcu-32s"
   comment: "38-pin (narrow)"
-  update_interval: "1min"
-  force_update: "true"
 
-<<: !include { file: .common.yaml }
-<<: !include { file: include/web/web_server.yaml, vars: { version: 3 } }
-
-captive_portal:
-
-debug:
-  update_interval: 5min
+packages:
+  # https://esphome.io/components/packages.html
+  debug: !include { file: include/debug.yaml }
+  common: !include { file: include/common.yaml }
+  status_led: !include
+    file: include/status_led.yaml
+    vars:
+      pin: GPIO33
+  ld2420: !include
+    file: include/ld2420/ld2420.yaml
+    vars:
+      rx_pin: GPIO16
+      tx_pin: GPIO17
 
 ${type}:
-  board: "${board}"
+  # https://esphome.io/#supported-microcontrollers
   framework:
-    type: esp-idf
-    version: recommended
     sdkconfig_options:
       CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
 
 esphome:
-  name: "${box_name}${box_num}"
-  comment: "${type}: ${board} (${comment})"
+  # https://esphome.io/components/esphome
   on_boot:
     - priority: -100
       then:
@@ -35,29 +37,6 @@ esphome:
             file: include/esphome/night_light_boot.yaml,
             vars: { light: main_led, switch: night_light },
           }
-
-light:
-  - !include { file: include/light/status_led.yaml, vars: { pin: 33 } }
-
-uart:
-  tx_pin: GPIO17
-  rx_pin: GPIO16
-  baud_rate: 115200
-
-ld2420:
-
-number:
-  - !include { file: include/ld2420/number.yaml }
-
-select:
-  - !include { file: include/ld2420/select.yaml }
-
-button:
-  - !include { file: include/button/identify.yaml, vars: { light: main_led } }
-  - !include { file: include/button/restart.yaml }
-  - !include { file: include/button/safe_mode.yaml }
-  - !include { file: include/button/factory_reset.yaml }
-  - !include { file: include/ld2420/button.yaml }
 
 switch:
   - !include {
@@ -70,19 +49,9 @@ switch:
     id: bedroom_light
     entity_id: light.bedroom_light
 
-text_sensor:
-  - !include { file: include/text/debug.yaml }
-  - !include { file: include/text/version.yaml }
-  - !include { file: include/text/wifi_info.yaml }
-  - !include { file: include/ld2420/text_sensor.yaml }
-
 binary_sensor:
-  - !include { file: include/binary/status.yaml }
-
-  - platform: ld2420
+  - id: !extend presence_sensor
     has_target:
-      name: "Presence ${box_num}"
-      id: presence
       on_press:
         !include {
           file: include/ld2420/on_press_night_light.yaml,
@@ -104,10 +73,3 @@ binary_sensor:
     on_press:
       then:
         - switch.toggle: night_light
-
-sensor:
-  - !include { file: include/sensor/debug.yaml }
-  - !include { file: include/sensor/internal_temperature.yaml }
-  - !include { file: include/sensor/uptime.yaml }
-  - !include { file: include/sensor/wifi_signal.yaml }
-  - !include { file: include/ld2420/sensor.yaml }

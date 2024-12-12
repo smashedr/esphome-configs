@@ -1,6 +1,17 @@
+# apds9960: !include { file: include/apds9960/apds9960.yaml }
+# apds9960: !include
+#   file: include/apds9960/apds9960.yaml
+#   vars:
+#     box_num: 01
+#     sorting_weight: 50
+# https://esphome.io/components/sensor/apds9960
+
+substitutions:
+  box_num: "01"
+  sorting_weight: "50"
+
 apds9960:
-  # https://esphome.io/components/sensor/apds9960
-  #id: apds_component
+  id: apds_component
   # defaults
   address: 0x39
   # optional
@@ -11,3 +22,16 @@ apds9960:
   gesture_led_drive: 100mA
   gesture_gain: 4x
   gesture_wait_time: 2.8ms
+
+web_server:
+  sorting_groups:
+    - !include { file: sg.yaml, vars: { sorting_weight: -25 } }
+
+binary_sensor:
+  - !include { file: binary_sensor/up.yaml }
+  - !include { file: binary_sensor/down.yaml }
+  - !include { file: binary_sensor/left.yaml }
+  - !include { file: binary_sensor/right.yaml }
+
+text_sensor:
+  - !include { file: text_sensor.yaml }

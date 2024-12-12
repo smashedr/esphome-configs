@@ -1,0 +1,93 @@
+# common: !include { file: include/common.yaml }
+
+substitutions:
+  # https://esphome.io/components/substitutions
+  update_interval: "1min"
+  force_update: "true"
+
+${type}:
+  # https://esphome.io/#supported-microcontrollers
+  board: "${board}"
+  framework:
+    type: esp-idf
+    version: recommended
+
+esphome:
+  # https://esphome.io/components/esphome
+  name: "${box_name}${box_num}"
+  comment: "${type}: ${board} (${comment})"
+
+ota:
+  # https://esphome.io/components/ota/esphome
+  platform: esphome
+  password: !secret ota_pass
+  id: ota_one
+
+logger:
+  # https://esphome.io/components/logger
+  level: DEBUG
+
+api:
+  # https://esphome.io/components/api
+  encryption:
+    key: !secret enc_key
+  on_client_connected:
+    - logger.log:
+        format: "Client Connected: %s (%s)"
+        args: ["client_info.c_str()", "client_address.c_str()"]
+        level: INFO
+  on_client_disconnected:
+    - logger.log:
+        format: "Client Disconnected: %s (%s)"
+        args: ["client_info.c_str()", "client_address.c_str()"]
+        level: INFO
+
+wifi:
+  # https://esphome.io/components/wifi
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  domain: !secret local_domain
+  fast_connect: true
+  use_address: "192.168.1.2${box_num}"
+  manual_ip:
+    static_ip: "192.168.1.2${box_num}"
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+  ap:
+    ssid: "${box_name}${box_num}"
+    password: !secret host_pass
+
+captive_portal:
+  # https://esphome.io/components/captive_portal
+
+web_server:
+  # https://esphome.io/components/web_server
+  port: 80
+  ota: false
+  version: 3
+  sorting_groups:
+    - id: sg_device
+      name: "Device"
+      sorting_weight: 1
+
+button:
+  # https://esphome.io/#button-components
+  - !include { file: button/restart.yaml }
+  - !include { file: button/factory_reset.yaml }
+  - !include { file: button/safe_mode.yaml }
+  #- !include { file: include/button/shutdown.yaml }
+
+binary_sensor:
+  # https://esphome.io/#binary-sensor-components
+  - !include { file: binary/status.yaml }
+
+text_sensor:
+  # https://esphome.io/#text-sensor-components
+  - !include { file: text/version.yaml }
+  - !include { file: text/wifi_info.yaml }
+
+sensor:
+  # https://esphome.io/#sensor-components
+  - !include { file: sensor/internal_temperature.yaml }
+  - !include { file: sensor/uptime.yaml }
+  - !include { file: sensor/wifi_signal.yaml }

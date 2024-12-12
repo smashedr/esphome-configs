@@ -1,6 +1,8 @@
+# https://esphome.io/components/button/shutdown
 platform: shutdown
 name: "Shutdown ${box_num}"
+id: btn_shutdown
 disabled_by_default: true
 web_server:
-  #sorting_group_id: sg_device
-  sorting_weight: 15
+  sorting_group_id: sg_device
+  sorting_weight: -20

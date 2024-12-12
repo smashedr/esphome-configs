@@ -1,7 +1,10 @@
+# https://esphome.io/components/debug
 platform: debug
 device:
   name: "Device Info ${box_num}"
+  id: debug_device_info
   disabled_by_default: true
 reset_reason:
   name: "Reset Reason ${box_num}"
+  id: debug_reset_reason
   disabled_by_default: true

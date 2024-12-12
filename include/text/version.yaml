@@ -1,3 +1,5 @@
+# https://esphome.io/components/text_sensor/version
 platform: version
 name: "ESPHome Version ${box_num}"
+id: esphome_version
 disabled_by_default: true
