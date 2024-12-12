@@ -1,10 +1,10 @@
-# micro_wake_word: !include { file: include/va/micro_wake_word.yaml }
+# https://esphome.io/components/micro_wake_word
+# micro_wake_word: github://smashedr/esphome-configs/include/va/micro_wake_word.yaml@master
 # micro_wake_word: !include
 #   file: include/va/micro_wake_word.yaml
 #   vars:
 #     model: hey_jarvis
 #     sorting_group_id: sg_va
-# https://esphome.io/components/micro_wake_word
 
 substitutions:
   model: "hey_jarvis"

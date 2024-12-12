@@ -1,9 +1,9 @@
-# debug: !include { file: include/debug.yaml }
+# https://esphome.io/components/debug
+# debug: github://smashedr/esphome-configs/include/debug.yaml@master
 # debug: !include
 #   file: include/debug.yaml
 #   vars:
 #     box_num: 01
-# https://esphome.io/components/debug
 
 substitutions:
   box_num: "01"

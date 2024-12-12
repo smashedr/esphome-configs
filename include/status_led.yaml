@@ -1,9 +1,10 @@
+# https://esphome.io/components/status_led
+# status_led: github://smashedr/esphome-configs/include/status_led.yaml@master
 # status_led: !include
 #   file: include/status_led.yaml
 #   vars:
 #     pin: GPIO18
 #     status_led: name_for_id
-# https://esphome.io/components/status_led
 
 substitutions:
   status_led: "main_led"

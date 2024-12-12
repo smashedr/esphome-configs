@@ -40,17 +40,17 @@ This is still a **WIP** but **very powerful** in its current state...
 
 _Click on the package name for info on using the package and the file name for full details._
 
-| Package                             | File                                                               | URL                                                                    |
-| ----------------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------- |
-| [common](#common)                   | [include/common.yaml](include/common.yaml)                         | github@smashedr/esphome-configs/include/common.yaml@master             |
-| [debug](#debug)                     | [include/debug.yaml](include/debug.yaml)                           | github@smashedr/esphome-configs/include/debug.yaml@master              |
-| [status_led](#status_led)           | [include/status_led.yaml](include/status_led.yaml)                 | github@smashedr/esphome-configs/include/status_led.yaml@master         |
-| [voice_assistant](#voice_assistant) | [include/va/voice_assistant.yaml](include/va/voice_assistant.yaml) | github@smashedr/esphome-configs/include/va/voice_assistant.yaml@master |
-| [micro_wake_word](#micro_wake_word) | [include/va/micro_wake_word.yaml](include/va/micro_wake_word.yaml) | github@smashedr/esphome-configs/include/va/micro_wake_word.yaml@master |
-| [pmsx003](#pmsx003)                 | [include/pmsx003/pmsx003.yaml](include/pmsx003/pmsx003.yaml)       | github@smashedr/esphome-configs/include/pmsx003/pmsx003.yaml@master    |
-| [apds9960](#apds9960)               | [include/apds9960/apds9960.yaml](include/apds9960/apds9960.yaml)   | github@smashedr/esphome-configs/include/apds9960/apds9960.yaml@master  |
-| [ld2420](#ld2420)                   | [include/ld2420/ld2420.yaml](include/ld2420/ld2420.yaml)           | github@smashedr/esphome-configs/include/ld2420/ld2420.yaml@master      |
-| [ld2450](#ld2450)                   | [include/ld2450/ld2450.yaml](include/ld2450/ld2450.yaml)           | github@smashedr/esphome-configs/include/ld2450/ld2450.yaml@master      |
+| Package                             | File                                                               | URL                                                                      |
+| ----------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| [common](#common)                   | [include/common.yaml](include/common.yaml)                         | github://smashedr/esphome-configs/include/common.yaml@master             |
+| [debug](#debug)                     | [include/debug.yaml](include/debug.yaml)                           | github://smashedr/esphome-configs/include/debug.yaml@master              |
+| [status_led](#status_led)           | [include/status_led.yaml](include/status_led.yaml)                 | github://smashedr/esphome-configs/include/status_led.yaml@master         |
+| [voice_assistant](#voice_assistant) | [include/va/voice_assistant.yaml](include/va/voice_assistant.yaml) | github://smashedr/esphome-configs/include/va/voice_assistant.yaml@master |
+| [micro_wake_word](#micro_wake_word) | [include/va/micro_wake_word.yaml](include/va/micro_wake_word.yaml) | github://smashedr/esphome-configs/include/va/micro_wake_word.yaml@master |
+| [pmsx003](#pmsx003)                 | [include/pmsx003/pmsx003.yaml](include/pmsx003/pmsx003.yaml)       | github://smashedr/esphome-configs/include/pmsx003/pmsx003.yaml@master    |
+| [apds9960](#apds9960)               | [include/apds9960/apds9960.yaml](include/apds9960/apds9960.yaml)   | github://smashedr/esphome-configs/include/apds9960/apds9960.yaml@master  |
+| [ld2420](#ld2420)                   | [include/ld2420/ld2420.yaml](include/ld2420/ld2420.yaml)           | github://smashedr/esphome-configs/include/ld2420/ld2420.yaml@master      |
+| [ld2450](#ld2450)                   | [include/ld2450/ld2450.yaml](include/ld2450/ld2450.yaml)           | github://smashedr/esphome-configs/include/ld2450/ld2450.yaml@master      |
 
 **Note:** All components included in a package can be `removed` or `extended` as desired...
 
@@ -77,11 +77,10 @@ This combines the `status_led` platform with an `identify` button.
 
 ```yaml
 packages:
-  status_led: !include
-    url: github@smashedr/esphome-configs/include/status_led.yaml@master
-    vars:
-      pin: GPIO18 # required
-      status_led: name_for_id
+  status_led: github://smashedr/esphome-configs/include/status_led.yaml@master
+substitutions:
+  pin: GPIO18 # required
+  status_led: name_for_id
 ```
 
 ### voice_assistant
@@ -96,12 +95,11 @@ packages:
 
 ```yaml
 packages:
-  voice_assistant: !include
-    file: github@smashedr/esphome-configs/include/va/voice_assistant.yaml@master
-    vars:
-      microphone: va_mic
-      script_va_start: va_start
-      sorting_weight: -30
+  voice_assistant: github://smashedr/esphome-configs/include/va/voice_assistant.yaml@master
+substitutions:
+  microphone: va_mic
+  script_va_start: va_start
+  sorting_weight: -30
 ```
 
 This package provides the voice_assistant, a button to activate, and a web_server sorting_group.
@@ -132,7 +130,7 @@ script:
 ```
 
 This will stop the VA if it is running, otherwise start the VA; making it a toggle.  
-At minimum add: `- voice_assistant.start:`.
+At minimum the script should attempt to: `- voice_assistant.start:`.
 
 ### micro_wake_word
 
@@ -145,11 +143,10 @@ At minimum add: `- voice_assistant.start:`.
 
 ```yaml
 packages:
-  micro_wake_word: !include
-    file: github@smashedr/esphome-configs/include/va/micro_wake_word.yaml@master
-    vars:
-      model: hey_jarvis
-      sorting_group_id: sg_va
+  micro_wake_word: github://smashedr/esphome-configs/include/va/micro_wake_word.yaml@master
+substitutions:
+  model: hey_jarvis
+  sorting_group_id: sg_va
 ```
 
 This package provides the micro_wake_word, a switch to enable/disable it and save state, an on_boot to ensure state; plus scripts:
@@ -173,13 +170,12 @@ You will want to extend these, and use them in your workflow for those actions..
 
 ```yaml
 packages:
-  pmsx003: !include
-    file: github@smashedr/esphome-configs/include/pmsx003/pmsx003.yaml@master
-    vars:
-      pms_num: 01
-      rx_pin: GPIO16
-      tx_pin: GPIO17
-      force_update: true
+  pmsx003: github://smashedr/esphome-configs/include/pmsx003/pmsx003.yaml@master
+substitutions:
+  pms_num: 01
+  rx_pin: GPIO16
+  tx_pin: GPIO17
+  force_update: true
 ```
 
 You may want to extend the sensor for `on_value` automations:
@@ -202,11 +198,10 @@ sensor:
 
 ```yaml
 packages:
-  apds9960: !include
-    file: github@smashedr/esphome-configs/include/apds9960/apds9960.yaml@master
-    vars:
-      box_num: 01
-      sorting_weight: 50
+  apds9960: github://smashedr/esphome-configs/include/apds9960/apds9960.yaml@master
+substitutions:
+  box_num: 01
+  sorting_weight: 50
 ```
 
 This package captures each gesture and publishes them to a text sensor with the last value, UP, DOWN, RIGHT, or LEFT.
@@ -242,11 +237,10 @@ web_server: !disable
 
 ```yaml
 packages:
-  ld2420: !include
-    file: github@smashedr/esphome-configs/include/ld2420/ld2420.yaml@master
-    vars:
-      rx_pin: GPIO16
-      tx_pin: GPIO17
+  ld2420: github://smashedr/esphome-configs/include/ld2420/ld2420.yaml@master
+substitutions:
+  rx_pin: GPIO16
+  tx_pin: GPIO17
 ```
 
 You may want to extend the presence sensor for `on_press` automations:
@@ -279,11 +273,10 @@ _Note: If you palan to extend the `uart:` definition, the `ld2420:` definition m
 
 ```yaml
 packages:
-  ld2450: !include
-    file: github@smashedr/esphome-configs/include/ld2450/ld2450.yaml@master
-    vars:
-      rx_pin: GPIO16
-      tx_pin: GPIO17
+  ld2450: github://smashedr/esphome-configs/include/ld2450/ld2450.yaml@master
+substitutions:
+  rx_pin: GPIO16
+  tx_pin: GPIO17
 ```
 
 The `presence` binary_sensor needs to be added manually and optionally moving/still:

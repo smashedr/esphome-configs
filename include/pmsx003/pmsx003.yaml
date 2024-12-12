@@ -1,12 +1,12 @@
-# pmsx003: !include { file: include/pmsx003/pmsx003.yaml }
-# pmsx003: !include
-# file: include/pmsx003/pmsx003.yaml
-# vars:
-#   pms_num: "01"
-#   rx_pin: GPIO16
-#   tx_pin: GPIO17
-#   force_update: true
 # https://esphome.io/components/sensor/pmsx003
+# pmsx003: github://smashedr/esphome-configs/include/pmsx003/pmsx003.yaml@master
+# pmsx003: !include
+#   file: include/pmsx003/pmsx003.yaml
+#   vars:
+#     pms_num: "01"
+#     rx_pin: GPIO16
+#     tx_pin: GPIO17
+#     force_update: true
 
 substitutions:
   pms_num: "01"

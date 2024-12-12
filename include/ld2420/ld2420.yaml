@@ -1,11 +1,11 @@
-# ld2420: !include { file: include/ld2420/ld2420.yaml }
+# https://esphome.io/components/sensor/ld2420
+# ld2420: github://smashedr/esphome-configs/include/ld2420/ld2420.yaml@master
 # ld2420: !include
 #   file: include/ld2420/ld2420.yaml
 #   vars:
 #     box_num: 01
 #     rx_pin: GPIO16
 #     tx_pin: GPIO17
-# https://esphome.io/components/sensor/ld2420
 
 substitutions:
   box_num: "01"

@@ -1,3 +1,4 @@
+# common: github://smashedr/esphome-configs/include/common.yaml@master
 # common: !include { file: include/common.yaml }
 
 substitutions:
