@@ -21,7 +21,7 @@ To see how these substitutions are used, see: [include/common.yaml](include/comm
 
 ```yaml
 substitutions:
-  # required
+  # required for most of package: common
   box_num: "01" # Box number appended to box_name used for hostname and IP address.
   box_name: "espbox" # Box name prepended to box_num used for hostname.
   type: "esp32" # Platform, see: https://esphome.io/#supported-microcontrollers
@@ -62,6 +62,17 @@ These are my common configurations shared with all boxes. You probably don't wan
 
 - https://esphome.io/components/debug
 
+| Variable | Default | Description                       |
+| -------- | ------- | --------------------------------- |
+| box_num  | `01`    | Number/Name Appended to `name`(s) |
+
+```yaml
+packages:
+  debug: github://smashedr/esphome-configs/include/debug.yaml@master
+substitutions:
+  box_num: "01"
+```
+
 Use this to easily enable the `debug` platform on ESPHome.
 
 ### status_led
@@ -79,8 +90,8 @@ This combines the `status_led` platform with an `identify` button.
 packages:
   status_led: github://smashedr/esphome-configs/include/status_led.yaml@master
 substitutions:
-  pin: GPIO18 # required
-  status_led: name_for_id
+  pin: "GPIO18" # required
+  status_led: "name_for_id"
 ```
 
 ### voice_assistant
@@ -97,9 +108,9 @@ substitutions:
 packages:
   voice_assistant: github://smashedr/esphome-configs/include/va/voice_assistant.yaml@master
 substitutions:
-  microphone: va_mic
-  script_va_start: va_start
-  sorting_weight: -30
+  microphone: "va_mic"
+  script_va_start: "va_start"
+  sorting_weight: "-30"
 ```
 
 This package provides the voice_assistant, a button to activate, and a web_server sorting_group.
@@ -136,17 +147,17 @@ At minimum the script should attempt to: `- voice_assistant.start:`.
 
 - https://esphome.io/components/micro_wake_word
 
-| Variable         | Default      | Description              |
-| ---------------- | ------------ | ------------------------ |
-| model            | `hey_jarvis` | Name or URL of `model`   |
-| sorting_group_id | `sg_va`      | ID of VA `sorting_group` |
+| Variable         | Default      | Description                   |
+| ---------------- | ------------ | ----------------------------- |
+| model            | `hey_jarvis` | Number/Name or URL of `model` |
+| sorting_group_id | `sg_va`      | ID of VA `sorting_group`      |
 
 ```yaml
 packages:
   micro_wake_word: github://smashedr/esphome-configs/include/va/micro_wake_word.yaml@master
 substitutions:
-  model: hey_jarvis
-  sorting_group_id: sg_va
+  model: "hey_jarvis"
+  sorting_group_id: "sg_va"
 ```
 
 This package provides the micro_wake_word, a switch to enable/disable it and save state, an on_boot to ensure state; plus scripts:
@@ -161,21 +172,21 @@ You will want to extend these, and use them in your workflow for those actions..
 
 - https://esphome.io/components/sensor/pmsx003
 
-| Variable     | Default  | Description                   |
-| ------------ | -------- | ----------------------------- |
-| pms_num      | `01`     | Number Appended to `name`(s)  |
-| rx_pin       | `GPIO16` | PIN for `rx_pin`              |
-| tx_pin       | `GPIO17` | PIN for `tx_pin`              |
-| force_update | `true`   | Set `force_update` for sensor |
+| Variable     | Default  | Description                       |
+| ------------ | -------- | --------------------------------- |
+| pms_num      | `01`     | Number/Name Appended to `name`(s) |
+| rx_pin       | `GPIO16` | PIN for `rx_pin`                  |
+| tx_pin       | `GPIO17` | PIN for `tx_pin`                  |
+| force_update | `true`   | Set `force_update` for sensor     |
 
 ```yaml
 packages:
   pmsx003: github://smashedr/esphome-configs/include/pmsx003/pmsx003.yaml@master
 substitutions:
-  pms_num: 01
-  rx_pin: GPIO16
-  tx_pin: GPIO17
-  force_update: true
+  pms_num: "01"
+  rx_pin: "GPIO16"
+  tx_pin: "GPIO17"
+  force_update: "true"
 ```
 
 You may want to extend the sensor for `on_value` automations:
@@ -193,15 +204,15 @@ sensor:
 
 | Variable       | Default | Description                                 |
 | -------------- | ------- | ------------------------------------------- |
-| box_num        | `01`    | Number Appended to `name`(s)                |
+| box_num        | `01`    | Number/Name Appended to `name`(s)           |
 | sorting_weight | `50`    | web_server: sorting_group: `sorting_weight` |
 
 ```yaml
 packages:
   apds9960: github://smashedr/esphome-configs/include/apds9960/apds9960.yaml@master
 substitutions:
-  box_num: 01
-  sorting_weight: 50
+  box_num: "01"
+  sorting_weight: "50"
 ```
 
 This package captures each gesture and publishes them to a text sensor with the last value, UP, DOWN, RIGHT, or LEFT.
@@ -229,18 +240,18 @@ web_server: !disable
 
 - https://esphome.io/components/sensor/ld2420
 
-| Variable | Default  | Description                  |
-| -------- | -------- | ---------------------------- |
-| box_num  | `01`     | Number Appended to `name`(s) |
-| rx_pin   | `GPIO16` | PIN for `rx_pin`             |
-| tx_pin   | `GPIO17` | PIN for `tx_pin`             |
+| Variable | Default  | Description                       |
+| -------- | -------- | --------------------------------- |
+| box_num  | `01`     | Number/Name Appended to `name`(s) |
+| rx_pin   | `GPIO16` | PIN for `rx_pin`                  |
+| tx_pin   | `GPIO17` | PIN for `tx_pin`                  |
 
 ```yaml
 packages:
   ld2420: github://smashedr/esphome-configs/include/ld2420/ld2420.yaml@master
 substitutions:
-  rx_pin: GPIO16
-  tx_pin: GPIO17
+  rx_pin: "GPIO16"
+  tx_pin: "GPIO17"
 ```
 
 You may want to extend the presence sensor for `on_press` automations:
@@ -265,18 +276,18 @@ _Note: If you palan to extend the `uart:` definition, the `ld2420:` definition m
 
 - https://github.com/uncle-yura/esphome-ld2450
 
-| Variable | Default  | Description                  |
-| -------- | -------- | ---------------------------- |
-| box_num  | `01`     | Number Appended to `name`(s) |
-| rx_pin   | `GPIO16` | PIN for `rx_pin`             |
-| tx_pin   | `GPIO17` | PIN for `tx_pin`             |
+| Variable | Default  | Description                       |
+| -------- | -------- | --------------------------------- |
+| box_num  | `01`     | Number/Name Appended to `name`(s) |
+| rx_pin   | `GPIO16` | PIN for `rx_pin`                  |
+| tx_pin   | `GPIO17` | PIN for `tx_pin`                  |
 
 ```yaml
 packages:
   ld2450: github://smashedr/esphome-configs/include/ld2450/ld2450.yaml@master
 substitutions:
-  rx_pin: GPIO16
-  tx_pin: GPIO17
+  rx_pin: "GPIO16"
+  tx_pin: "GPIO17"
 ```
 
 The `presence` binary_sensor needs to be added manually and optionally moving/still:
