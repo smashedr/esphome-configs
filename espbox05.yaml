@@ -45,9 +45,11 @@ output:
     pin: 33
 
 button:
+  # https://esphome.io/#button-components
   - id: !disable btn_identify
 
 sensor:
+  # https://esphome.io/#sensor-components
   - id: !extend pm_sensor
     pm_2_5:
       on_value_range:

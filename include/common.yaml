@@ -28,21 +28,6 @@ logger:
   # https://esphome.io/components/logger
   level: DEBUG
 
-api:
-  # https://esphome.io/components/api
-  encryption:
-    key: !secret enc_key
-  on_client_connected:
-    - logger.log:
-        format: "Client Connected: %s (%s)"
-        args: ["client_info.c_str()", "client_address.c_str()"]
-        level: INFO
-  on_client_disconnected:
-    - logger.log:
-        format: "Client Disconnected: %s (%s)"
-        args: ["client_info.c_str()", "client_address.c_str()"]
-        level: INFO
-
 wifi:
   # https://esphome.io/components/wifi
   ssid: !secret wifi_ssid
@@ -57,6 +42,21 @@ wifi:
   ap:
     ssid: "${box_name}${box_num}"
     password: !secret host_pass
+
+api:
+  # https://esphome.io/components/api
+  encryption:
+    key: !secret enc_key
+  on_client_connected:
+    - logger.log:
+        format: "Client Connected: %s (%s)"
+        args: ["client_info.c_str()", "client_address.c_str()"]
+        level: INFO
+  on_client_disconnected:
+    - logger.log:
+        format: "Client Disconnected: %s (%s)"
+        args: ["client_info.c_str()", "client_address.c_str()"]
+        level: INFO
 
 captive_portal:
   # https://esphome.io/components/captive_portal

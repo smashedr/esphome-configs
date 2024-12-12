@@ -89,6 +89,7 @@ light:
     output: red_out
 
 #switch:
+#  # https://esphome.io/#switch-components
 #  - platform: template
 #    name: "Night Light ${box_num}"
 #    id: night_light
@@ -106,7 +107,6 @@ light:
 #      - light.turn_off: main_led
 #
 #  - platform: homeassistant
-#    name: "Kitchen Light"
 #    id: kitchen_light
 #    entity_id: light.kitchen
 #    on_turn_on:
@@ -193,12 +193,14 @@ display:
       }
 
 i2c:
+  # https://esphome.io/components/i2c
   sda: GPIO21
   scl: GPIO22
   scan: false
   frequency: 400kHz
 
 output:
+  # https://esphome.io/components/output/
   - platform: gpio
     id: red_out
     pin: GPIO33
@@ -208,9 +210,11 @@ output:
     id: rtttl_out
 
 rtttl:
+  # https://esphome.io/components/rtttl
   output: rtttl_out
 
 binary_sensor:
+  # https://esphome.io/#binary-sensor-components
   - platform: gpio
     name: "Door Freezer"
     id: door_sensor_1

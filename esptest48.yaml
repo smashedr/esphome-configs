@@ -17,17 +17,27 @@ packages:
     vars:
       pin: GPIO26
 
-logger:
-  on_message:
-    level: ERROR
-    then:
-      - number.increment: error_count
-
 esphome:
+  # https://esphome.io/components/esphome
   on_boot:
     - priority: -200
       then:
         - logger.log: "Boot -200"
+
+logger:
+  # https://esphome.io/components/logger
+  on_message:
+    level: ERROR
+    then:
+      - number.increment: error_log_count
+
+wifi:
+  # https://esphome.io/components/wifi
+  on_connect:
+    - logger.log: "WiFi Connected..."
+  on_disconnect:
+    - logger.log: "WiFi Disconnected!"
+    - number.increment: wifi_dc_count
 
 api:
   # https://esphome.io/components/api
@@ -66,9 +76,10 @@ light:
       sorting_weight: 10
 
 number:
+  # https://esphome.io/#number-components
   - platform: template
     name: "Error Count ${box_num}"
-    id: error_count
+    id: error_log_count
     icon: mdi:alert-plus
     entity_category: diagnostic
     optimistic: true
@@ -77,13 +88,13 @@ number:
     min_value: 0
     max_value: 999
     step: 1
-    #web_server:
-    #  sorting_group_id: sg_device
-    #  sorting_weight: -24
+    web_server:
+      sorting_group_id: sg_device
+      sorting_weight: -19
 
   - platform: template
-    name: "Disconnect Count ${box_num}"
-    id: disconnect_count
+    name: "API Disconnect Count ${box_num}"
+    id: api_dc_count
     icon: mdi:web-plus
     entity_category: diagnostic
     optimistic: true
@@ -92,6 +103,24 @@ number:
     min_value: 0
     max_value: 999
     step: 1
+    web_server:
+      sorting_group_id: sg_device
+      sorting_weight: -18
+
+  - platform: template
+    name: "WIFI Disconnect Count ${box_num}"
+    id: wifi_dc_count
+    icon: mdi:wifi-plus
+    entity_category: diagnostic
+    optimistic: true
+    restore_value: false
+    initial_value: 0
+    min_value: 0
+    max_value: 999
+    step: 1
+    web_server:
+      sorting_group_id: sg_device
+      sorting_weight: -17
 
 #switch:
 #  - platform: template
@@ -137,7 +166,15 @@ output:
   #  pin: GPIO12
   #  max_power: 80%
 
+switch:
+  # https://esphome.io/#switch-components
+  - !include {
+      file: include/switch/toggle_component.yaml,
+      vars: { name: Photoresistor, component: photoresistor },
+    }
+
 binary_sensor:
+  # https://esphome.io/#binary-sensor-components
   - platform: gpio
     name: "Touch 1 - ${box_num}"
     id: touch_1
@@ -159,7 +196,7 @@ binary_sensor:
             level: INFO
     on_release:
       then:
-        - number.increment: disconnect_count
+        - number.increment: api_dc_count
         - logger.log:
             format: "API Disconnected!"
             level: WARN
@@ -184,9 +221,12 @@ binary_sensor:
   #      - light.turn_off: main_led
 
 sensor:
+  # https://esphome.io/components/sensor/adc
   - platform: adc
     name: "Photoresistor ${box_num}"
+    id: photoresistor
+    icon: mdi:lightning-bolt-circle
     pin: GPIO36
     attenuation: 12db
-    update_interval: 5s
+    update_interval: 1s
     disabled_by_default: true

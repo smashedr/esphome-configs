@@ -42,29 +42,24 @@ esphome:
           }
 
 switch:
+  # https://esphome.io/#switch-components
   - !include {
       file: include/switch/night_light.yaml,
       vars: { light: main_led, binary: presence },
     }
 
   - platform: homeassistant
-    name: "Bathroom Light"
     id: bathroom_light
     entity_id: light.bathroom_light
 
 binary_sensor:
+  # https://esphome.io/#binary-sensor-components
   - id: !extend presence_sensor
     has_target:
-      on_press:
-        !include {
-          file: include/ld2420/on_press_night_light.yaml,
-          vars: { light: main_led, switch: bathroom_light },
-        }
-      on_release:
-        !include {
-          file: include/ld2420/on_release_night_light.yaml,
-          vars: { light: main_led },
-        }
+      !include {
+        file: include/ld2420/has_target_night_light.yaml,
+        vars: { light: main_led, switch: bathroom_light },
+      }
 
   #- platform: gpio
   #  name: "Touch 1 - ${box_num}"
@@ -78,4 +73,5 @@ binary_sensor:
   #      - switch.toggle: night_light
 
 sensor:
+  # https://esphome.io/#sensor-components
   - id: !remove esp32_internal_temperature # not available on esp8266

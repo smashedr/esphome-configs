@@ -1,0 +1,11 @@
+platform: template
+name: "Toggle ${name} ${box_num}"
+icon: mdi:toggle-switch-variant-off
+optimistic: true
+restore_mode: ALWAYS_ON
+turn_on_action:
+  - logger.log: "Resume: ${name}: ${component}"
+  - component.resume: ${component}
+turn_off_action:
+  - logger.log: "Suspend: ${name}: ${component}"
+  - component.suspend: ${component}

@@ -1,7 +1,0 @@
-then:
-  - logger.log: "Presence Detected"
-  - wait_until:
-      condition:
-        switch.is_on: ${switch}
-      #timeout: 8s
-  - light.turn_off: ${light}

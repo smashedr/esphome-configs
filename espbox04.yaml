@@ -17,8 +17,10 @@ packages:
       pin: GPIO23
 
 binary_sensor:
+  # https://esphome.io/#binary-sensor-components
   - !include { file: include/binary/btn_light_reset.yaml, vars: { pin: 19 } }
 
 sensor:
+  # https://esphome.io/#sensor-components
   - !include { file: include/sensor/dht22.yaml, vars: { pin: 33 } }
   - !include { file: include/sensor/absolute_humidity_dht22.yaml }

@@ -35,10 +35,16 @@ logger:
     component: ERROR
 
 binary_sensor:
+  # This custom package can not be extended because it does not allow an ID
   - platform: ld2450
+    #has_target:
+    #  !include {
+    #    file: include/ld2420/has_target_night_light.yaml,
+    #    vars: { light: main_led, switch: bedroom_light },
+    #  }
     has_target:
       name: "Presence ${box_num}"
-      #id: presence
+      id: presence
       on_press:
         then:
           - light.turn_on: main_led

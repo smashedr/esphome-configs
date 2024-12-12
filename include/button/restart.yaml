@@ -4,4 +4,4 @@ name: "Reboot Device ${box_num}"
 id: btn_restart
 web_server:
   sorting_group_id: sg_device
-  sorting_weight: -28
+  sorting_weight: -27

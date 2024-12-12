@@ -5,4 +5,4 @@ id: btn_safe_mode
 disabled_by_default: true
 web_server:
   sorting_group_id: sg_device
-  sorting_weight: -22
+  sorting_weight: -25

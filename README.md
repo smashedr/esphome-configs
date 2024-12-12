@@ -166,7 +166,7 @@ This package provides the micro_wake_word, a switch to enable/disable it and sav
 - va_start
 - va_end
 
-You will want to extend these, and use them in your workflow for those actions...
+You will want to !extend these, and use them in your workflow for those actions...
 
 ### pmsx003
 
@@ -189,7 +189,7 @@ substitutions:
   force_update: "true"
 ```
 
-You may want to extend the sensor for `on_value` automations:
+You may want to !extend the sensor for `on_value` automations:
 
 ```yaml
 sensor:
@@ -217,7 +217,7 @@ substitutions:
 
 This package captures each gesture and publishes them to a text sensor with the last value, UP, DOWN, RIGHT, or LEFT.
 
-You will probably want to extend the `last_gesture` sensor to add automation for the `on_value`:
+You will probably want to !extend the `last_gesture` sensor to add automation for the `on_value`:
 
 ```yaml
 text_sensor:
@@ -254,7 +254,7 @@ substitutions:
   tx_pin: "GPIO17"
 ```
 
-You may want to extend the presence sensor for `on_press` automations:
+You may want to !extend the presence sensor for `on_press` automations:
 
 ```yaml
 binary_sensor:
@@ -270,7 +270,7 @@ binary_sensor:
 
 Attempting to include this in the package then overriding it throws a duplicate ID error on `presence`.
 
-_Note: If you palan to extend the `uart:` definition, the `ld2420:` definition must come before it!_
+_Note: If you plan to extend the `uart:` definition, the `ld2420:` definition must come before it!_
 
 ### ld2450
 
@@ -310,7 +310,7 @@ binary_sensor:
       name: "Still Target ${box_num}"
 ```
 
-_Note: This is because this is a custom component and does not allow assigning an ID to the platform._
+_Note: This custom package can not be extended because it does not allow an ID..._
 
 ## Voice Assistant
 

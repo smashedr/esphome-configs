@@ -33,7 +33,6 @@ binary_sensor:
     id: presence_sensor
     has_target:
       name: "Presence ${box_num}"
-      id: presence
 
 text_sensor:
   - !include { file: text_sensor.yaml }

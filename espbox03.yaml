@@ -17,9 +17,11 @@ packages:
       pin: GPIO27
 
 i2c:
+  # https://esphome.io/components/i2c
   scan: false
 
 sensor:
+  # https://esphome.io/#sensor-components
   - !include { file: include/sensor/dht22.yaml, vars: { pin: 19 } }
   - !include { file: include/sensor/absolute_humidity_dht22.yaml }
   - !include { file: include/sensor/bmp280.yaml, vars: { address: 0x76 } }

@@ -5,4 +5,4 @@ id: btn_shutdown
 disabled_by_default: true
 web_server:
   sorting_group_id: sg_device
-  sorting_weight: -20
+  sorting_weight: -24
