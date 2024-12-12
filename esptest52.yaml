@@ -60,34 +60,12 @@ light:
 
 script:
   # https://esphome.io/components/script
-  - id: va_start
-    then:
-      - if:
-          condition:
-            - voice_assistant.is_running:
-          then:
-            - logger.log: "va_start: voice_assistant.stop"
-            - voice_assistant.stop:
-            # TODO: verify that voice_assistant.stop does not trigger on_end which runs va_end
-            #- script.execute: va_end
-          else:
-            - logger.log: "va_start: micro_wake_word.stop"
-            - micro_wake_word.stop:
-            - wait_until:
-                condition:
-                  not:
-                    microphone.is_capturing:
-                timeout: 500ms
-            - logger.log: "va_start: voice_assistant.start"
-            - voice_assistant.start:
-
   - id: !extend va_end
     then:
       - light.turn_off: main_led
 
 voice_assistant:
   # https://esphome.io/components/voice_assistant
-
   on_listening:
     then:
       # Listening - We are listening to what you are saying for processing
@@ -174,6 +152,7 @@ output:
 #      - light.turn_off: main_led
 
 binary_sensor:
+  # https://esphome.io/#binary-sensor-components
   - platform: gpio
     name: "Touch 1 - ${box_num}"
     id: touch_1

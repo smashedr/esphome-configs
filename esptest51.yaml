@@ -55,32 +55,29 @@ light:
 
 script:
   # https://esphome.io/components/script
-  - id: va_start
+  - id: !extend micro_wake_enable
     then:
-      - logger.log: "Running script: va_start"
+      - if:
+          condition:
+            not:
+              voice_assistant.is_running:
+          then:
+            - light.turn_off: rgb_led
+            - text_sensor.template.publish:
+                id: va_text
+                state: "Frasier is Live..."
+
+  - id: !extend va_start
+    then:
       - if:
           condition:
             - voice_assistant.is_running:
           then:
-            - logger.log: "va_start: voice_assistant.stop"
-            # TODO: verify that voice_assistant.stop does not trigger on_end which runs va_end
-            - voice_assistant.stop:
-            - script.execute: va_end
+            #- script.execute: va_end
             - script.execute: set_text
-          else:
-            - logger.log: "va_start: micro_wake_word.stop"
-            - micro_wake_word.stop:
-            - wait_until:
-                condition:
-                  not:
-                    microphone.is_capturing:
-                timeout: 500ms
-            - logger.log: "va_start: voice_assistant.start"
-            - voice_assistant.start:
 
   - id: !extend va_end
     then:
-      - logger.log: "Running script: va_end"
       - script.execute: turn_off_led
       - rtttl.play: "s:d=4,o=6,b=225:8e,4d"
       - delay: 30s
@@ -90,21 +87,6 @@ script:
               voice_assistant.is_running:
           then:
             - script.execute: set_text
-
-  - id: !extend micro_wake_enable
-    mode: restart
-    then:
-      - logger.log: "Enable Micro Wake Word"
-      - if:
-          condition:
-            not:
-              voice_assistant.is_running:
-          then:
-            - micro_wake_word.start:
-            - light.turn_off: rgb_led
-            - text_sensor.template.publish:
-                id: va_text
-                state: "Frasier is Live..."
 
   - id: turn_off_led
     mode: restart
@@ -141,7 +123,6 @@ script:
 
 voice_assistant:
   # https://esphome.io/components/voice_assistant
-
   on_listening:
     then:
       # Listening - We are listening to what you are saying for processing
@@ -186,15 +167,15 @@ voice_assistant:
       # TTS Start - We now have the response text from the VA
       - lambda: |-
           id(va_text).publish_state(x.c_str());
-      #- homeassistant.action:
-      #    action: notify.alexa_media
-      #    data:
-      #      target: media_player.desk
-      #    data_template:
-      #      message: "{{ message }}"
-      #    variables:
-      #      message: |-
-      #        return x.c_str();
+      - homeassistant.action:
+          action: notify.alexa_media
+          data:
+            target: media_player.desk
+          data_template:
+            message: "{{ message }}"
+          variables:
+            message: |-
+              return x.c_str();
 
   on_end:
     then:
@@ -262,13 +243,6 @@ font:
     glyphsets:
       - GF_Latin_Core
 
-  #- file: "fonts/arial.ttf"
-  #  id: arial_ttf
-  #  size: 14
-  #  bpp: 1
-  #  glyphsets:
-  #    - GF_Latin_Core
-
 rtttl:
   # https://esphome.io/components/rtttl
   output: rtttl_out
@@ -335,6 +309,7 @@ text:
       sorting_weight: 14
 
 button:
+  # https://esphome.io/#button-components
   - platform: template
     name: "Test Tone ${box_num}"
     icon: mdi:play
@@ -394,15 +369,9 @@ text_sensor:
     on_value:
       then:
         - component.update: main_display
-        #- lambda: |-
-        #    ESP_LOGI("va", "New Status: %s", x.c_str());
-        #    id(main_display).update();
 
   - platform: template
     id: !extend last_gesture
     on_value:
       then:
-        - logger.log:
-            format: "Direction: %s"
-            args: ["x.c_str()"]
         - script.execute: va_start

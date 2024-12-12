@@ -101,7 +101,6 @@ voice_assistant:
           ESP_LOGW("va", "message: %s", message.c_str());
 
 button:
-  # https://esphome.io/#button-components
   - platform: template
     name: "Activate Assistant ${box_num}"
     icon: mdi:microphone

@@ -12,7 +12,6 @@ substitutions:
   model: "hey_jarvis"
 
 esphome:
-  # https://esphome.io/components/esphome
   on_boot:
     - priority: -113
       then:
@@ -37,17 +36,40 @@ micro_wake_word:
 script:
   - id: micro_wake_enable
     then:
-      - logger.log: "Enable Micro Wake Word"
+      - logger.log: "Running script: micro_wake_enable"
       - if:
           condition:
             not:
               voice_assistant.is_running:
           then:
+            - logger.log: "micro_wake_enable: micro_wake_word.start"
             - micro_wake_word.start:
+
+  - id: va_start
+    mode: restart
+    then:
+      - logger.log: "Running script: va_start"
+      - if:
+          condition:
+            - voice_assistant.is_running:
+          then:
+            - logger.log: "va_start: voice_assistant.stop"
+            - voice_assistant.stop:
+          else:
+            - logger.log: "va_start: micro_wake_word.stop"
+            - micro_wake_word.stop:
+            - wait_until:
+                condition:
+                  not:
+                    microphone.is_capturing:
+                #timeout: 1000ms
+            - logger.log: "va_start: voice_assistant.start"
+            - voice_assistant.start:
 
   - id: va_end
     mode: restart
     then:
+      - logger.log: "Running script: va_end"
       - if:
           condition:
             switch.is_on: micro_wake_toggle
@@ -55,10 +77,10 @@ script:
             - wait_until:
                 not:
                   voice_assistant.is_running:
+            - logger.log: "va_end: micro_wake_word.start"
             - micro_wake_word.start:
 
 switch:
-  # https://esphome.io/#switch-components
   - platform: template
     name: "Enable Wake ${box_num}"
     id: micro_wake_toggle
