@@ -113,9 +113,9 @@ substitutions:
   sorting_weight: "-30"
 ```
 
-This package provides the voice_assistant, a button to activate, and a web_server sorting_group.
+This package provides the voice_assistant, a button to activate and a web_server sorting_group.
 
-This requires the script a `va_start` script provided by `micro_wake_word`. If only using va, add:
+This requires the a `va_start` script provided by `micro_wake_word` package. If only using `voice_assistant`, add:
 
 ```yaml
 script:
@@ -130,12 +130,10 @@ script:
             - logger.log: "va_start: voice_assistant.stop"
             - voice_assistant.stop:
           else:
-            - logger.log: "va_start: micro_wake_word.stop"
             - wait_until:
                 condition:
                   not:
                     microphone.is_capturing:
-                timeout: 1000ms
             - logger.log: "va_start: voice_assistant.start"
             - voice_assistant.start:
 ```
@@ -166,7 +164,16 @@ This package provides the micro_wake_word, a switch to enable/disable it and sav
 - va_start
 - va_end
 
-You will want to !extend these, and use them in your workflow for those actions...
+You will want to !extend these, and use them in your workflow for those actions.
+
+Example extending the `va_end` script to turn off a light:
+
+```yaml
+script:
+  - id: !extend va_end
+    then:
+      - light.turn_off: main_led
+```
 
 ### pmsx003
 
@@ -270,7 +277,7 @@ binary_sensor:
 
 Attempting to include this in the package then overriding it throws a duplicate ID error on `presence`.
 
-_Note: If you plan to extend the `uart:` definition, the `ld2420:` definition must come before it!_
+_Note: If you plan to !extend the `uart:` definition, the `ld2420:` definition must come before it!_
 
 ### ld2450
 
