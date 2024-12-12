@@ -308,6 +308,7 @@ voice_assistant:
           id(va_text).publish_state(formatted_message);
 
       - delay: 3s
+      # TODO: verify that on_end does not trigger simultaneously with on_error
       - script.execute: va_end
 
 display:

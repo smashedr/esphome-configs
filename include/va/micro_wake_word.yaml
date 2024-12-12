@@ -1,0 +1,76 @@
+# WIP - NOT READY FOR USE !!!
+# micro_wake_word: !include { file: include/va/micro_wake_word.yaml }
+# micro_wake_word: !include
+#   file: include/va/micro_wake_word.yaml
+#   vars:
+#   models:
+#     - model: hey_jarvis
+# https://esphome.io/components/micro_wake_word
+
+substitutions:
+  sorting_group_id: "sg_va"
+  model: "hey_jarvis"
+
+esphome:
+  # https://esphome.io/components/esphome
+  on_boot:
+    - priority: -113
+      then:
+        - logger.log: "Boot -113"
+        - if:
+            condition:
+              - switch.is_on: micro_wake_toggle
+            then:
+              - logger.log: "Enabling Micro Wake Word..."
+              - script.execute: micro_wake_enable
+              #- micro_wake_word.start:
+
+micro_wake_word:
+  vad:
+  models:
+    - model: ${model}
+  on_wake_word_detected:
+    then:
+      - logger.log: "on_wake_word_detected"
+      - voice_assistant.start:
+
+script:
+  - id: micro_wake_enable
+    then:
+      - logger.log: "Enable Micro Wake Word"
+      - if:
+          condition:
+            not:
+              voice_assistant.is_running:
+          then:
+            - micro_wake_word.start:
+
+  - id: va_end
+    mode: restart
+    then:
+      - if:
+          condition:
+            switch.is_on: micro_wake_toggle
+          then:
+            - wait_until:
+                not:
+                  voice_assistant.is_running:
+            - micro_wake_word.start:
+
+switch:
+  # https://esphome.io/#switch-components
+  - platform: template
+    name: "Enable Wake ${box_num}"
+    id: micro_wake_toggle
+    icon: mdi:account-voice
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    turn_on_action:
+      - logger.log: "Enable Micro Wake Word"
+      - script.execute: micro_wake_enable
+    turn_off_action:
+      - logger.log: "Disable Micro Wake Word"
+      - micro_wake_word.stop:
+    web_server:
+      sorting_group_id: sg_va
+      sorting_weight: -30
