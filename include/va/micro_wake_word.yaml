@@ -4,12 +4,13 @@
 #   file: include/va/micro_wake_word.yaml
 #   vars:
 #   models:
-#     - model: hey_jarvis
+#     - model: "hey_jarvis"
+#     - sorting_group_id: "sg_va"
 # https://esphome.io/components/micro_wake_word
 
 substitutions:
-  sorting_group_id: "sg_va"
   model: "hey_jarvis"
+  sorting_group_id: "sg_va"
 
 esphome:
   on_boot:

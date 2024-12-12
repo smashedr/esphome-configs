@@ -40,15 +40,17 @@ This is a **WIP** but **very powerful!**
 
 Click on the package name for info on using the package and the file name for full details.
 
-| Package                   | File                                                             | URL |
-| ------------------------- | ---------------------------------------------------------------- | --- |
-| [common](#common)         | [include/common.yaml](include/common.yaml)                       | WIP |
-| [debug](#debug)           | [include/debug.yaml](include/debug.yaml)                         | WIP |
-| [status_led](#status_led) | [include/status_led.yaml](include/status_led.yaml)               | WIP |
-| [pmsx003](#pmsx003)       | [include/pmsx003/pmsx003.yaml](include/pmsx003/pmsx003.yaml)     | WIP |
-| [apds9960](#apds9960)     | [include/apds9960/apds9960.yaml](include/apds9960/apds9960.yaml) | WIP |
-| [ld2420](#ld2420)         | [include/ld2420/ld2420.yaml](include/ld2420/ld2420.yaml)         | WIP |
-| [ld2450](#ld2450)         | [include/ld2450/ld2450.yaml](include/ld2450/ld2450.yaml)         | WIP |
+| Package                             | File                                                               | URL |
+| ----------------------------------- | ------------------------------------------------------------------ | --- |
+| [common](#common)                   | [include/common.yaml](include/common.yaml)                         | WIP |
+| [debug](#debug)                     | [include/debug.yaml](include/debug.yaml)                           | WIP |
+| [status_led](#status_led)           | [include/status_led.yaml](include/status_led.yaml)                 | WIP |
+| [voice_assistant](#voice_assistant) | [include/va/voice_assistant.yaml](include/va/voice_assistant.yaml) | WIP |
+| [micro_wake_word](#micro_wake_word) | [include/va/micro_wake_word.yaml](include/va/micro_wake_word.yaml) | WIP |
+| [pmsx003](#pmsx003)                 | [include/pmsx003/pmsx003.yaml](include/pmsx003/pmsx003.yaml)       | WIP |
+| [apds9960](#apds9960)               | [include/apds9960/apds9960.yaml](include/apds9960/apds9960.yaml)   | WIP |
+| [ld2420](#ld2420)                   | [include/ld2420/ld2420.yaml](include/ld2420/ld2420.yaml)           | WIP |
+| [ld2450](#ld2450)                   | [include/ld2450/ld2450.yaml](include/ld2450/ld2450.yaml)           | WIP |
 
 **Note:** All components included in a package can be `removed` or `extended` as desired...
 
@@ -68,10 +70,10 @@ Use this to easily enable the `debug` platform on ESPHome.
 
 This combines the `status_led` platform with an `identify` button.
 
-| Variable   | Default      | Type   | Description               |
-| ---------- | ------------ | ------ | ------------------------- |
-| pin        | **required** | string | PIN for LED Binary Output |
-| status_led | `main_led`   | string | ID of the `status_led`    |
+| Variable   | Default    | Description               |
+| ---------- | ---------- | ------------------------- |
+| pin        | -          | PIN for LED Binary Output |
+| status_led | `main_led` | ID of the `status_led`    |
 
 ```yaml
 packages:
@@ -82,16 +84,64 @@ packages:
       status_led: name_for_id
 ```
 
+### voice_assistant
+
+- https://esphome.io/components/voice_assistant
+
+| Variable        | Default    | Description                  |
+| --------------- | ---------- | ---------------------------- |
+| microphone      | `va_mic`   | ID of `microphone`           |
+| script_va_start | `va_start` | ID of script to `start` va   |
+| sorting_weight  | `-30`      | `sorting_weight` of VA group |
+
+```yaml
+voice_assistant: !include
+  file: include/va/voice_assistant.yaml
+  vars:
+  models:
+    - microphone: "va_mic"
+    - script_va_start: "va_start"
+    - sorting_weight: "-30"
+```
+
+This package provides the voice_assistant, a button to activate, and a web_server sorting_group.
+
+### micro_wake_word
+
+- https://esphome.io/components/micro_wake_word
+
+| Variable         | Default      | Description              |
+| ---------------- | ------------ | ------------------------ |
+| sorting_group_id | `sg_va`      | ID of VA `sorting_group` |
+| model            | `hey_jarvis` | Name or URL of `model`   |
+
+```yaml
+micro_wake_word: !include
+  file: include/va/micro_wake_word.yaml
+  vars:
+  models:
+    - model: "hey_jarvis"
+    - sorting_group_id: "sg_va"
+```
+
+This package provides the micro_wake_word, a switch to enable/disable it and save state, an on_boot to ensure state; plus scripts:
+
+- micro_wake_enable
+- va_start
+- va_end
+
+You will want to extend these, and use them in your workflow for those actions...
+
 ### pmsx003
 
 - https://esphome.io/components/sensor/pmsx003
 
-| Variable     | Default | Type   | Description                   |
-| ------------ | ------- | ------ | ----------------------------- |
-| pms_num      | 01      | string | Number Appended to `name`(s)  |
-| rx_pin       | GPIO16  | string | PIN for `rx_pin`              |
-| tx_pin       | GPIO17  | string | PIN for `tx_pin`              |
-| force_update | true    | string | Set `force_update` for sensor |
+| Variable     | Default | Description                   |
+| ------------ | ------- | ----------------------------- |
+| pms_num      | 01      | Number Appended to `name`(s)  |
+| rx_pin       | GPIO16  | PIN for `rx_pin`              |
+| tx_pin       | GPIO17  | PIN for `tx_pin`              |
+| force_update | true    | Set `force_update` for sensor |
 
 ```yaml
 packages:
@@ -117,12 +167,10 @@ sensor:
 
 - https://esphome.io/components/sensor/apds9960
 
-| Variable       | Default | Type   | Description                                 |
-| -------------- | ------- | ------ | ------------------------------------------- |
-| box_num        | 01      | string | Number Appended to `name`(s)                |
-| sorting_weight | 50      | string | web_server: sorting_group: `sorting_weight` |
-
-This package captures each gesture and publishes them to a text sensor with the last value, UP, DOWN, RIGHT, or LEFT.
+| Variable       | Default | Description                                 |
+| -------------- | ------- | ------------------------------------------- |
+| box_num        | 01      | Number Appended to `name`(s)                |
+| sorting_weight | 50      | web_server: sorting_group: `sorting_weight` |
 
 ```yaml
 packages:
@@ -132,6 +180,8 @@ packages:
       box_num: 01
       sorting_weight: 50
 ```
+
+This package captures each gesture and publishes them to a text sensor with the last value, UP, DOWN, RIGHT, or LEFT.
 
 You will probably want to extend the `last_gesture` sensor to add automation for the `on_value`:
 
@@ -156,11 +206,11 @@ web_server: !disable
 
 - https://esphome.io/components/sensor/ld2420
 
-| Variable | Default | Type   | Description                  |
-| -------- | ------- | ------ | ---------------------------- |
-| box_num  | 01      | string | Number Appended to `name`(s) |
-| rx_pin   | GPIO16  | string | PIN for `rx_pin`             |
-| tx_pin   | GPIO17  | string | PIN for `tx_pin`             |
+| Variable | Default | Description                  |
+| -------- | ------- | ---------------------------- |
+| box_num  | 01      | Number Appended to `name`(s) |
+| rx_pin   | GPIO16  | PIN for `rx_pin`             |
+| tx_pin   | GPIO17  | PIN for `tx_pin`             |
 
 ```yaml
 packages:
@@ -193,11 +243,11 @@ _Note: If you palan to extend the `uart:` definition, the `ld2420:` definition m
 
 - https://github.com/uncle-yura/esphome-ld2450
 
-| Variable | Default | Type   | Description                  |
-| -------- | ------- | ------ | ---------------------------- |
-| box_num  | 01      | string | Number Appended to `name`(s) |
-| rx_pin   | GPIO16  | string | PIN for `rx_pin`             |
-| tx_pin   | GPIO17  | string | PIN for `tx_pin`             |
+| Variable | Default | Description                  |
+| -------- | ------- | ---------------------------- |
+| box_num  | 01      | Number Appended to `name`(s) |
+| rx_pin   | GPIO16  | PIN for `rx_pin`             |
+| tx_pin   | GPIO17  | PIN for `tx_pin`             |
 
 ```yaml
 packages:
