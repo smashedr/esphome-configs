@@ -1,4 +1,10 @@
-# WIP - NOT READY FOR USE !!!
+# voice_assistant: !include { file: include/va/voice_assistant.yaml }
+# voice_assistant: !include
+#   file: include/va/voice_assistant.yaml
+#   vars:
+#     microphone: va_mic
+#     script_va_start: va_start
+#     sorting_weight: -30
 # https://esphome.io/components/voice_assistant
 
 substitutions:

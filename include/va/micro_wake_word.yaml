@@ -1,11 +1,9 @@
-# WIP - NOT READY FOR USE !!!
 # micro_wake_word: !include { file: include/va/micro_wake_word.yaml }
 # micro_wake_word: !include
 #   file: include/va/micro_wake_word.yaml
 #   vars:
-#   models:
-#     - model: "hey_jarvis"
-#     - sorting_group_id: "sg_va"
+#     model: hey_jarvis
+#     sorting_group_id: sg_va
 # https://esphome.io/components/micro_wake_word
 
 substitutions:

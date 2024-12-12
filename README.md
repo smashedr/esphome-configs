@@ -4,8 +4,8 @@
 
 # ESPHome Configs
 
-- [Packages](#packages) <-- this is a **MUST SEE!**
 - [Substitutions](#substitutions)
+- [Packages](#packages) <-- this is a **MUST SEE!**
 - [Voice Assistant](#voice-assistant)
 - [Micro Wake Word](#micro-wake-word)
 
@@ -36,21 +36,21 @@ substitutions:
 
 - https://esphome.io/components/packages.html
 
-This is a **WIP** but **very powerful!**
+This is still a **WIP** but **very powerful** in its current state...
 
-Click on the package name for info on using the package and the file name for full details.
+_Click on the package name for info on using the package and the file name for full details._
 
-| Package                             | File                                                               | URL |
-| ----------------------------------- | ------------------------------------------------------------------ | --- |
-| [common](#common)                   | [include/common.yaml](include/common.yaml)                         | WIP |
-| [debug](#debug)                     | [include/debug.yaml](include/debug.yaml)                           | WIP |
-| [status_led](#status_led)           | [include/status_led.yaml](include/status_led.yaml)                 | WIP |
-| [voice_assistant](#voice_assistant) | [include/va/voice_assistant.yaml](include/va/voice_assistant.yaml) | WIP |
-| [micro_wake_word](#micro_wake_word) | [include/va/micro_wake_word.yaml](include/va/micro_wake_word.yaml) | WIP |
-| [pmsx003](#pmsx003)                 | [include/pmsx003/pmsx003.yaml](include/pmsx003/pmsx003.yaml)       | WIP |
-| [apds9960](#apds9960)               | [include/apds9960/apds9960.yaml](include/apds9960/apds9960.yaml)   | WIP |
-| [ld2420](#ld2420)                   | [include/ld2420/ld2420.yaml](include/ld2420/ld2420.yaml)           | WIP |
-| [ld2450](#ld2450)                   | [include/ld2450/ld2450.yaml](include/ld2450/ld2450.yaml)           | WIP |
+| Package                             | File                                                               | URL                                                                    |
+| ----------------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| [common](#common)                   | [include/common.yaml](include/common.yaml)                         | github@smashedr/esphome-configs/include/common.yaml@master             |
+| [debug](#debug)                     | [include/debug.yaml](include/debug.yaml)                           | github@smashedr/esphome-configs/include/debug.yaml@master              |
+| [status_led](#status_led)           | [include/status_led.yaml](include/status_led.yaml)                 | github@smashedr/esphome-configs/include/status_led.yaml@master         |
+| [voice_assistant](#voice_assistant) | [include/va/voice_assistant.yaml](include/va/voice_assistant.yaml) | github@smashedr/esphome-configs/include/va/voice_assistant.yaml@master |
+| [micro_wake_word](#micro_wake_word) | [include/va/micro_wake_word.yaml](include/va/micro_wake_word.yaml) | github@smashedr/esphome-configs/include/va/micro_wake_word.yaml@master |
+| [pmsx003](#pmsx003)                 | [include/pmsx003/pmsx003.yaml](include/pmsx003/pmsx003.yaml)       | github@smashedr/esphome-configs/include/pmsx003/pmsx003.yaml@master    |
+| [apds9960](#apds9960)               | [include/apds9960/apds9960.yaml](include/apds9960/apds9960.yaml)   | github@smashedr/esphome-configs/include/apds9960/apds9960.yaml@master  |
+| [ld2420](#ld2420)                   | [include/ld2420/ld2420.yaml](include/ld2420/ld2420.yaml)           | github@smashedr/esphome-configs/include/ld2420/ld2420.yaml@master      |
+| [ld2450](#ld2450)                   | [include/ld2450/ld2450.yaml](include/ld2450/ld2450.yaml)           | github@smashedr/esphome-configs/include/ld2450/ld2450.yaml@master      |
 
 **Note:** All components included in a package can be `removed` or `extended` as desired...
 
@@ -78,7 +78,7 @@ This combines the `status_led` platform with an `identify` button.
 ```yaml
 packages:
   status_led: !include
-    file: include/status_led.yaml
+    url: github@smashedr/esphome-configs/include/status_led.yaml@master
     vars:
       pin: GPIO18 # required
       status_led: name_for_id
@@ -95,13 +95,13 @@ packages:
 | sorting_weight  | `-30`      | `sorting_weight` of VA group |
 
 ```yaml
-voice_assistant: !include
-  file: include/va/voice_assistant.yaml
-  vars:
-  models:
-    - microphone: "va_mic"
-    - script_va_start: "va_start"
-    - sorting_weight: "-30"
+packages:
+  voice_assistant: !include
+    file: github@smashedr/esphome-configs/include/va/voice_assistant.yaml@master
+    vars:
+      microphone: va_mic
+      script_va_start: va_start
+      sorting_weight: -30
 ```
 
 This package provides the voice_assistant, a button to activate, and a web_server sorting_group.
@@ -140,16 +140,16 @@ At minimum add: `- voice_assistant.start:`.
 
 | Variable         | Default      | Description              |
 | ---------------- | ------------ | ------------------------ |
-| sorting_group_id | `sg_va`      | ID of VA `sorting_group` |
 | model            | `hey_jarvis` | Name or URL of `model`   |
+| sorting_group_id | `sg_va`      | ID of VA `sorting_group` |
 
 ```yaml
-micro_wake_word: !include
-  file: include/va/micro_wake_word.yaml
-  vars:
-  models:
-    - model: "hey_jarvis"
-    - sorting_group_id: "sg_va"
+packages:
+  micro_wake_word: !include
+    file: github@smashedr/esphome-configs/include/va/micro_wake_word.yaml@master
+    vars:
+      model: hey_jarvis
+      sorting_group_id: sg_va
 ```
 
 This package provides the micro_wake_word, a switch to enable/disable it and save state, an on_boot to ensure state; plus scripts:
@@ -164,17 +164,17 @@ You will want to extend these, and use them in your workflow for those actions..
 
 - https://esphome.io/components/sensor/pmsx003
 
-| Variable     | Default | Description                   |
-| ------------ | ------- | ----------------------------- |
-| pms_num      | 01      | Number Appended to `name`(s)  |
-| rx_pin       | GPIO16  | PIN for `rx_pin`              |
-| tx_pin       | GPIO17  | PIN for `tx_pin`              |
-| force_update | true    | Set `force_update` for sensor |
+| Variable     | Default  | Description                   |
+| ------------ | -------- | ----------------------------- |
+| pms_num      | `01`     | Number Appended to `name`(s)  |
+| rx_pin       | `GPIO16` | PIN for `rx_pin`              |
+| tx_pin       | `GPIO17` | PIN for `tx_pin`              |
+| force_update | `true`   | Set `force_update` for sensor |
 
 ```yaml
 packages:
   pmsx003: !include
-    file: include/pmsx003/pmsx003.yaml
+    file: github@smashedr/esphome-configs/include/pmsx003/pmsx003.yaml@master
     vars:
       pms_num: 01
       rx_pin: GPIO16
@@ -197,13 +197,13 @@ sensor:
 
 | Variable       | Default | Description                                 |
 | -------------- | ------- | ------------------------------------------- |
-| box_num        | 01      | Number Appended to `name`(s)                |
-| sorting_weight | 50      | web_server: sorting_group: `sorting_weight` |
+| box_num        | `01`    | Number Appended to `name`(s)                |
+| sorting_weight | `50`    | web_server: sorting_group: `sorting_weight` |
 
 ```yaml
 packages:
   apds9960: !include
-    file: include/apds9960/apds9960.yaml
+    file: github@smashedr/esphome-configs/include/apds9960/apds9960.yaml@master
     vars:
       box_num: 01
       sorting_weight: 50
@@ -234,16 +234,16 @@ web_server: !disable
 
 - https://esphome.io/components/sensor/ld2420
 
-| Variable | Default | Description                  |
-| -------- | ------- | ---------------------------- |
-| box_num  | 01      | Number Appended to `name`(s) |
-| rx_pin   | GPIO16  | PIN for `rx_pin`             |
-| tx_pin   | GPIO17  | PIN for `tx_pin`             |
+| Variable | Default  | Description                  |
+| -------- | -------- | ---------------------------- |
+| box_num  | `01`     | Number Appended to `name`(s) |
+| rx_pin   | `GPIO16` | PIN for `rx_pin`             |
+| tx_pin   | `GPIO17` | PIN for `tx_pin`             |
 
 ```yaml
 packages:
   ld2420: !include
-    file: include/ld2420/ld2420.yaml
+    file: github@smashedr/esphome-configs/include/ld2420/ld2420.yaml@master
     vars:
       rx_pin: GPIO16
       tx_pin: GPIO17
@@ -271,16 +271,16 @@ _Note: If you palan to extend the `uart:` definition, the `ld2420:` definition m
 
 - https://github.com/uncle-yura/esphome-ld2450
 
-| Variable | Default | Description                  |
-| -------- | ------- | ---------------------------- |
-| box_num  | 01      | Number Appended to `name`(s) |
-| rx_pin   | GPIO16  | PIN for `rx_pin`             |
-| tx_pin   | GPIO17  | PIN for `tx_pin`             |
+| Variable | Default  | Description                  |
+| -------- | -------- | ---------------------------- |
+| box_num  | `01`     | Number Appended to `name`(s) |
+| rx_pin   | `GPIO16` | PIN for `rx_pin`             |
+| tx_pin   | `GPIO17` | PIN for `tx_pin`             |
 
 ```yaml
 packages:
   ld2450: !include
-    file: include/ld2450/ld2450.yaml
+    file: github@smashedr/esphome-configs/include/ld2450/ld2450.yaml@master
     vars:
       rx_pin: GPIO16
       tx_pin: GPIO17
@@ -312,18 +312,21 @@ _Note: This is because this is a custom component and does not allow assigning a
 
 - https://esphome.io/components/voice_assistant
 
-Packages coming soon...
+See Packages for more info: [voice_assistant](#voice_assistant)
 
-This is a WIP but already looking very good!
+Current Progress:
 
-Current Progress: [esptest51.yaml](esptest51.yaml)
+- Config: [esptest51.yaml](esptest51.yaml)
+- Package: [include/va/voice_assistant.yaml](include/va/voice_assistant.yaml)
 
 ## Micro Wake Word
 
 - https://esphome.io/components/micro_wake_word
 - https://github.com/kahrendt/microWakeWord
 
-Packages coming soon... Micro Wake Word Models coming soon...
+See Packages for more info: [micro_wake_word](#micro_wake_word)
+
+_More Micro Wake Word Models coming soon..._
 
 | Wake Word     | File                                  | URL for Model                                          |
 | ------------- | ------------------------------------- | ------------------------------------------------------ |
