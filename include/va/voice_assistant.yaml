@@ -103,6 +103,7 @@ voice_assistant:
 button:
   - platform: template
     name: "Activate Assistant ${box_num}"
+    id: btn_va_activate
     icon: mdi:microphone
     on_press:
       - logger.log: "script.execute: ${script_va_start}"

@@ -106,6 +106,34 @@ voice_assistant: !include
 
 This package provides the voice_assistant, a button to activate, and a web_server sorting_group.
 
+This requires the script a `va_start` script provided by `micro_wake_word`. If only using va, add:
+
+```yaml
+script:
+  - id: va_start
+    mode: restart
+    then:
+      - logger.log: "Running script: va_start"
+      - if:
+          condition:
+            - voice_assistant.is_running:
+          then:
+            - logger.log: "va_start: voice_assistant.stop"
+            - voice_assistant.stop:
+          else:
+            - logger.log: "va_start: micro_wake_word.stop"
+            - wait_until:
+                condition:
+                  not:
+                    microphone.is_capturing:
+                timeout: 1000ms
+            - logger.log: "va_start: voice_assistant.start"
+            - voice_assistant.start:
+```
+
+This will stop the VA if it is running, otherwise start the VA; making it a toggle.  
+At minimum add: `- voice_assistant.start:`.
+
 ### micro_wake_word
 
 - https://esphome.io/components/micro_wake_word
