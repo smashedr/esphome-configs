@@ -1,4 +1,4 @@
-# BENCHED - MIC TEST
+# BENCHED - VA TEST 2
 
 substitutions:
   # https://esphome.io/components/substitutions
@@ -91,7 +91,6 @@ voice_assistant:
   on_listening:
     then:
       # Listening - We are listening to what you are saying for processing
-      - logger.log: "voice_assistant on_listening"
       - light.turn_on:
           id: main_led
           brightness: 75%
@@ -100,7 +99,6 @@ voice_assistant:
   on_stt_vad_end:
     then:
       # STT Start - We are done listening and starting to process stt
-      - logger.log: "voice_assistant on_stt_vad_end"
       - light.turn_on:
           id: main_led
           effect: "Fast Pulse"
@@ -108,10 +106,6 @@ voice_assistant:
   on_tts_start:
     then:
       # TTS Start - We now have the response text from the VA
-      - logger.log:
-          format: "voice_assistant on_tts_start text: %s"
-          args: ["x.c_str()"]
-          level: INFO
       - homeassistant.action:
           action: notify.alexa_media
           data:
@@ -122,30 +116,18 @@ voice_assistant:
             message: |-
               return x.c_str();
 
-  on_tts_end:
-    then:
-      # TTS End - We now have a URL to the response audio from the VA
-      - logger.log:
-          format: "voice_assistant on_tts_end url: %s"
-          args: ["x.c_str()"]
-          level: INFO
-
   on_end:
     then:
       # DONE - We are done, restart micro_wake_word when VA is done...
-      - logger.log: "on_end"
       - script.execute: va_end
 
   on_error:
     then:
       # ERROR - You fucked up Chuck!
-      - logger.log: "on_error"
       - lambda: |-
-          ESP_LOGW("va", "code: %s", code.c_str());
-          ESP_LOGW("va", "message: %s", message.c_str());
-
           char formatted_message[128];
-          snprintf(formatted_message, sizeof(formatted_message), "Error[%s]: %s", code.c_str(), message.c_str());
+          snprintf(formatted_message, sizeof(formatted_message), "Error[%s]: %s", 
+              code.c_str(), message.c_str());
           ESP_LOGI("va", "formatted_message: %s", formatted_message);
 
       # TODO: verify that on_end does not trigger simultaneously with on_error
