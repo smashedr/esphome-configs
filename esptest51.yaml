@@ -2,6 +2,7 @@
 
 substitutions:
   # https://esphome.io/components/substitutions
+  friendly_name: "Test Box 51"
   box_num: "51"
   box_name: "esptest"
   type: "esp32"

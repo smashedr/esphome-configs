@@ -22,8 +22,9 @@ To see how these substitutions are used, see: [include/common.yaml](include/comm
 ```yaml
 substitutions:
   # required for most of package: common
-  box_num: "01" # Box number appended to box_name used for hostname and IP address.
-  box_name: "espbox" # Box name prepended to box_num used for hostname.
+  friendly_name: "Kitchen Box" # Friendly name for display in Home Assistant.
+  box_num: "01" # Unique box number appended to box_name used for hostname and IP address.
+  box_name: "espbox" # Non-unique box name prepended to box_num used for hostname.
   type: "esp32" # Platform, see: https://esphome.io/#supported-microcontrollers
   board: "esp32dev" # Board, see: https://esphome.io/#supported-microcontrollers
   comment: "38-pin" # Just a comment to show in ESPHome.

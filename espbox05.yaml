@@ -2,6 +2,7 @@
 
 substitutions:
   # https://esphome.io/components/substitutions
+  friendly_name: "PM Sensor Box"
   box_num: "05"
   box_name: "espbox"
   type: "esp32"

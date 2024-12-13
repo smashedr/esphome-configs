@@ -2,6 +2,7 @@
 
 substitutions:
   # https://esphome.io/components/substitutions
+  friendly_name: "Test Box 48"
   box_num: "48"
   box_name: "esptest"
   type: "esp32"
@@ -65,6 +66,12 @@ logger:
       #      return "Triggered on_message with level " + to_string(level) + ",
       #          tag " + tag + " and message " + message;
 
+#esp32_improv:
+#  # https://esphome.io/components/esp32_improv
+#  authorizer: touch_1
+#  status_indicator: mono_chromo
+#  identify_duration: 30s
+
 wifi:
   # https://esphome.io/components/wifi
   on_connect:
@@ -98,6 +105,7 @@ web_server:
       sorting_weight: -30
 
 http_request:
+  # https://esphome.io/components/http_request
   timeout: 6s
   verify_ssl: false
 
@@ -279,6 +287,7 @@ binary_sensor:
       mode: INPUT_PULLUP
     on_press:
       then:
+        - logger.log: "Can't Touch This"
         - light.toggle: chromatic_led
 
   #- !include { file: include/binary/api_connected.yaml }
@@ -316,6 +325,7 @@ binary_sensor:
   #      - light.turn_off: main_led
 
 text_sensor:
+  #- id: !remove wifi_info_platform
   - platform: homeassistant
     id: discord_webhook
     entity_id: input_text.discord_webhook

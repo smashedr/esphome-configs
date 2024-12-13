@@ -2,6 +2,7 @@
 
 substitutions:
   # https://esphome.io/components/substitutions
+  friendly_name: "Living Room Box"
   box_num: "03"
   box_name: "espbox"
   type: "esp32"

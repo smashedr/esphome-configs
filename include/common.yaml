@@ -16,6 +16,7 @@ ${type}:
 esphome:
   # https://esphome.io/components/esphome
   name: "${box_name}${box_num}"
+  friendly_name: "${friendly_name}"
   comment: "${type}: ${board} (${comment})"
 
 ota:
