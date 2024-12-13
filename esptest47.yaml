@@ -35,13 +35,8 @@ logger:
     component: ERROR
 
 binary_sensor:
-  # This custom package can not be extended because it does not allow an ID
+  # https://esphome.io/#binary-sensor-components
   - platform: ld2450
-    #has_target:
-    #  !include {
-    #    file: include/ld2420/has_target_night_light.yaml,
-    #    vars: { light: main_led, switch: bedroom_light },
-    #  }
     has_target:
       name: "Presence ${box_num}"
       id: presence
@@ -51,6 +46,11 @@ binary_sensor:
       on_release:
         then:
           - light.turn_off: main_led
+    #has_target:
+    #  !include {
+    #    file: include/ld2420/has_target_night_light.yaml,
+    #    vars: { light: main_led, switch: bedroom_light },
+    #  }
     has_moving_target:
       name: "Moving Target ${box_num}"
       disabled_by_default: true
@@ -59,6 +59,7 @@ binary_sensor:
       disabled_by_default: true
 
   #- id: !extend ld2450_binary_sensor
+  #  # This custom package can not be extended because it does not allow an ID
   #  has_target:
   #    on_press:
   #      then:

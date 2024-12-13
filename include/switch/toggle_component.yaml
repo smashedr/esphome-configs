@@ -1,5 +1,6 @@
 platform: template
 name: "Toggle ${name} ${box_num}"
+id: toggle_component
 icon: mdi:toggle-switch-variant-off
 optimistic: true
 restore_mode: ALWAYS_ON

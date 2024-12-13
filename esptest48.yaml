@@ -23,6 +23,21 @@ esphome:
     - priority: -200
       then:
         - logger.log: "Boot -200"
+        - switch.turn_off: toggle_component
+
+#mqtt:
+#  # https://esphome.io/components/mqtt.html
+#  broker: !secret mqtt_broker
+#  #port: !secret mqtt_port
+#  username: !secret mqtt_username
+#  password: !secret mqtt_password
+#  client_id: "${box_name}${box_num}"
+#  #clean_session : true
+#  discovery: false
+#  discover_ip: false
+#  log_topic:
+#    topic: device/logs
+#    level: ERROR
 
 logger:
   # https://esphome.io/components/logger
@@ -30,6 +45,25 @@ logger:
     level: ERROR
     then:
       - number.increment: error_log_count
+      #- homeassistant.action:
+      #    action: notify.discord
+      #    data:
+      #      target: "1316922545747918989"
+      #      message: !lambda |-
+      #        return std::string("Error: ") + "${box_num}: " + message;
+      #- script.execute:
+      #    id: send_discord
+      #    message: !lambda |-
+      #      return std::string("Error: ") + "${box_num}: " + message;
+      #- script.execute:
+      #    id: send_discord
+      #    message: !lambda |-
+      #      return std::string("Error: ") + message;
+      #- mqtt.publish:
+      #    topic: device/logs
+      #    payload: !lambda |-
+      #      return "Triggered on_message with level " + to_string(level) + ",
+      #          tag " + tag + " and message " + message;
 
 wifi:
   # https://esphome.io/components/wifi
@@ -62,6 +96,44 @@ web_server:
     - id: sg_lights
       name: "Lights"
       sorting_weight: -30
+
+http_request:
+  timeout: 6s
+  verify_ssl: false
+
+script:
+  # https://esphome.io/components/script
+  - id: send_discord
+    mode: parallel
+    max_runs: 2
+    parameters:
+      message: string
+    then:
+      - logger.log:
+          format: "message: %s"
+          args: ["message.c_str()"]
+      - logger.log:
+          format: "discord_webhook: %s"
+          args: ["id(discord_webhook).state.c_str()"]
+      - http_request.post:
+          url: !lambda "return id(discord_webhook).state.c_str();"
+          headers:
+            Content-Type: application/json
+          json:
+            content: !lambda "return message;"
+            username: "${box_name}${box_num}"
+          on_response:
+            then:
+              - logger.log:
+                  format: "Response status: %d, Duration: %u ms"
+                  args:
+                    - response->status_code
+                    - response->duration_ms
+              - lambda: |-
+                  ESP_LOGD("script", "Response status: %d, Duration: %u ms", response->status_code, response->duration_ms);
+          on_error:
+            then:
+              - logger.log: "Request failed!"
 
 light:
   # https://esphome.io/components/light/
@@ -122,22 +194,6 @@ number:
       sorting_group_id: sg_device
       sorting_weight: -17
 
-#switch:
-#  - platform: template
-#    name: "Presence Light ${box_num}"
-#    id: presence_light
-#    icon: mdi:alarm-light-off-outline
-#    optimistic: true
-#    restore_mode: RESTORE_DEFAULT_OFF
-#    turn_on_action:
-#      - if:
-#          condition:
-#            - binary_sensor.is_on: presence
-#          then:
-#            - light.turn_on: mono_chromo
-#    turn_off_action:
-#      - light.turn_off: mono_chromo
-
 #remote_receiver:
 #  pin: GPIO23
 #  dump: all
@@ -172,6 +228,45 @@ switch:
       file: include/switch/toggle_component.yaml,
       vars: { name: Photoresistor, component: photoresistor },
     }
+
+  #- platform: template
+  #  name: "Presence Light ${box_num}"
+  #  id: presence_light
+  #  icon: mdi:alarm-light-off-outline
+  #  optimistic: true
+  #  restore_mode: RESTORE_DEFAULT_OFF
+  #  turn_on_action:
+  #    - if:
+  #        condition:
+  #          - binary_sensor.is_on: presence
+  #        then:
+  #          - light.turn_on: mono_chromo
+  #  turn_off_action:
+  #    - light.turn_off: mono_chromo
+
+button:
+  # https://esphome.io/#button-components
+  - platform: template
+    name: "Debug ${box_num}"
+    icon: mdi:bug-play
+    on_press:
+      - logger.log: "Doing Nothing Cuz Suck..."
+      #- homeassistant.action:
+      #    action: notify.discord
+      #    data:
+      #      target: "1316922545747918989"
+      #      message: !lambda |-
+      #        std::string message = "Test Message";
+      #        return "Error: ${box_num}: " + message;
+      #- script.execute:
+      #    id: send_discord
+      #    message: !lambda |-
+      #      std::string message = "Test Message";
+      #      return "Error: ${box_num}: " + message;
+      #- mqtt.publish:
+      #    topic: device/logs
+      #    payload: !lambda |-
+      #      return "This is a test error log message.";
 
 binary_sensor:
   # https://esphome.io/#binary-sensor-components
@@ -220,9 +315,15 @@ binary_sensor:
   #    then:
   #      - light.turn_off: main_led
 
+text_sensor:
+  - platform: homeassistant
+    id: discord_webhook
+    entity_id: input_text.discord_webhook
+
 sensor:
-  # https://esphome.io/components/sensor/adc
+  # https://esphome.io/#sensor-components
   - platform: adc
+    # https://esphome.io/components/sensor/adc
     name: "Photoresistor ${box_num}"
     id: photoresistor
     icon: mdi:lightning-bolt-circle

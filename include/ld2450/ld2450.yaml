@@ -109,14 +109,14 @@ select:
     regions_type:
       name: "Regions Type ${box_num}"
 
-binary_sensor:
-  - platform: ld2450
-    has_target:
-      name: "Presence ${box_num}"
-    has_moving_target:
-      name: "Moving Target ${box_num}"
-    has_still_target:
-      name: "Still Target ${box_num}"
+#binary_sensor:
+#  - platform: ld2450
+#    has_target:
+#      name: "Presence ${box_num}"
+#    has_moving_target:
+#      name: "Moving Target ${box_num}"
+#    has_still_target:
+#      name: "Still Target ${box_num}"
 
 text_sensor:
   - platform: ld2450
