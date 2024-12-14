@@ -13,6 +13,7 @@ substitutions:
   sorting_weight: "-30"
 
 web_server:
+  version: 3
   sorting_groups:
     - id: sg_va
       name: "Voice Assistant"

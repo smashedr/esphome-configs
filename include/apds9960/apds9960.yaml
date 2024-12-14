@@ -24,6 +24,7 @@ apds9960:
   gesture_wait_time: 2.8ms
 
 web_server:
+  version: 3
   sorting_groups:
     - !include { file: sg.yaml, vars: { sorting_weight: -25 } }
 

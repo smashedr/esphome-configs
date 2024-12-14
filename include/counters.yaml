@@ -1,0 +1,50 @@
+# counters: github://smashedr/esphome-configs/include/counters.yaml@master
+# counters: !include
+#   file: include/counters.yaml
+#   vars:
+#     box_num: 01
+#     level: ERROR
+
+substitutions:
+  box_num: "01"
+  level: "ERROR"
+
+logger:
+  # https://esphome.io/components/logger
+  on_message:
+    level: "${level}"
+    then:
+      - number.increment: error_log_count
+
+wifi:
+  # https://esphome.io/components/wifi
+  on_connect:
+    - logger.log: "WiFi Connected..."
+  on_disconnect:
+    - logger.log: "WiFi Disconnected!"
+    - number.increment: wifi_dc_count
+
+web_server:
+  # https://esphome.io/components/web_server
+  version: 3
+  sorting_groups:
+    - id: sg_counters
+      name: "Counters"
+      sorting_weight: 1
+
+number:
+  - !include { file: number/api_dc_count.yaml }
+  - !include { file: number/error_log_count.yaml, vars: { level: "${level}" } }
+  - !include { file: number/wifi_dc_count.yaml }
+
+sensor:
+  platform: status
+  id: counters_api_status
+  internal: true
+  on_press:
+    then:
+      - logger.log: "API Connected..."
+  on_release:
+    then:
+      - logger.log: "API Disconnected!"
+      - number.increment: api_dc_count

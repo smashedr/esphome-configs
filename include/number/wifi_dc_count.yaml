@@ -1,0 +1,14 @@
+platform: template
+name: "WIFI Disconnect Count ${box_num}"
+id: wifi_dc_count
+icon: mdi:wifi-plus
+entity_category: diagnostic
+optimistic: true
+restore_value: false
+initial_value: 0
+min_value: 0
+max_value: 99
+step: 1
+web_server:
+  sorting_group_id: sg_counters
+  sorting_weight: 3

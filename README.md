@@ -80,12 +80,12 @@ Use this to easily enable the `debug` platform on ESPHome.
 
 - https://esphome.io/components/status_led
 
-This combines the `status_led` platform with an `identify` button.
-
 | Variable   | Default    | Description               |
 | ---------- | ---------- | ------------------------- |
 | pin        | -          | PIN for LED Binary Output |
 | status_led | `main_led` | ID of the `status_led`    |
+
+This combines the `status_led` platform with an `identify` button.
 
 ```yaml
 packages:
@@ -93,6 +93,50 @@ packages:
 substitutions:
   pin: "GPIO18" # required
   status_led: "name_for_id"
+```
+
+### counters
+
+| Variable | Default | Description                          |
+| -------- | ------- | ------------------------------------ |
+| box_num  | `01`    | Number/Name Appended to `name`(s)    |
+| level    | `ERROR` | Log Level to trigger error messages. |
+
+Sends all logs at `level` or higher to a discord `channel_id` via the discord integration `notify_id`.
+
+```yaml
+packages:
+  counters: github://smashedr/esphome-configs/include/counters.yaml@master
+substitutions:
+  box_num: "01"
+  level: "ERROR"
+```
+
+### discord_logs
+
+- https://www.home-assistant.io/integrations/discord/
+
+| Variable      | Default      | Description                                   |
+| ------------- | ------------ | --------------------------------------------- |
+| channel_id    | -            | PIN for LED Binary Output                     |
+| box_num       | `01`         | Combined with box_name for name. Vanity Only. |
+| box_name      | `esp`        | Combined with box_num for name. Vanity Only.  |
+| friendly_name | `ESP Box`    | Box Name. Vanity Only.                        |
+| notify_id     | `ha_discord` | ID of the `notify.discord` integration.       |
+| level         | `ERROR`      | Log Level to trigger error messages.          |
+
+Sends all logs at `level` or higher to a discord `channel_id` via the discord integration `notify_id`.
+
+```yaml
+packages:
+  discord_logs: github://smashedr/esphome-configs/include/discord_logs.yaml@master
+substitutions:
+  channel_id: "0123456789" # REQUIRED
+  box_num: "01"
+  box_name: "esp"
+  friendly_name: "ESP Box"
+  notify_id: "ha_discord"
+  level: "ERROR"
 ```
 
 ### voice_assistant

@@ -17,6 +17,11 @@ packages:
     file: include/status_led.yaml
     vars:
       pin: GPIO26
+  counters: !include { file: include/counters.yaml }
+  discord_logs: !include
+    file: include/discord_logs.yaml
+    vars:
+      channel_id: !secret discord_logs_id
 
 esphome:
   # https://esphome.io/components/esphome
@@ -40,31 +45,35 @@ esphome:
 #    topic: device/logs
 #    level: ERROR
 
-logger:
-  # https://esphome.io/components/logger
-  on_message:
-    level: ERROR
-    then:
-      - number.increment: error_log_count
-      #- homeassistant.action:
-      #    action: notify.discord
-      #    data:
-      #      target: "1316922545747918989"
-      #      message: !lambda |-
-      #        return std::string("Error: ") + "${box_num}: " + message;
-      #- script.execute:
-      #    id: send_discord
-      #    message: !lambda |-
-      #      return std::string("Error: ") + "${box_num}: " + message;
-      #- script.execute:
-      #    id: send_discord
-      #    message: !lambda |-
-      #      return std::string("Error: ") + message;
-      #- mqtt.publish:
-      #    topic: device/logs
-      #    payload: !lambda |-
-      #      return "Triggered on_message with level " + to_string(level) + ",
-      #          tag " + tag + " and message " + message;
+#logger:
+#  # https://esphome.io/components/logger
+#  on_message:
+#    level: ERROR
+#    then:
+#      - number.increment: error_log_count
+#      - homeassistant.action:
+#          action: notify.ha_discord
+#          data:
+#            target: !secret discord_logs_id
+#            message: !lambda |-
+#              // return std::string("Error: ") + "${friendly_name}: " + message;
+#              return "**${friendly_name}** - `${box_name}${box_num}` - <http://192.168.1.2${box_num}/>\n```" + message + "```";
+
+#- script.execute:
+#    id: send_discord
+#    message: !lambda |-
+#      return std::string("Error: ") + "${box_num}: " + message;
+
+#- script.execute:
+#    id: send_discord
+#    message: !lambda |-
+#      return std::string("Error: ") + message;
+
+#- mqtt.publish:
+#    topic: device/logs
+#    payload: !lambda |-
+#      return "Triggered on_message with level " + to_string(level) + ",
+#          tag " + tag + " and message " + message;
 
 #esp32_improv:
 #  # https://esphome.io/components/esp32_improv
@@ -72,13 +81,13 @@ logger:
 #  status_indicator: mono_chromo
 #  identify_duration: 30s
 
-wifi:
-  # https://esphome.io/components/wifi
-  on_connect:
-    - logger.log: "WiFi Connected..."
-  on_disconnect:
-    - logger.log: "WiFi Disconnected!"
-    - number.increment: wifi_dc_count
+#wifi:
+#  # https://esphome.io/components/wifi
+#  on_connect:
+#    - logger.log: "WiFi Connected..."
+#  on_disconnect:
+#    - logger.log: "WiFi Disconnected!"
+#    - number.increment: wifi_dc_count
 
 api:
   # https://esphome.io/components/api
@@ -99,6 +108,7 @@ api:
 
 web_server:
   # https://esphome.io/components/web_server
+  version: 3
   sorting_groups:
     - id: sg_lights
       name: "Lights"
@@ -155,52 +165,52 @@ light:
       sorting_group_id: sg_lights
       sorting_weight: 10
 
-number:
-  # https://esphome.io/#number-components
-  - platform: template
-    name: "Error Count ${box_num}"
-    id: error_log_count
-    icon: mdi:alert-plus
-    entity_category: diagnostic
-    optimistic: true
-    restore_value: false
-    initial_value: 0
-    min_value: 0
-    max_value: 999
-    step: 1
-    web_server:
-      sorting_group_id: sg_device
-      sorting_weight: -19
-
-  - platform: template
-    name: "API Disconnect Count ${box_num}"
-    id: api_dc_count
-    icon: mdi:web-plus
-    entity_category: diagnostic
-    optimistic: true
-    restore_value: false
-    initial_value: 0
-    min_value: 0
-    max_value: 999
-    step: 1
-    web_server:
-      sorting_group_id: sg_device
-      sorting_weight: -18
-
-  - platform: template
-    name: "WIFI Disconnect Count ${box_num}"
-    id: wifi_dc_count
-    icon: mdi:wifi-plus
-    entity_category: diagnostic
-    optimistic: true
-    restore_value: false
-    initial_value: 0
-    min_value: 0
-    max_value: 999
-    step: 1
-    web_server:
-      sorting_group_id: sg_device
-      sorting_weight: -17
+#number:
+#  # https://esphome.io/#number-components
+#  - platform: template
+#    name: "Error Count ${box_num}"
+#    id: error_log_count
+#    icon: mdi:alert-plus
+#    entity_category: diagnostic
+#    optimistic: true
+#    restore_value: false
+#    initial_value: 0
+#    min_value: 0
+#    max_value: 999
+#    step: 1
+#    web_server:
+#      sorting_group_id: sg_device
+#      sorting_weight: -19
+#
+#  - platform: template
+#    name: "API Disconnect Count ${box_num}"
+#    id: api_dc_count
+#    icon: mdi:web-plus
+#    entity_category: diagnostic
+#    optimistic: true
+#    restore_value: false
+#    initial_value: 0
+#    min_value: 0
+#    max_value: 999
+#    step: 1
+#    web_server:
+#      sorting_group_id: sg_device
+#      sorting_weight: -18
+#
+#  - platform: template
+#    name: "WIFI Disconnect Count ${box_num}"
+#    id: wifi_dc_count
+#    icon: mdi:wifi-plus
+#    entity_category: diagnostic
+#    optimistic: true
+#    restore_value: false
+#    initial_value: 0
+#    min_value: 0
+#    max_value: 999
+#    step: 1
+#    web_server:
+#      sorting_group_id: sg_device
+#      sorting_weight: -17
 
 #remote_receiver:
 #  pin: GPIO23
@@ -254,75 +264,92 @@ switch:
 
 button:
   # https://esphome.io/#button-components
+  - !include {
+      file: include/button/update_component.yaml,
+      vars: { name: Photoresistor, component: photoresistor },
+    }
+
   - platform: template
     name: "Debug ${box_num}"
     icon: mdi:bug-play
     on_press:
-      - logger.log: "Doing Nothing Cuz Suck..."
-      #- homeassistant.action:
-      #    action: notify.discord
-      #    data:
-      #      target: "1316922545747918989"
-      #      message: !lambda |-
-      #        std::string message = "Test Message";
-      #        return "Error: ${box_num}: " + message;
+      - logger.log: "Discord Shit Yo..."
+      - homeassistant.action:
+          action: notify.ha_discord
+          data:
+            target: !secret discord_logs_id
+            message: !lambda |-
+              std::string message = "Test error message.";
+              return "**${friendly_name}** - `${box_name}${box_num}` - <http://" + id(counters_wifi_ip).state + "/>\n```" + message + "```";
+
+  - platform: template
+    name: "Trigger Error ${box_num}"
+    icon: mdi:bug-play
+    on_press:
+      - logger.log:
+          format: "Test ERROR log message..."
+          level: ERROR
+      #- http_request.get:
+      #    url: "https://hp9284gh2h4ga.com/"
+
       #- script.execute:
       #    id: send_discord
       #    message: !lambda |-
       #      std::string message = "Test Message";
-      #      return "Error: ${box_num}: " + message;
+      #      return "Message: " + message;
+
       #- mqtt.publish:
       #    topic: device/logs
       #    payload: !lambda |-
       #      return "This is a test error log message.";
 
-binary_sensor:
-  # https://esphome.io/#binary-sensor-components
-  - platform: gpio
-    name: "Touch 1 - ${box_num}"
-    id: touch_1
-    icon: mdi:gesture-tap-box
-    pin:
-      number: 16
-      mode: INPUT_PULLUP
-    on_press:
-      then:
-        - logger.log: "Can't Touch This"
-        - light.toggle: chromatic_led
+#binary_sensor:
+#  # https://esphome.io/#binary-sensor-components
+#  - platform: gpio
+#    name: "Touch 1 - ${box_num}"
+#    id: touch_1
+#    icon: mdi:gesture-tap-box
+#    pin:
+#      number: 16
+#      mode: INPUT_PULLUP
+#    on_press:
+#      then:
+#        - logger.log: "Can't Touch This"
+#        - light.toggle: chromatic_led
+#
+#  #- !include { file: include/binary/api_connected.yaml }
 
-  #- !include { file: include/binary/api_connected.yaml }
+#  - id: !extend api_status
+#    on_press:
+#      then:
+#        - logger.log:
+#            format: "API Connected..."
+#            level: INFO
+#    on_release:
+#      then:
+#        - number.increment: api_dc_count
+#        - logger.log:
+#            format: "API Disconnected!"
+#            level: WARN
 
-  - id: !extend api_status
-    on_press:
-      then:
-        - logger.log:
-            format: "API Connected..."
-            level: INFO
-    on_release:
-      then:
-        - number.increment: api_dc_count
-        - logger.log:
-            format: "API Disconnected!"
-            level: WARN
-
-  #- platform: gpio
-  #  pin: GPIO19
-  #  name: "Presence ${box_num}"
-  #  id: presence
-  #  #icon: mdi:motion-sensor
-  #  device_class: motion
-  #  #filters:
-  #  #  - delayed_off: 60s
-  #  on_press:
-  #    then:
-  #      - if:
-  #          condition:
-  #            - switch.is_on: presence_light
-  #          then:
-  #            - light.turn_on: main_led
-  #  on_release:
-  #    then:
-  #      - light.turn_off: main_led
+#- platform: gpio
+#  pin: GPIO19
+#  name: "Presence ${box_num}"
+#  id: presence
+#  #icon: mdi:motion-sensor
+#  device_class: motion
+#  #filters:
+#  #  - delayed_off: 60s
+#  on_press:
+#    then:
+#      - if:
+#          condition:
+#            - switch.is_on: presence_light
+#          then:
+#            - light.turn_on: main_led
+#  on_release:
+#    then:
+#      - light.turn_off: main_led
 
 text_sensor:
   #- id: !remove wifi_info_platform

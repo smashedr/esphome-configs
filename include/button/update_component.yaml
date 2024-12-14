@@ -1,0 +1,7 @@
+platform: template
+name: "Update ${name} ${box_num}"
+id: update_component
+icon: mdi:update
+on_press:
+  - logger.log: "Update: ${name}: ${component}"
+  - component.update: ${component}

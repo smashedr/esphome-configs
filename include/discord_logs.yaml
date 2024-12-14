@@ -1,0 +1,37 @@
+# https://www.home-assistant.io/integrations/discord/
+# discord_logs: github://smashedr/esphome-configs/include/discord_logs.yaml@master
+# discord_logs: !include
+#   file: include/discord_logs.yaml
+#   vars:
+#     channel_id: "0123456789" # REQUIRED
+#     box_num: "01"
+#     box_name: "esp"
+#     friendly_name: "ESP Box"
+#     notify_id: "ha_discord"
+#     level: "ERROR"
+
+substitutions:
+  box_num: "01"
+  box_name: "esp"
+  friendly_name: "ESP Box"
+  notify_id: "ha_discord"
+  level: "ERROR"
+
+logger:
+  # https://esphome.io/components/logger
+  on_message:
+    level: "${level}"
+    then:
+      - homeassistant.action:
+          action: notify.${notify_id}
+          data:
+            target: "${channel_id}"
+            message: !lambda |-
+              std::string prefix = "**${friendly_name}** - `${box_name}${box_num}`: ";
+              return prefix + "<http://" + id(counters_wifi_ip).state + "/>\n```" + message + "```";
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      id: counters_wifi_ip
+      internal: true
