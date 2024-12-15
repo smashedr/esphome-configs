@@ -14,7 +14,14 @@ packages:
   debug: !include { file: include/debug.yaml }
   common: !include { file: include/common.yaml }
   voice_assistant: !include { file: include/va/voice_assistant.yaml }
-  micro_wake_word: !include { file: include/va/micro_wake_word.yaml }
+  micro_wake_word: !include
+    file: include/va/micro_wake_word.yaml
+    vars:
+      model: models/jenkins.json
+  discord_logs: !include
+    file: include/va/discord.yaml
+    vars:
+      channel_id: !secret discord_va_id
 
 #external_components:
 #  - source: github://jesserockz/esphome-components
@@ -44,7 +51,17 @@ esphome:
         - logger.log: "Boot -100"
         - wait_until:
             - api.connected:
-        - light.turn_off: main_led
+        #- light.turn_off: main_led
+        - if:
+            condition:
+              - switch.is_on: micro_wake_toggle
+            then:
+              - light.turn_off: main_led
+            else:
+              - light.turn_on:
+                  id: main_led
+                  brightness: 20%
+                  effect: None
 
 light:
   # https://esphome.io/components/light/
@@ -63,7 +80,27 @@ script:
   # https://esphome.io/components/script
   - id: !extend va_end
     then:
-      - light.turn_off: main_led
+      #- light.turn_off: main_led
+      - script.execute: turn_off_led
+
+  - id: turn_off_led
+    mode: restart
+    then:
+      - logger.log: "Running script: turn_off_led"
+      - if:
+          condition:
+            - switch.is_on: micro_wake_toggle
+          then:
+            - logger.log: "Switch micro_wake_toggle is ON: light.turn_off"
+            - light.turn_off:
+                id: main_led
+                transition_length: 0s
+          else:
+            - logger.log: "Switch micro_wake_toggle is ON: light.turn_on"
+            - light.turn_on:
+                id: main_led
+                brightness: 20%
+                effect: None
 
 voice_assistant:
   # https://esphome.io/components/voice_assistant
@@ -136,6 +173,34 @@ output:
     pin: GPIO26
     max_power: 80%
 
+switch:
+  # https://esphome.io/#switch-components
+  - id: !remove enable_continuous
+  - id: !extend micro_wake_toggle
+    turn_on_action:
+      - logger.log: "micro_wake_toggle: turn_on_action"
+      - if:
+          condition:
+            not:
+              voice_assistant.is_running:
+          then:
+            - logger.log: "micro_wake_toggle: wait_until: switch.is_on:"
+            - wait_until:
+                switch.is_on: micro_wake_toggle
+            - logger.log: "micro_wake_toggle: script.execute: turn_off_led"
+            - script.execute: turn_off_led
+    turn_off_action:
+      - logger.log: "micro_wake_toggle: turn_off_action"
+      - if:
+          condition:
+            not:
+              voice_assistant.is_running:
+          then:
+            - logger.log: "micro_wake_toggle: light.turn_on: 20"
+            - light.turn_on:
+                id: main_led
+                brightness: 20%
+
 #button:
 #  - platform: template
 #    name: "Start Capture ${box_num}"
@@ -172,9 +237,9 @@ binary_sensor:
         then:
           - logger.log: "2+ Second Touch - Toggle Wake"
           - switch.toggle: micro_wake_toggle
-          - light.turn_on:
-              id: main_led
-              brightness: 100%
-              transition_length: 0s
-          - delay: 500ms
-          - light.turn_off: main_led
+          #- light.turn_on:
+          #    id: main_led
+          #    brightness: 100%
+          #    transition_length: 0s
+          #- delay: 500ms
+          #- light.turn_off: main_led

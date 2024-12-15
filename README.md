@@ -382,10 +382,11 @@ Current Progress:
 
 See Packages for more info: [micro_wake_word](#micro_wake_word)
 
-_More Micro Wake Word Models coming soon..._
+For training documentation, see: [basic_training_notebook.ipynb](models/basic_training_notebook.ipynb)
 
 | Wake Word     | File                                  | URL for Model                                          |
 | ------------- | ------------------------------------- | ------------------------------------------------------ |
+| `Jenkins`     | [jenkins.json](models/jenkins.json)   | github://smashedr/esphome-configs/models/jenkins.json  |
 | `Computer` \* | [computer.json](models/computer.json) | github://smashedr/esphome-configs/models/computer.json |
 
 \* Not made by me. See manifest file for details...
@@ -397,11 +398,14 @@ micro_wake_word:
   vad:
   models:
     - model: hey_jarvis
+    - model: github://smashedr/esphome-configs/models/jenkins.json@master
     - model: github://smashedr/esphome-configs/models/computer.json@master
   on_wake_word_detected:
     then:
       - voice_assistant.start:
 ```
+
+Tip: Using only use 1 model seems to improve performance.
 
 Tip: Micro Wake Word will respond slightly faster with increased CPU frequency on ESP32:
 
@@ -414,6 +418,8 @@ esp32:
     sdkconfig_options:
       CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
 ```
+
+Note: This may differ for variants...
 
 _Reference: https://esphome.io/components/esp32_  
 _Reference: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/kconfig-reference.html_

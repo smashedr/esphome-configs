@@ -1,0 +1,67 @@
+# https://www.home-assistant.io/integrations/discord/
+# discord_logs: github://smashedr/esphome-configs/include/va/discord.yaml@master
+# discord_logs: !include
+#   file: include/va/discord.yaml
+#   vars:
+#     friendly_name: "ESP Box"
+#     notify_id: "ha_discord"
+
+substitutions:
+  friendly_name: "ESP Box"
+  notify_id: "ha_discord"
+
+voice_assistant:
+  on_stt_end:
+    then:
+      # STT End - We have processed what you said as text
+      - logger.log:
+          format: "discord - discord_last_stt: %s"
+          args: ["x.c_str()"]
+          level: INFO
+      - text_sensor.template.publish:
+          id: discord_last_stt
+          state: !lambda "return x.c_str();"
+
+  on_tts_start:
+    then:
+      # TTS Start - We now have the response text from the VA
+      - logger.log:
+          format: "discord - discord_response_text: %s"
+          args: ["x.c_str()"]
+          level: INFO
+      - text_sensor.template.publish:
+          id: discord_response_text
+          state: !lambda "return x.c_str();"
+
+  on_tts_end:
+    then:
+      # TTS End - We now have a URL to the response audio from the VA
+      - logger.log:
+          format: "discord - discord_audio_url: %s"
+          args: ["x.c_str()"]
+          level: INFO
+      - text_sensor.template.publish:
+          id: discord_audio_url
+          state: !lambda "return x.c_str();"
+      - homeassistant.action:
+          action: notify.${notify_id}
+          data:
+            target: "${channel_id}"
+            message: !lambda |-
+              return std::string("New VA Pipeline from **${friendly_name}**:\n") +
+                    "Request: `" + id(discord_last_stt).state + "`\n" +
+                    "Response: " + id(discord_audio_url).state + "\n```" + 
+                      id(discord_response_text).state + "```";
+
+text_sensor:
+  - platform: template
+    id: discord_last_stt
+    internal: true
+
+  - platform: template
+    id: discord_response_text
+    internal: true
+
+  - platform: template
+    id: discord_audio_url
+    internal: true

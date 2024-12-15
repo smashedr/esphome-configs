@@ -117,4 +117,36 @@ button:
       - script.execute: ${script_va_start}
     web_server:
       sorting_group_id: sg_va
-      sorting_weight: -20
+      sorting_weight: 30
+
+switch:
+  - platform: template
+    name: "Enable Continuous ${box_num}"
+    id: enable_continuous
+    icon: mdi:account-voice
+    disabled_by_default: true
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    on_turn_on:
+      - logger.log: "Enable Continuous"
+      - if:
+          condition:
+            - voice_assistant.is_running:
+          then:
+            - logger.log: "enable_continuous: voice_assistant.stop:"
+            - voice_assistant.stop:
+            - wait_until:
+                condition:
+                  - not:
+                      - voice_assistant.is_running:
+                      - microphone.is_capturing:
+      - logger.log: "enable_continuous: voice_assistant.start_continuous"
+      - lambda: "id(va).set_use_wake_word(true);"
+      - voice_assistant.start_continuous:
+    on_turn_off:
+      - logger.log: "Disable Continuous"
+      - voice_assistant.stop:
+      - lambda: "id(va).set_use_wake_word(false);"
+    web_server:
+      sorting_group_id: sg_va
+      sorting_weight: 20

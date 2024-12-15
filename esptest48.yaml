@@ -352,7 +352,7 @@ button:
 #      - light.turn_off: main_led
 
 text_sensor:
-  #- id: !remove wifi_info_platform
+  # https://esphome.io/#text-sensor-components
   - platform: homeassistant
     id: discord_webhook
     entity_id: input_text.discord_webhook
