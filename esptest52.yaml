@@ -17,7 +17,7 @@ packages:
   micro_wake_word: !include
     file: include/va/micro_wake_word.yaml
     vars:
-      model: models/jenkins.json
+      model: models/jarvis.json
   discord_logs: !include
     file: include/va/discord.yaml
     vars:

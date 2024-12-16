@@ -5,9 +5,9 @@
 # ESPHome Configs
 
 - [Substitutions](#substitutions)
-- [Packages](#packages) <-- this is a **MUST SEE!**
 - [Voice Assistant](#voice-assistant)
 - [Micro Wake Word](#micro-wake-word)
+- [Packages](#packages) <-- this is a **MUST SEE!**
 
 ESPHome: https://esphome.io/
 
@@ -32,6 +32,70 @@ substitutions:
   update_interval: "1min" # Used to define update_interval for many of the included sensors.
   force_update: "true" # Used to define force_update for many of the included sensors.
 ```
+
+## Voice Assistant
+
+- https://esphome.io/components/voice_assistant
+
+**See Packages for more info: [voice_assistant](#voice_assistant)**
+
+Current Progress:
+
+- Configs: [esptest48.yaml](esptest48.yaml) /[esptest51.yaml](esptest51.yaml) / [esptest52.yaml](esptest52.yaml)
+- Package: [include/va/voice_assistant.yaml](include/va/voice_assistant.yaml)
+
+## Micro Wake Word
+
+- https://esphome.io/components/micro_wake_word
+- https://github.com/kahrendt/microWakeWord
+
+**See Packages for more info: [micro_wake_word](#micro_wake_word)**
+
+For training documentation, see: [basic_training_notebook.ipynb](models/basic_training_notebook.ipynb)
+
+These models are a WIP and will either be deprecated or improved based on popularity.
+
+| Wake Word     | File                                         | URL for Model                                          |
+| ------------- | -------------------------------------------- | ------------------------------------------------------ |
+| `Jenkins`     | [models/jenkins.json](models/jenkins.json)   | github://smashedr/esphome-configs/models/jenkins.json  |
+| `Jarvis`      | [models/jarvis.json](models/jarvis.json)     | github://smashedr/esphome-configs/models/jarvis.json   |
+| `Computer` \* | [models/computer.json](models/computer.json) | github://smashedr/esphome-configs/models/computer.json |
+
+\* Not made by me. See manifest file for details...
+
+Example Configuration:
+
+```yaml
+micro_wake_word:
+  vad:
+  models:
+    - model: hey_jarvis
+    - model: github://smashedr/esphome-configs/models/jenkins.json@master
+    - model: github://smashedr/esphome-configs/models/jarvis.json@master
+    - model: github://smashedr/esphome-configs/models/computer.json@master
+  on_wake_word_detected:
+    then:
+      - voice_assistant.start:
+```
+
+**Note: Using only use 1 model seems to improve performance.**
+
+Tip: Micro Wake Word will respond slightly faster with increased CPU frequency on ESP32:
+
+```yaml
+esp32:
+  board: "${board}"
+  framework:
+    type: esp-idf
+    version: recommended
+    sdkconfig_options:
+      CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
+```
+
+Note: This may differ for variants...
+
+_Reference: https://esphome.io/components/esp32_  
+_Reference: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/kconfig-reference.html_
 
 ## Packages
 
@@ -58,6 +122,8 @@ _Click on the package name for info on using the package and the file name for f
 ### common
 
 These are my common configurations shared with all boxes. You probably don't want to use these without modification.
+
+This package requires most of the required variables from: [Substitutions](#substitutions)
 
 ### debug
 
@@ -363,63 +429,3 @@ binary_sensor:
 ```
 
 _Note: This custom package can not be extended because it does not allow an ID..._
-
-## Voice Assistant
-
-- https://esphome.io/components/voice_assistant
-
-See Packages for more info: [voice_assistant](#voice_assistant)
-
-Current Progress:
-
-- Config: [esptest51.yaml](esptest51.yaml)
-- Package: [include/va/voice_assistant.yaml](include/va/voice_assistant.yaml)
-
-## Micro Wake Word
-
-- https://esphome.io/components/micro_wake_word
-- https://github.com/kahrendt/microWakeWord
-
-See Packages for more info: [micro_wake_word](#micro_wake_word)
-
-For training documentation, see: [basic_training_notebook.ipynb](models/basic_training_notebook.ipynb)
-
-| Wake Word     | File                                  | URL for Model                                          |
-| ------------- | ------------------------------------- | ------------------------------------------------------ |
-| `Jenkins`     | [jenkins.json](models/jenkins.json)   | github://smashedr/esphome-configs/models/jenkins.json  |
-| `Computer` \* | [computer.json](models/computer.json) | github://smashedr/esphome-configs/models/computer.json |
-
-\* Not made by me. See manifest file for details...
-
-Example Configuration:
-
-```yaml
-micro_wake_word:
-  vad:
-  models:
-    - model: hey_jarvis
-    - model: github://smashedr/esphome-configs/models/jenkins.json@master
-    - model: github://smashedr/esphome-configs/models/computer.json@master
-  on_wake_word_detected:
-    then:
-      - voice_assistant.start:
-```
-
-Tip: Using only use 1 model seems to improve performance.
-
-Tip: Micro Wake Word will respond slightly faster with increased CPU frequency on ESP32:
-
-```yaml
-esp32:
-  board: "${board}"
-  framework:
-    type: esp-idf
-    version: recommended
-    sdkconfig_options:
-      CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
-```
-
-Note: This may differ for variants...
-
-_Reference: https://esphome.io/components/esp32_  
-_Reference: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/kconfig-reference.html_
