@@ -36,7 +36,7 @@ esphome:
       then:
         - !include {
             file: include/esphome/night_light_boot.yaml,
-            vars: { light: main_led, switch: night_light },
+            vars: { light: main_led, switch: night_light_switch },
           }
 
 switch:
@@ -68,4 +68,4 @@ binary_sensor:
       mode: INPUT_PULLUP
     on_press:
       then:
-        - switch.toggle: night_light
+        - switch.toggle: night_light_switch

@@ -12,7 +12,7 @@ on_release:
   then:
     - if:
         condition:
-          - switch.is_on: night_light
+          - switch.is_on: night_light_switch
           - light.is_off: ${light}
         then:
           - logger.log: "No Presence"

@@ -37,7 +37,7 @@ number:
   - !include { file: number/error_log_count.yaml, vars: { level: "${level}" } }
   - !include { file: number/wifi_dc_count.yaml }
 
-sensor:
+binary_sensor:
   platform: status
   id: counters_api_status
   internal: true

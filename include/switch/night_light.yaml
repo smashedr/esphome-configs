@@ -1,6 +1,6 @@
 platform: template
 name: "Night Light ${box_num}"
-id: night_light
+id: night_light_switch
 icon: mdi:lightbulb-night
 optimistic: true
 turn_on_action:

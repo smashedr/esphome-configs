@@ -13,98 +13,31 @@ packages:
   # https://esphome.io/components/packages.html
   debug: !include { file: include/debug.yaml }
   common: !include { file: include/common.yaml }
-  status_led: !include
-    file: include/status_led.yaml
-    vars:
-      pin: GPIO26
+  #status_led: !include
+  #  file: include/status_led.yaml
+  #  vars:
+  #    pin: GPIO26
   counters: !include { file: include/counters.yaml }
-  discord_logs: !include
-    file: include/discord_logs.yaml
+  voice_assistant: !include { file: include/va/voice_assistant.yaml }
+  micro_wake_word: !include
+    file: include/va/micro_wake_word.yaml
     vars:
-      channel_id: !secret discord_logs_id
+      model: models/jenkins.json
+  discord_logs: !include
+    file: include/va/discord.yaml
+    vars:
+      channel_id: !secret discord_va_id
+  ld2420: !include
+    file: include/ld2420/ld2420.yaml
+    vars:
+      rx_pin: GPIO16
+      tx_pin: GPIO17
 
-esphome:
-  # https://esphome.io/components/esphome
-  on_boot:
-    - priority: -200
-      then:
-        - logger.log: "Boot -200"
-        - switch.turn_off: toggle_component
-
-#mqtt:
-#  # https://esphome.io/components/mqtt.html
-#  broker: !secret mqtt_broker
-#  #port: !secret mqtt_port
-#  username: !secret mqtt_username
-#  password: !secret mqtt_password
-#  client_id: "${box_name}${box_num}"
-#  #clean_session : true
-#  discovery: false
-#  discover_ip: false
-#  log_topic:
-#    topic: device/logs
-#    level: ERROR
-
-#logger:
-#  # https://esphome.io/components/logger
-#  on_message:
-#    level: ERROR
-#    then:
-#      - number.increment: error_log_count
-#      - homeassistant.action:
-#          action: notify.ha_discord
-#          data:
-#            target: !secret discord_logs_id
-#            message: !lambda |-
-#              // return std::string("Error: ") + "${friendly_name}: " + message;
-#              return "**${friendly_name}** - `${box_name}${box_num}` - <http://192.168.1.2${box_num}/>\n```" + message + "```";
-
-#- script.execute:
-#    id: send_discord
-#    message: !lambda |-
-#      return std::string("Error: ") + "${box_num}: " + message;
-
-#- script.execute:
-#    id: send_discord
-#    message: !lambda |-
-#      return std::string("Error: ") + message;
-
-#- mqtt.publish:
-#    topic: device/logs
-#    payload: !lambda |-
-#      return "Triggered on_message with level " + to_string(level) + ",
-#          tag " + tag + " and message " + message;
-
-#esp32_improv:
-#  # https://esphome.io/components/esp32_improv
-#  authorizer: touch_1
-#  status_indicator: mono_chromo
-#  identify_duration: 30s
-
-#wifi:
-#  # https://esphome.io/components/wifi
-#  on_connect:
-#    - logger.log: "WiFi Connected..."
-#  on_disconnect:
-#    - logger.log: "WiFi Disconnected!"
-#    - number.increment: wifi_dc_count
-
-api:
-  # https://esphome.io/components/api
-  on_client_connected:
-    - lambda: |-
-        if (client_info.find("Home Assistant") != std::string::npos) {
-          ESP_LOGI("api", "API Connected: Home Assistant (%s)", client_address.c_str());
-        } else {
-          ESP_LOGI("api", "Client Connected: %s (%s)", client_info.c_str(), client_address.c_str());
-        }
-  on_client_disconnected:
-    - lambda: |-
-        if (client_info.find("Home Assistant") != std::string::npos) {
-          ESP_LOGW("api", "API Disconnected: Home Assistant (%s)", client_address.c_str());
-        } else {
-          ESP_LOGI("api", "Client Disconnected: %s (%s)", client_info.c_str(), client_address.c_str());
-        }
+${type}:
+  # https://esphome.io/#supported-microcontrollers
+  framework:
+    sdkconfig_options:
+      CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
 
 web_server:
   # https://esphome.io/components/web_server
@@ -114,257 +47,237 @@ web_server:
       name: "Lights"
       sorting_weight: -30
 
-http_request:
-  # https://esphome.io/components/http_request
-  timeout: 6s
-  verify_ssl: false
+esphome:
+  # https://esphome.io/components/esphome
+  on_boot:
+    - priority: 600
+      then:
+        - logger.log: "Boot 600"
+        - light.turn_on:
+            id: main_led
+            effect: "Full Pulse"
+    - priority: -100
+      then:
+        - logger.log: "Boot -100"
+        - wait_until:
+            - api.connected:
+        - if:
+            condition:
+              - switch.is_on: micro_wake_toggle
+            then:
+              - light.turn_off: main_led
+            else:
+              - light.turn_on:
+                  id: main_led
+                  brightness: 20%
+                  effect: None
+        - !include {
+            file: include/esphome/night_light_boot.yaml,
+            vars: { light: night_led, switch: night_light_switch },
+          }
 
 script:
   # https://esphome.io/components/script
-  - id: send_discord
-    mode: parallel
-    max_runs: 2
-    parameters:
-      message: string
+  - id: !extend va_end
     then:
-      - logger.log:
-          format: "message: %s"
-          args: ["message.c_str()"]
-      - logger.log:
-          format: "discord_webhook: %s"
-          args: ["id(discord_webhook).state.c_str()"]
-      - http_request.post:
-          url: !lambda "return id(discord_webhook).state.c_str();"
-          headers:
-            Content-Type: application/json
-          json:
-            content: !lambda "return message;"
-            username: "${box_name}${box_num}"
-          on_response:
-            then:
-              - logger.log:
-                  format: "Response status: %d, Duration: %u ms"
-                  args:
-                    - response->status_code
-                    - response->duration_ms
-              - lambda: |-
-                  ESP_LOGD("script", "Response status: %d, Duration: %u ms", response->status_code, response->duration_ms);
-          on_error:
-            then:
-              - logger.log: "Request failed!"
+      #- light.turn_off: main_led
+      - script.execute: turn_off_led
+
+  - id: turn_off_led
+    mode: restart
+    then:
+      - logger.log: "Running script: turn_off_led"
+      - if:
+          condition:
+            - switch.is_on: micro_wake_toggle
+          then:
+            - logger.log: "Switch micro_wake_toggle is ON: light.turn_off"
+            - light.turn_off:
+                id: main_led
+                transition_length: 0s
+          else:
+            - logger.log: "Switch micro_wake_toggle is ON: light.turn_on"
+            - light.turn_on:
+                id: main_led
+                brightness: 20%
+                effect: None
+
+voice_assistant:
+  # https://esphome.io/components/voice_assistant
+  on_listening:
+    then:
+      # Listening - We are listening to what you are saying for processing
+      - light.turn_on:
+          id: main_led
+          brightness: 75%
+          transition_length: 0s
+
+  on_stt_vad_end:
+    then:
+      # STT Start - We are done listening and starting to process stt
+      - light.turn_on:
+          id: main_led
+          effect: "Fast Pulse"
+
+  on_tts_start:
+    then:
+      # TTS Start - We now have the response text from the VA
+      - homeassistant.action:
+          action: notify.alexa_media
+          data:
+            target: media_player.bedroom
+          data_template:
+            message: "{{ message }}"
+          variables:
+            message: |-
+              return x.c_str();
+
+  on_end:
+    then:
+      # DONE - We are done, restart micro_wake_word when VA is done...
+      - script.execute: va_end
+
+  on_error:
+    then:
+      # ERROR - You fucked up Chuck!
+      - lambda: |-
+          char formatted_message[128];
+          snprintf(formatted_message, sizeof(formatted_message), "Error[%s]: %s", 
+              code.c_str(), message.c_str());
+          ESP_LOGI("va", "formatted_message: %s", formatted_message);
+
+      # TODO: verify that on_end does not trigger simultaneously with on_error
+      - script.execute: va_end
+
+switch:
+  # https://esphome.io/#switch-components
+  - !include {
+      file: include/switch/night_light.yaml,
+      vars: { light: night_led, binary: presence },
+    }
+
+  - platform: homeassistant
+    id: bedroom_light
+    entity_id: light.bedroom_light
+
+  - id: !remove enable_continuous
+  - id: !extend micro_wake_toggle
+    turn_on_action:
+      - logger.log: "micro_wake_toggle: turn_on_action"
+      - if:
+          condition:
+            not:
+              voice_assistant.is_running:
+          then:
+            - logger.log: "micro_wake_toggle: wait_until: switch.is_on:"
+            - wait_until:
+                switch.is_on: micro_wake_toggle
+            - logger.log: "micro_wake_toggle: script.execute: turn_off_led"
+            - script.execute: turn_off_led
+    turn_off_action:
+      - logger.log: "micro_wake_toggle: turn_off_action"
+      - if:
+          condition:
+            not:
+              voice_assistant.is_running:
+          then:
+            - logger.log: "micro_wake_toggle: light.turn_on: 20"
+            - light.turn_on:
+                id: main_led
+                brightness: 20%
+
+#button:
+#  - platform: template
+#    name: "Start Capture ${box_num}"
+#    id: start_capture
+#    icon: mdi:account-voice
+#    optimistic: true
+#    #restore_mode: RESTORE_DEFAULT_ON
+#    turn_on_action:
+#      - logger.log: "microphone.capture: va_mic"
+#      - microphone.capture: va_mic
+#      - light.turn_on: main_led
+#    turn_off_action:
+#      - logger.log: "microphone.stop_capture: va_mic"
+#      - microphone.stop_capture: va_mic
+#      #- light.turn_off: main_led
+#      - script.execute: turn_off_led
+
+binary_sensor:
+  # https://esphome.io/#binary-sensor-components
+  - id: !extend presence_sensor
+    has_target:
+      !include {
+        file: include/ld2420/has_target_night_light.yaml,
+        vars: { light: night_led, switch: bedroom_light },
+      }
+
+  - platform: gpio
+    name: "Touch 1 - ${box_num}"
+    id: touch_1
+    icon: mdi:gesture-tap-box
+    pin:
+      number: GPIO26
+      mode: INPUT_PULLUP
+    on_multi_click:
+      - timing:
+          - ON for at most 1.9s
+        then:
+          - logger.log: "Single Click - Start Voice"
+          - script.execute: va_start
+      - timing:
+          - ON for at least 2s
+        then:
+          - logger.log: "2+ Second Touch - Toggle Wake"
+          - switch.toggle: micro_wake_toggle
 
 light:
   # https://esphome.io/components/light/
   - platform: monochromatic
-    name: "Monochromatic Light ${box_num}"
-    id: chromatic_led
+    name: "Main Light ${box_num}"
+    id: main_led
     icon: mdi:lightbulb-outline
-    output: mono_chromo
+    output: blue_led
     effects: !include { file: include/light/effects/pulse.yaml }
     web_server:
       sorting_group_id: sg_lights
       sorting_weight: 10
 
-#number:
-#  # https://esphome.io/#number-components
-#  - platform: template
-#    name: "Error Count ${box_num}"
-#    id: error_log_count
-#    icon: mdi:alert-plus
-#    entity_category: diagnostic
-#    optimistic: true
-#    restore_value: false
-#    initial_value: 0
-#    min_value: 0
-#    max_value: 999
-#    step: 1
-#    web_server:
-#      sorting_group_id: sg_device
-#      sorting_weight: -19
-#
-#  - platform: template
-#    name: "API Disconnect Count ${box_num}"
-#    id: api_dc_count
-#    icon: mdi:web-plus
-#    entity_category: diagnostic
-#    optimistic: true
-#    restore_value: false
-#    initial_value: 0
-#    min_value: 0
-#    max_value: 999
-#    step: 1
-#    web_server:
-#      sorting_group_id: sg_device
-#      sorting_weight: -18
-#
-#  - platform: template
-#    name: "WIFI Disconnect Count ${box_num}"
-#    id: wifi_dc_count
-#    icon: mdi:wifi-plus
-#    entity_category: diagnostic
-#    optimistic: true
-#    restore_value: false
-#    initial_value: 0
-#    min_value: 0
-#    max_value: 999
-#    step: 1
-#    web_server:
-#      sorting_group_id: sg_device
-#      sorting_weight: -17
-
-#remote_receiver:
-#  pin: GPIO23
-#  dump: all
-#  on_raw:
-#    then:
-#      - logger.log: "RX on_raw"
-#      - light.toggle: rgb_led
+  - platform: monochromatic
+    name: "Night Light ${box_num}"
+    id: night_led
+    icon: mdi:lightbulb-outline
+    output: white_led
+    effects: !include { file: include/light/effects/pulse.yaml }
+    web_server:
+      sorting_group_id: sg_lights
+      sorting_weight: 12
 
 output:
   # https://esphome.io/components/output/
   - platform: ledc
-    id: mono_chromo
-    pin: GPIO25
+    id: blue_led
+    pin: GPIO33
     max_power: 80%
 
-  #- platform: ledc
-  #  id: rgb_r
-  #  pin: GPIO27
-  #  max_power: 75%
-  #- platform: ledc
-  #  id: rgb_g
-  #  pin: GPIO14
-  #  max_power: 80%
-  #- platform: ledc
-  #  id: rgb_b
-  #  pin: GPIO12
-  #  max_power: 80%
+  - platform: ledc
+    id: white_led
+    pin: GPIO32
+    max_power: 80%
 
-switch:
-  # https://esphome.io/#switch-components
-  - !include {
-      file: include/switch/toggle_component.yaml,
-      vars: { name: Photoresistor, component: photoresistor },
-    }
+microphone:
+  # https://esphome.io/components/microphone/
+  - platform: i2s_audio
+    id: va_mic
+    i2s_audio_id: i2s_in
+    i2s_din_pin: GPIO21 # SD - green
+    adc_type: external
+    #channel: left
+    #pdm: false
+    #bits_per_sample: 32bit
 
-  #- platform: template
-  #  name: "Presence Light ${box_num}"
-  #  id: presence_light
-  #  icon: mdi:alarm-light-off-outline
-  #  optimistic: true
-  #  restore_mode: RESTORE_DEFAULT_OFF
-  #  turn_on_action:
-  #    - if:
-  #        condition:
-  #          - binary_sensor.is_on: presence
-  #        then:
-  #          - light.turn_on: mono_chromo
-  #  turn_off_action:
-  #    - light.turn_off: mono_chromo
-
-button:
-  # https://esphome.io/#button-components
-  - !include {
-      file: include/button/update_component.yaml,
-      vars: { name: Photoresistor, component: photoresistor },
-    }
-
-  - platform: template
-    name: "Debug ${box_num}"
-    icon: mdi:bug-play
-    on_press:
-      - logger.log: "Discord Shit Yo..."
-      - homeassistant.action:
-          action: notify.ha_discord
-          data:
-            target: !secret discord_logs_id
-            message: !lambda |-
-              std::string message = "Test error message.";
-              return "**${friendly_name}** - `${box_name}${box_num}` - <http://" + id(counters_wifi_ip).state + "/>\n```" + message + "```";
-
-  - platform: template
-    name: "Trigger Error ${box_num}"
-    icon: mdi:bug-play
-    on_press:
-      - logger.log:
-          format: "Test ERROR log message..."
-          level: ERROR
-      #- http_request.get:
-      #    url: "https://hp9284gh2h4ga.com/"
-
-      #- script.execute:
-      #    id: send_discord
-      #    message: !lambda |-
-      #      std::string message = "Test Message";
-      #      return "Message: " + message;
-
-      #- mqtt.publish:
-      #    topic: device/logs
-      #    payload: !lambda |-
-      #      return "This is a test error log message.";
-
-#binary_sensor:
-#  # https://esphome.io/#binary-sensor-components
-#  - platform: gpio
-#    name: "Touch 1 - ${box_num}"
-#    id: touch_1
-#    icon: mdi:gesture-tap-box
-#    pin:
-#      number: 16
-#      mode: INPUT_PULLUP
-#    on_press:
-#      then:
-#        - logger.log: "Can't Touch This"
-#        - light.toggle: chromatic_led
-#
-#  #- !include { file: include/binary/api_connected.yaml }
-
-#  - id: !extend api_status
-#    on_press:
-#      then:
-#        - logger.log:
-#            format: "API Connected..."
-#            level: INFO
-#    on_release:
-#      then:
-#        - number.increment: api_dc_count
-#        - logger.log:
-#            format: "API Disconnected!"
-#            level: WARN
-
-#- platform: gpio
-#  pin: GPIO19
-#  name: "Presence ${box_num}"
-#  id: presence
-#  #icon: mdi:motion-sensor
-#  device_class: motion
-#  #filters:
-#  #  - delayed_off: 60s
-#  on_press:
-#    then:
-#      - if:
-#          condition:
-#            - switch.is_on: presence_light
-#          then:
-#            - light.turn_on: main_led
-#  on_release:
-#    then:
-#      - light.turn_off: main_led
-
-text_sensor:
-  # https://esphome.io/#text-sensor-components
-  - platform: homeassistant
-    id: discord_webhook
-    entity_id: input_text.discord_webhook
-
-sensor:
-  # https://esphome.io/#sensor-components
-  - platform: adc
-    # https://esphome.io/components/sensor/adc
-    name: "Photoresistor ${box_num}"
-    id: photoresistor
-    icon: mdi:lightning-bolt-circle
-    pin: GPIO36
-    attenuation: 12db
-    update_interval: 1s
-    disabled_by_default: true
+i2s_audio:
+  # https://esphome.io/components/microphone/i2s_audio
+  id: i2s_in
+  i2s_lrclk_pin: GPIO23 # WS - blue
+  i2s_bclk_pin: GPIO22 # SCK - yellow

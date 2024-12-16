@@ -36,7 +36,7 @@ esphome:
     #        else:
     #          - if:
     #              condition:
-    #                - switch.is_on: night_light
+    #                - switch.is_on: night_light_switch
     #              then:
     #                - logger.log: "Turning On: main_led"
     #                - light.turn_on: main_led
@@ -93,7 +93,7 @@ light:
 #  # https://esphome.io/#switch-components
 #  - platform: template
 #    name: "Night Light ${box_num}"
-#    id: night_light
+#    id: night_light_switch
 #    icon: mdi:lightbulb-night
 #    optimistic: true
 #    turn_on_action:
@@ -118,7 +118,7 @@ light:
 #      then:
 #        - if:
 #            condition:
-#              - switch.is_on: night_light
+#              - switch.is_on: night_light_switch
 #            then:
 #              - logger.log: "Kitchen Light Off"
 #              - light.turn_on: main_led

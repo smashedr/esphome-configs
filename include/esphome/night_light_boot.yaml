@@ -1,7 +1,7 @@
 if:
   condition:
     - binary_sensor.is_on: presence
-    - light.is_on: main_led
+    - light.is_on: ${light}
   then:
     - logger.log: "Turning Off: main_led"
     - light.turn_off: ${light}
