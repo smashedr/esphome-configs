@@ -353,7 +353,7 @@ text_sensor:
 This also adds a `sorting_group` to the `web_server`. If you don't use `web_server` 3 this can be disabled:
 
 ```yaml
-web_server: !disable
+web_server: !remove
 ```
 
 ### ld2420

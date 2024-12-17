@@ -47,7 +47,7 @@ output:
 
 button:
   # https://esphome.io/#button-components
-  - id: !disable btn_identify
+  - id: !remove btn_identify
 
 sensor:
   # https://esphome.io/#sensor-components

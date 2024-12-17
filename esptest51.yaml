@@ -31,6 +31,14 @@ packages:
     vars:
       channel_id: !secret discord_va_id
 
+#external_components:
+#  - source: github://jesserockz/esphome-components
+#    components: [udp_audio]
+#
+#udp_audio:
+#  ip_address: 192.168.1.20
+#  port: 6056
+
 ${type}:
   # https://esphome.io/#supported-microcontrollers
   framework:
@@ -352,6 +360,21 @@ switch:
             - text_sensor.template.publish:
                 id: va_text
                 state: "Frasier Out!"
+
+  #- platform: template
+  #  name: "Start Capture ${box_num}"
+  #  id: start_capture
+  #  icon: mdi:account-voice
+  #  optimistic: true
+  #  #restore_mode: RESTORE_DEFAULT_ON
+  #  turn_on_action:
+  #    - logger.log: "microphone.capture: va_mic"
+  #    - microphone.capture: va_mic
+  #    - light.turn_on: main_led
+  #  turn_off_action:
+  #    - logger.log: "microphone.stop_capture: va_mic"
+  #    - microphone.stop_capture: va_mic
+  #    - light.turn_off: main_led
 
 binary_sensor:
   # https://esphome.io/#binary-sensor-components
