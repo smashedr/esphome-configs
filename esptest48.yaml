@@ -22,7 +22,7 @@ packages:
   micro_wake_word: !include
     file: include/va/micro_wake_word.yaml
     vars:
-      model: models/jarvis.json
+      model: models/jenkins.json
   discord_logs: !include
     file: include/va/discord.yaml
     vars:
@@ -32,6 +32,14 @@ packages:
     vars:
       rx_pin: GPIO16
       tx_pin: GPIO17
+
+#external_components:
+#  - source: github://jesserockz/esphome-components
+#    components: [udp_audio]
+#
+#udp_audio:
+#  ip_address: 192.168.1.20
+#  port: 6056
 
 ${type}:
   # https://esphome.io/#supported-microcontrollers
@@ -186,22 +194,21 @@ switch:
                 id: main_led
                 brightness: 20%
 
-#button:
-#  - platform: template
-#    name: "Start Capture ${box_num}"
-#    id: start_capture
-#    icon: mdi:account-voice
-#    optimistic: true
-#    #restore_mode: RESTORE_DEFAULT_ON
-#    turn_on_action:
-#      - logger.log: "microphone.capture: va_mic"
-#      - microphone.capture: va_mic
-#      - light.turn_on: main_led
-#    turn_off_action:
-#      - logger.log: "microphone.stop_capture: va_mic"
-#      - microphone.stop_capture: va_mic
-#      #- light.turn_off: main_led
-#      - script.execute: turn_off_led
+  #- platform: template
+  #  name: "Start Capture ${box_num}"
+  #  id: start_capture
+  #  icon: mdi:account-voice
+  #  optimistic: true
+  #  #restore_mode: RESTORE_DEFAULT_ON
+  #  turn_on_action:
+  #    - logger.log: "microphone.capture: va_mic"
+  #    - microphone.capture: va_mic
+  #    - light.turn_on: main_led
+  #  turn_off_action:
+  #    - logger.log: "microphone.stop_capture: va_mic"
+  #    - microphone.stop_capture: va_mic
+  #    #- light.turn_off: main_led
+  #    - script.execute: turn_off_led
 
 binary_sensor:
   # https://esphome.io/#binary-sensor-components

@@ -17,12 +17,15 @@ packages:
     file: include/status_led.yaml
     vars:
       pin: GPIO26
-  apds9960: !include { file: include/apds9960/apds9960.yaml }
+  apds9960: !include
+    file: include/apds9960/apds9960.yaml
+    vars:
+      disabled_by_default: false
   voice_assistant: !include { file: include/va/voice_assistant.yaml }
   micro_wake_word: !include
     file: include/va/micro_wake_word.yaml
     vars:
-      model: models/jarvis.json
+      model: models/jenkins.json
   discord_logs: !include
     file: include/va/discord.yaml
     vars:
@@ -382,8 +385,8 @@ text_sensor:
       then:
         - component.update: main_display
 
-  - platform: template
-    id: !extend last_gesture
-    on_value:
-      then:
-        - script.execute: va_start
+  #- platform: template
+  #  id: !extend last_gesture
+  #  on_value:
+  #    then:
+  #      - script.execute: va_start

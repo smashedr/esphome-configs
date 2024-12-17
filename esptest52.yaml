@@ -17,7 +17,7 @@ packages:
   micro_wake_word: !include
     file: include/va/micro_wake_word.yaml
     vars:
-      model: models/jarvis.json
+      model: models/jenkins.json
   discord_logs: !include
     file: include/va/discord.yaml
     vars:
@@ -125,7 +125,7 @@ voice_assistant:
       - homeassistant.action:
           action: notify.alexa_media
           data:
-            target: media_player.desk
+            target: media_player.kitchen
           data_template:
             message: "{{ message }}"
           variables:
@@ -201,21 +201,20 @@ switch:
                 id: main_led
                 brightness: 20%
 
-#button:
-#  - platform: template
-#    name: "Start Capture ${box_num}"
-#    id: start_capture
-#    icon: mdi:account-voice
-#    optimistic: true
-#    #restore_mode: RESTORE_DEFAULT_ON
-#    turn_on_action:
-#      - logger.log: "microphone.capture: va_mic"
-#      - microphone.capture: va_mic
-#      - light.turn_on: main_led
-#    turn_off_action:
-#      - logger.log: "microphone.stop_capture: va_mic"
-#      - microphone.stop_capture: va_mic
-#      - light.turn_off: main_led
+  #- platform: template
+  #  name: "Start Capture ${box_num}"
+  #  id: start_capture
+  #  icon: mdi:account-voice
+  #  optimistic: true
+  #  #restore_mode: RESTORE_DEFAULT_ON
+  #  turn_on_action:
+  #    - logger.log: "microphone.capture: va_mic"
+  #    - microphone.capture: va_mic
+  #    - light.turn_on: main_led
+  #  turn_off_action:
+  #    - logger.log: "microphone.stop_capture: va_mic"
+  #    - microphone.stop_capture: va_mic
+  #    - light.turn_off: main_led
 
 binary_sensor:
   # https://esphome.io/#binary-sensor-components

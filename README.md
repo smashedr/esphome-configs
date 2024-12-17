@@ -320,10 +320,11 @@ sensor:
 
 - https://esphome.io/components/sensor/apds9960
 
-| Variable       | Default | Description                                 |
-| -------------- | ------- | ------------------------------------------- |
-| box_num        | `01`    | Number/Name Appended to `name`(s)           |
-| sorting_weight | `50`    | web_server: sorting_group: `sorting_weight` |
+| Variable            | Default | Description                                 |
+| ------------------- | ------- | ------------------------------------------- |
+| box_num             | `01`    | Number/Name Appended to `name`(s)           |
+| sorting_weight      | `50`    | web_server: sorting_group: `sorting_weight` |
+| disabled_by_default | `true`  | Binary sensors `disabled_by_default`        |
 
 ```yaml
 packages:
@@ -331,6 +332,7 @@ packages:
 substitutions:
   box_num: "01"
   sorting_weight: "50"
+  disabled_by_default: "true"
 ```
 
 This package captures each gesture and publishes them to a text sensor with the last value, UP, DOWN, RIGHT, or LEFT.

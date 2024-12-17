@@ -4,11 +4,13 @@
 #   vars:
 #     box_num: 01
 #     sorting_weight: 50
+#     disabled_by_default: true
 # https://esphome.io/components/sensor/apds9960
 
 substitutions:
   box_num: "01"
   sorting_weight: "50"
+  disabled_by_default: "true"
 
 apds9960:
   id: apds_component
