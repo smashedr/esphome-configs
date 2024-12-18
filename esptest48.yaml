@@ -19,10 +19,7 @@ packages:
   #    pin: GPIO26
   counters: !include { file: include/counters.yaml }
   voice_assistant: !include { file: include/va/voice_assistant.yaml }
-  micro_wake_word: !include
-    file: include/va/micro_wake_word.yaml
-    vars:
-      model: models/jenkins.json
+  micro_wake_word: !include { file: include/va/micro_wake_word.yaml }
   discord_logs: !include
     file: include/va/discord.yaml
     vars:
@@ -228,12 +225,12 @@ binary_sensor:
       mode: INPUT_PULLUP
     on_multi_click:
       - timing:
-          - ON for at most 1.9s
+          - ON for at most 0.9s
         then:
           - logger.log: "Single Click - Start Voice"
           - script.execute: va_start
       - timing:
-          - ON for at least 2s
+          - ON for at least 1s
         then:
           - logger.log: "2+ Second Touch - Toggle Wake"
           - switch.toggle: micro_wake_toggle
