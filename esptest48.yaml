@@ -19,7 +19,10 @@ packages:
   #    pin: GPIO26
   counters: !include { file: include/counters.yaml }
   voice_assistant: !include { file: include/va/voice_assistant.yaml }
-  micro_wake_word: !include { file: include/va/micro_wake_word.yaml }
+  micro_wake_word: !include
+    file: include/va/micro_wake_word.yaml
+    vars:
+      model: models/computer.json
   discord_logs: !include
     file: include/va/discord.yaml
     vars:
@@ -165,7 +168,7 @@ switch:
     id: bedroom_light
     entity_id: light.bedroom_light
 
-  - id: !remove enable_continuous
+  #- id: !remove enable_continuous
   - id: !extend micro_wake_toggle
     turn_on_action:
       - logger.log: "micro_wake_toggle: turn_on_action"

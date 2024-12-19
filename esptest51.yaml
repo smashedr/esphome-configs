@@ -22,7 +22,10 @@ packages:
     vars:
       disabled_by_default: false
   voice_assistant: !include { file: include/va/voice_assistant.yaml }
-  micro_wake_word: !include { file: include/va/micro_wake_word.yaml }
+  micro_wake_word: !include
+    file: include/va/micro_wake_word.yaml
+    vars:
+      model: models/computer.json
   discord_logs: !include
     file: include/va/discord.yaml
     vars:
@@ -142,11 +145,15 @@ script:
 
 voice_assistant:
   # https://esphome.io/components/voice_assistant
+  on_start:
+    then:
+      - rtttl.play: "s:d=4,o=6,b=225:8d"
+
   on_listening:
     then:
       # Listening - We are listening to what you are saying for processing
       #- rtttl.play: "s:d=4,o=6,b=225:8d,4e"
-      - rtttl.play: "s:d=4,o=6,b=225:8d"
+      #- rtttl.play: "s:d=4,o=6,b=225:8d"
       - light.turn_on:
           id: rgb_led
           brightness: 80%
@@ -340,7 +347,7 @@ button:
 
 switch:
   # https://esphome.io/#switch-components
-  - id: !remove enable_continuous
+  #- id: !remove enable_continuous
   - id: !extend micro_wake_toggle
     turn_off_action:
       - if:

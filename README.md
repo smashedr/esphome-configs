@@ -55,24 +55,31 @@ For training documentation, see: [basic_training_notebook.ipynb](models/basic_tr
 
 These models are a WIP and will either be deprecated or improved based on popularity.
 
-| Wake Word     | File                                         | URL for Model                                          |
-| ------------- | -------------------------------------------- | ------------------------------------------------------ |
-| `Jenkins`     | [models/jenkins.json](models/jenkins.json)   | github://smashedr/esphome-configs/models/jenkins.json  |
-| `Jarvis`      | [models/jarvis.json](models/jarvis.json)     | github://smashedr/esphome-configs/models/jarvis.json   |
-| `Computer` \* | [models/computer.json](models/computer.json) | github://smashedr/esphome-configs/models/computer.json |
+| Wake Word     | File                                              | URL for Model                                                 |
+| ------------- | ------------------------------------------------- | ------------------------------------------------------------- |
+| Computer      | [models/computer.json](models/computer.json)      | `github://smashedr/esphome-configs/models/computer.json`      |
+| Jarvis        | [models/jarvis.json](models/jarvis.json)          | `github://smashedr/esphome-configs/models/jarvis.json`        |
+| Jenkins       | [models/jenkins.json](models/jenkins.json)        | `github://smashedr/esphome-configs/models/jenkins.json`       |
+| Wakeup Jarvis | [models/computer.json](models/wakeup_jarvis.json) | `github://smashedr/esphome-configs/models/wakeup_jarvis.json` |
 
-\* Not made by me. See manifest file for details...
+Note: training wake words that work with background noise takes lots of trial and error and playing with the settings.  
+Some notes on the models I have trained.
 
-Example Configuration:
+- **Computer**: This is my first version of computer and a second is already in progress...
+- **Jarvis**: Quite a few false positives, same issue with background noise.
+- **Jenkins**: Works well, except with background noise.
+- **Wakeup Jarvis**: This is just for testing to enable micro wake word and activate for "muted" boxes.
+
+Example Configuration (official, local, and remote):
 
 ```yaml
 micro_wake_word:
   vad:
   models:
     - model: hey_jarvis
-    - model: github://smashedr/esphome-configs/models/jenkins.json@master
+    - model: models/computer.json
     - model: github://smashedr/esphome-configs/models/jarvis.json@master
-    - model: github://smashedr/esphome-configs/models/computer.json@master
+    - model: github://smashedr/esphome-configs/models/jenkins.json@master
   on_wake_word_detected:
     then:
       - voice_assistant.start:

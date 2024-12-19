@@ -14,7 +14,10 @@ packages:
   debug: !include { file: include/debug.yaml }
   common: !include { file: include/common.yaml }
   voice_assistant: !include { file: include/va/voice_assistant.yaml }
-  micro_wake_word: !include { file: include/va/micro_wake_word.yaml }
+  micro_wake_word: !include
+    file: include/va/micro_wake_word.yaml
+    vars:
+      model: models/computer.json
   discord_logs: !include
     file: include/va/discord.yaml
     vars:
@@ -172,7 +175,7 @@ output:
 
 switch:
   # https://esphome.io/#switch-components
-  - id: !remove enable_continuous
+  #- id: !remove enable_continuous
   - id: !extend micro_wake_toggle
     turn_on_action:
       - logger.log: "micro_wake_toggle: turn_on_action"
