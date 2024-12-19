@@ -53,7 +53,7 @@ Current Progress:
 
 For training documentation, see: [basic_training_notebook.ipynb](models/basic_training_notebook.ipynb)
 
-These models are a WIP and will either be deprecated or improved based on popularity.
+**These models are a WIP** and will either be deprecated or improved based on popularity.
 
 | Wake Word     | File                                              | URL for Model                                                 |
 | ------------- | ------------------------------------------------- | ------------------------------------------------------------- |
@@ -65,7 +65,7 @@ These models are a WIP and will either be deprecated or improved based on popula
 Note: training wake words that work with background noise takes lots of trial and error and playing with the settings.  
 Some notes on the models I have trained.
 
-- **Computer**: This is my first version of computer and a second is already in progress...
+- **Computer**: This is "actually" the first version of computer.
 - **Jarvis**: Quite a few false positives, same issue with background noise.
 - **Jenkins**: Works well, except with background noise.
 - **Wakeup Jarvis**: This is just for testing to enable micro wake word and activate for "muted" boxes.
