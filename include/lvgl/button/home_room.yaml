@@ -1,0 +1,14 @@
+button:
+  width: 100
+  height: 100
+  id: "${id}"
+  bg_color: 0xD3D3D3
+  widgets:
+    - label:
+        align: CENTER
+        text: "${text}"
+        text_font: icons_48
+        text_color: 0x000000
+  on_click:
+    - logger.log: "${id}: on_click"
+    - lvgl.page.show: "${show}"

@@ -1,0 +1,21 @@
+button:
+  width: 100
+  height: 100
+  id: "${id}"
+  checkable: true
+  widgets:
+    - label:
+        align: CENTER
+        text: "${text}"
+        text_font: icons_48
+  on_click:
+    - logger.log: "${id}: on_click"
+    - homeassistant.action:
+        action: "${action}"
+        data:
+          entity_id: "${entity_id}"
+  on_value:
+    then:
+      - logger.log:
+          format: "${id}: on_value: x: %d"
+          args: ["x"]

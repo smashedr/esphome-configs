@@ -7,6 +7,7 @@
 - [Substitutions](#substitutions)
 - [Voice Assistant](#voice-assistant)
 - [Micro Wake Word](#micro-wake-word)
+- [LVGL](#lvgl)
 - [Packages](#packages) <-- this is a **MUST SEE!**
 
 ESPHome: https://esphome.io/
@@ -69,6 +70,7 @@ Some notes on the models I have trained.
 - **Jarvis**: Quite a few false positives, same issue with background noise.
 - **Jenkins**: Works well, except with background noise.
 - **Wakeup Jarvis**: This is just for testing to enable micro wake word and activate for "muted" boxes.
+- **Frasier**: This was only trained with my voice. **DO NOT USE!**
 
 Example Configuration (official, local, and remote):
 
@@ -103,6 +105,14 @@ Note: This may differ for variants...
 
 _Reference: https://esphome.io/components/esp32_  
 _Reference: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/kconfig-reference.html_
+
+## LVGL
+
+Coming Soon...
+
+Current Project: https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-4.3
+
+Progress: [waveshare01.yaml](waveshare01.yaml)
 
 ## Packages
 

@@ -1,4 +1,4 @@
-# BENCHED - VA TEST 1
+# DESK - VA TEST
 
 substitutions:
   # https://esphome.io/components/substitutions
@@ -25,7 +25,7 @@ packages:
   micro_wake_word: !include
     file: include/va/micro_wake_word.yaml
     vars:
-      model: models/computer.json
+      model: hey_jarvis
   discord_logs: !include
     file: include/va/discord.yaml
     vars:
@@ -55,6 +55,16 @@ esphome:
     - priority: -100
       then:
         - script.execute: turn_off_led
+
+api:
+  # https://esphome.io/components/api
+  services:
+    - service: play_rtttl
+      variables:
+        song_str: string
+      then:
+        - rtttl.play:
+            rtttl: !lambda "return song_str;"
 
 web_server:
   # https://esphome.io/components/web_server
@@ -398,7 +408,7 @@ binary_sensor:
       - timing:
           - ON for at least 1s
         then:
-          - logger.log: "2+ Second Touch - Toggle Wake"
+          - logger.log: "1+ Second Touch - Toggle Wake"
           - rtttl.play: "s:d=4,o=6,b=100:16d"
           - switch.toggle: micro_wake_toggle
 

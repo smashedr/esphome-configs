@@ -1,4 +1,4 @@
-# PIR - BENCHED
+# BEDROOM - VA TEST
 
 substitutions:
   # https://esphome.io/components/substitutions
@@ -22,7 +22,7 @@ packages:
   micro_wake_word: !include
     file: include/va/micro_wake_word.yaml
     vars:
-      model: models/computer.json
+      model: hey_jarvis
   discord_logs: !include
     file: include/va/discord.yaml
     vars:

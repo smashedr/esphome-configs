@@ -1,0 +1,1651 @@
+# Waveshare
+
+substitutions:
+  # https://esphome.io/components/substitutions
+  friendly_name: "Desk Waveshare"
+  box_num: "11"
+  box_name: "espwave"
+  type: "esp32"
+  board: "esp32-s3-devkitc-1"
+  comment: "Touch Screen"
+
+packages:
+  # https://esphome.io/components/packages.html
+  common: !include { file: include/common.yaml }
+  debug: !include { file: include/debug.yaml }
+
+${type}:
+  # https://esphome.io/#supported-microcontrollers
+  variant: esp32s3
+  flash_size: 8MB
+  framework:
+    sdkconfig_options:
+      COMPILER_OPTIMIZATION_SIZE: "y"
+      CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
+      # https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-4.3#Hardware_Connection
+      CONFIG_FREERTOS_HZ: "1000"
+      CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240: "y"
+      CONFIG_SPIRAM_MODE_OCT: "y"
+      CONFIG_IDF_EXPERIMENTAL_FEATURES: "y"
+      CONFIG_SPIRAM_SPEED_120M: "y"
+      CONFIG_SPIRAM_FETCH_INSTRUCTIONS: "y"
+      CONFIG_SPIRAM_RODATA: "y"
+      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
+      CONFIG_COMPILER_OPTIMIZATION_PERF: "y"
+      CONFIG_LV_MEM_CUSTOM: "y"
+      CONFIG_LV_MEMCPY_MEMSET_STD: "y"
+      CONFIG_LV_ATTRIBUTE_FAST_MEM: "y"
+
+esphome:
+  # https://esphome.io/components/esphome
+  platformio_options:
+    build_flags: "-DBOARD_HAS_PSRAM"
+    board_build.arduino.memory_type: qio_opi
+    board_build.flash_mode: dio
+    board_upload.maximum_ram_size: 524288
+  on_boot:
+    - priority: 800
+      # Hardware Initialized
+      then:
+        - logger.log: "Boot 800"
+
+    - priority: 600
+      # Sensors Initialized
+      then:
+        - logger.log: "Boot 600"
+
+    - priority: 400
+      then:
+        - logger.log: "Boot 400"
+
+    - priority: 300
+      # NOT CONFIRMED: LVGL Setup complete
+      then:
+        - logger.log: "Boot 300"
+
+    - priority: 250
+      # WiFi Initialized
+      then:
+        - logger.log: "Boot 250"
+        - lvgl.widget.hide: boot_screen
+        - lvgl.widget.show: top_overlay
+        - lvgl.widget.show: bottom_overlay
+
+    - priority: 240
+      # NOT CONFIRMED: WiFi Connected
+      then:
+        - logger.log: "Boot 240"
+
+    - priority: 200
+      # API Connected
+      then:
+        - logger.log: "Boot 200"
+
+    - priority: -100
+      # Everything Ready
+      then:
+        - logger.log: "Boot -100"
+
+wifi:
+  # https://esphome.io/components/wifi
+  on_connect:
+    - logger.log: "wifi: on_connect"
+    - script.execute: update_wifi_stats
+  on_disconnect:
+    - logger.log: "wifi: on_disconnect"
+    - script.execute: update_wifi_stats
+    - lvgl.label.update:
+        id: header_wifi
+        text: "\U000F092B" # wifi-strength-alert-outline
+
+api:
+  # https://esphome.io/components/api
+  reboot_timeout: 0s
+  on_client_connected:
+    - if:
+        condition:
+          lambda: 'return (0 == client_info.find("Home Assistant "));'
+        then:
+          - logger.log: "api: on_client_connected"
+          - lvgl.label.update:
+              id: header_api
+              text: "\U000F07D0" # home-assistant
+  on_client_disconnected:
+    - if:
+        condition:
+          lambda: 'return (0 == client_info.find("Home Assistant "));'
+        then:
+          - logger.log: "api: on_client_disconnected"
+          - lvgl.label.update:
+              id: header_api
+              text: "\U000F1A47" # home-off-outline
+
+psram:
+  # https://esphome.io/components/psram
+  mode: octal
+  speed: 80MHz
+
+i2c:
+  # https://esphome.io/components/i2c
+  sda: GPIO08
+  scl: GPIO09
+
+#ch422g:
+#  - id: ch422g_hub
+
+#switch:
+#  - platform: gpio
+#    name: "Display Backlight ${box_num}"
+#    id: backlight_switch
+#    pin:
+#      ch422g: ch422g_hub
+#      number: 2
+#      mode:
+#        output: true
+#      inverted: False
+#    restore_mode: ALWAYS_ON
+#    on_turn_on:
+#      - lvgl.resume:
+#      - lvgl.widget.redraw:
+#    on_turn_off:
+#      - lvgl.pause:
+
+image:
+  # https://esphome.io/components/image
+  - file: images/esphome.png
+    id: boot_logo
+    type: RGB565
+    use_transparency: true
+
+touchscreen:
+  # https://esphome.io/#touchscreen
+  platform: gt911
+  id: my_touch
+  interrupt_pin: GPIO4
+  #reset_pin:
+  #  ch422g: ch422g_hub
+  #  number: 1
+  on_touch:
+    - lambda: |-
+        ESP_LOGD("touch", "x=%d y=%d", touch.x, touch.y);
+    #- if:
+    #    condition:
+    #      - switch.is_off: backlight_switch
+    #    then:
+    #      - logger.log: "switch.turn_on: backlight_switch"
+    #      - switch.turn_on: backlight_switch
+
+display:
+  # https://esphome.io/#display-components
+  - platform: rpi_dpi_rgb
+    id: my_display
+    auto_clear_enabled: false
+    color_order: RGB
+    update_interval: never # for LVGL
+    dimensions:
+      width: 800
+      height: 480
+    ##enable_pin:
+    ##  ch422g: ch422g_hub
+    ##  number: 2
+    #reset_pin:
+    #  ch422g: ch422g_hub
+    #  number: 3
+    de_pin:
+      number: 5
+    hsync_pin:
+      number: 46
+      ignore_strapping_warning: true
+    vsync_pin:
+      number: 3
+      ignore_strapping_warning: true
+    pclk_pin: 7
+    pclk_frequency: 14MHz # 16MHz
+    pclk_inverted: true # false
+    hsync_back_porch: 8 # 30
+    hsync_front_porch: 8 # 210
+    hsync_pulse_width: 4 # 30
+    vsync_back_porch: 16 # 4
+    vsync_front_porch: 16 # 4
+    vsync_pulse_width: 4
+    data_pins:
+      red: [1, 2, 42, 41, 40]
+      blue: [14, 38, 18, 17, 10]
+      green: [39, 0, 45, 48, 47, 21]
+
+font:
+  # https://esphome.io/components/font
+  - file:
+      type: gfonts
+      family: "Red Hat Text"
+    id: main_text26
+    size: 26
+    bpp: 4
+    glyphsets:
+      - GF_Latin_Core
+    extras:
+      - file: "fonts/materialdesignicons-webfont.ttf"
+        glyphs: &glyphs
+          - "\U000F004D" # arrow-left
+          - "\U000F0054" # arrow-right
+          - "\U000F07D0" # home-assistant
+          - "\U000F1A47" # home-off-outline
+          - "\U000F0150" # clock-outline
+          - "\U000F0E17" # calendar-month
+          - "\U000F092B" # wifi-strength-alert-outline
+          - "\U000F091F" # wifi-strength-1
+          - "\U000F0922" # wifi-strength-2
+          - "\U000F0925" # wifi-strength-3
+          - "\U000F0928" # wifi-strength-4
+          # Home Page Buttons
+          - "\U000F110B" # reload-alert
+          - "\U000F01F7" # emoticon-poop
+          - "\U000F0717" # snowflake
+          - "\U000F1C70" # information-variant-circle-outline
+          # Lights
+          - "\U000F1802" # lightbulb-variant
+          - "\U000F066F" # globe-light
+          - "\U000F0A00" # lighthouse-on
+          # Devices
+          - "\U000F0210" # fan
+          - "\U000F0D91" # motion-sensor
+          - "\U000F0CCB" # shield-home-outline
+          - "\U000F05CB" # account-voice
+          - "\U000F0D90" # monitor-off
+          # Areas
+          - "\U000F04B9" # sofa
+          - "\U000F181C" # countertop
+          - "\U000F08A0" # bed-empty
+          # Weather
+          - "\U000F0505" # temperature-fahrenheit
+          - "\U000F0504" # temperature-celsius
+          - "\U000F0533" # trending-down
+          - "\U000F0534" # trending-neutral
+          - "\U000F0535" # trending-up
+          # Unused
+          - "\U000F092E" # wifi-strength-off-outline
+
+  - file:
+      type: gfonts
+      family: "Red Hat Text"
+    id: main_text32
+    size: 32
+    bpp: 4
+    glyphsets:
+      - GF_Latin_Core
+    extras:
+      - file: "fonts/materialdesignicons-webfont.ttf"
+        glyphs: *glyphs
+
+  - file:
+      type: gfonts
+      family: "Red Hat Text"
+    id: main_text48
+    size: 48
+    bpp: 4
+    glyphsets:
+      - GF_Latin_Core
+    #extras:
+    #  - file: "fonts/materialdesignicons-webfont.ttf"
+    #    glyphs: *glyphs
+
+  - file: "fonts/materialdesignicons-webfont.ttf"
+    id: icons_36
+    size: 36
+    bpp: 4
+    glyphs: *glyphs
+
+  - file: "fonts/materialdesignicons-webfont.ttf"
+    id: icons_48
+    size: 48
+    bpp: 4
+    glyphs: *glyphs
+
+lvgl:
+  # https://esphome.io/components/lvgl/
+  buffer_size: 25% # 100%
+
+  theme:
+    # https://esphome.io/components/lvgl/#themes
+    label:
+      text_color: 0xFFFFFF
+      text_font: main_text26
+    buttonmatrix:
+      items:
+        text_color: 0xFFFFFF
+        text_font: icons_36
+    obj:
+      border_opa: TRANSP
+      border_width: 0
+      bg_opa: TRANSP
+      pad_all: 0
+      radius: 0
+
+  style_definitions:
+    - id: header_footer
+      bg_color: 0x2F8CD8
+      bg_grad_color: 0x005782
+      bg_grad_dir: VER
+      bg_opa: COVER
+      border_opa: TRANSP
+      radius: 0
+      pad_all: 0
+      pad_row: 0
+      pad_column: 0
+      border_color: 0x0077b3
+      text_color: 0xFFFFFF
+      width: 100%
+      height: 60
+
+    - id: sunglasses
+      bg_color: 0x000000
+      text_color: 0xFFFFFF
+      bg_opa: COVER
+
+  on_idle:
+    - timeout: 60s
+      then:
+        - logger.log: "LVGL is idle"
+        - lvgl.page.show: home_page
+        #- switch.turn_off: backlight_switch
+
+  msgboxes:
+    - id: ralph_broke_it
+      close_button: true
+      title: "Everything"
+      body:
+        text: "Ralph Broke It!"
+        bg_color: 0x808080
+      buttons:
+        - id: msgbox_close
+          text: "Close"
+          on_click:
+            then:
+              - logger.log: "msgbox_close: on_click"
+              - lvgl.widget.hide: ralph_broke_it
+
+  top_layer:
+    widgets:
+      - obj:
+          id: top_overlay
+          hidden: true
+          align: TOP_MID
+          styles: header_footer
+          bg_opa: COVER
+          height: 36
+          on_press:
+            - logger.log: "top_overlay: on_press"
+            - lvgl.page.show: stats_page
+          widgets:
+            - label:
+                align: TOP_LEFT
+                text_align: LEFT
+                text: "\U000F0150 --:--" # clock-outline
+                id: header_time
+            - label:
+                align: CENTER
+                text_align: CENTER
+                text: "Connecting..."
+                id: header_date
+            - obj:
+                align: TOP_RIGHT
+                #text_align: RIGHT
+                #border_opa: COVER
+                #border_color: 0xFFFFFF
+                #border_width: 1
+                width: 33%
+                layout:
+                  type: FLEX
+                  flex_flow: ROW
+                  flex_align_main: END
+                  #flex_align_cross: SPACE_EVENLY
+                widgets:
+                  - label:
+                      text: "--.- \U000F0505"
+                      id: header_temp
+                  - label:
+                      text: "\U000F1A47" # home-off-outline
+                      id: header_api
+                  - label:
+                      text: "\U000F092B" # wifi-strength-alert-outline
+                      id: header_wifi
+
+      - buttonmatrix:
+          id: bottom_overlay
+          hidden: true
+          align: BOTTOM_MID
+          styles: header_footer
+          bg_opa: COVER
+          pad_all: 0
+          outline_width: 0
+          items:
+            styles: header_footer
+          rows:
+            - buttons:
+                - id: page_prev
+                  text: "\U000F004D" # arrow-left
+                  on_press:
+                    then:
+                      - logger.log: "on_press Previous"
+                      - lvgl.page.previous:
+                          #animation: OUT_RIGHT
+                          #time: 400ms
+                - id: page_home
+                  text: "\U000F07D0" # home-assistant
+                  on_press:
+                    then:
+                      - logger.log: "on_press Home"
+                      - lvgl.page.show: home_page
+                - id: page_next
+                  text: "\U000F0054" # arrow-right
+                  on_press:
+                    then:
+                      - logger.log: "on_press Next"
+                      - lvgl.page.next:
+                          #animation: OUT_LEFT
+                          #time: 400ms
+
+  pages:
+    # https://esphome.io/components/lvgl/#main-configuration
+    - id: first_page
+      styles: sunglasses
+      widgets:
+        - obj:
+            align: CENTER
+            width: 100%
+            height: SIZE_CONTENT
+            layout:
+              type: FLEX
+              flex_flow: ROW_WRAP
+              flex_align_cross: CENTER
+            widgets:
+              - obj:
+                  #align: CENTER
+                  width: 100%
+                  height: SIZE_CONTENT
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW_WRAP
+                    flex_align_cross: CENTER
+                    flex_align_main: CENTER
+                  widgets:
+                    - label:
+                        align: CENTER
+                        text: "This Is Your Life Now!"
+                        text_font: main_text48
+              - obj:
+                  #align: CENTER
+                  width: 100%
+                  height: SIZE_CONTENT
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW_WRAP
+                    flex_align_cross: CENTER
+                    flex_align_main: CENTER
+                  widgets:
+                    - button:
+                        width: SIZE_CONTENT
+                        height: 70
+                        widgets:
+                          - label:
+                              align: CENTER
+                              text: "\U000F110B Reboot"
+                        on_press:
+                          then:
+                            - logger.log: "on_press Reboot"
+                            - button.press: btn_restart
+                    - button:
+                        width: SIZE_CONTENT
+                        height: 70
+                        widgets:
+                          - label:
+                              align: CENTER
+                              text: "\U000F0717 Antiburn"
+                        on_click:
+                          then:
+                            - logger.log: "on_click Antiburn"
+                            - if:
+                                condition: lvgl.is_paused
+                                then:
+                                  - lvgl.resume:
+                                  - lvgl.widget.redraw:
+                            - lvgl.pause:
+                                show_snow: true
+                    - button:
+                        width: SIZE_CONTENT
+                        height: 70
+                        widgets:
+                          - label:
+                              align: CENTER
+                              text: "\U000F0D90 Display"
+                        on_click:
+                          then:
+                            - logger.log: "on_click Display"
+                            #- switch.turn_off: backlight_switch
+                            - lvgl.widget.show: ralph_broke_it
+                            #- lvgl.page.show: test_page_1
+
+              - obj:
+                  #align: CENTER
+                  width: 100%
+                  height: SIZE_CONTENT
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW_WRAP
+                    flex_align_cross: CENTER
+                    flex_align_main: CENTER
+                  widgets:
+                    - button:
+                        width: SIZE_CONTENT
+                        height: 70
+                        widgets:
+                          - label:
+                              align: CENTER
+                              text: "\U000F1C70 Info"
+                        on_press:
+                          then:
+                            - logger.log: "on_press Info"
+                            - lvgl.page.show: stats_page
+                    - button:
+                        width: SIZE_CONTENT
+                        height: 70
+                        widgets:
+                          - label:
+                              align: CENTER
+                              text: "\U000F01F7 Do Shit"
+                        on_press:
+                          then:
+                            - logger.log: "on_press Poop"
+                            - lvgl.page.show: test_page_2
+
+        - obj:
+            id: boot_screen
+            x: 0
+            y: 0
+            width: 100%
+            height: 100%
+            bg_color: 0x000000
+            bg_opa: COVER
+            widgets:
+              - image:
+                  align: CENTER
+                  src: boot_logo
+                  y: -40
+              - spinner:
+                  align: CENTER
+                  y: 95
+                  height: 80
+                  width: 80
+                  spin_time: 1s
+                  arc_length: 60deg
+                  arc_width: 8
+                  indicator:
+                    arc_color: 0x18bcf2
+                    arc_width: 8
+            on_press:
+              - lvgl.widget.hide: boot_screen
+              - lvgl.widget.show: top_overlay
+              - lvgl.widget.show: bottom_overlay
+
+    #- id: ralph_page
+    #  styles: sunglasses
+    #  widgets:
+    #    - obj:
+    #        align: CENTER
+    #        width: 100%
+    #        height: 100%
+    #        pad_top: 64
+    #        #bg_opa: TRANSP
+    #        #border_opa: TRANSP
+    #        #border_width: 1
+    #        #radius: 0
+    #        #pad_all: 0
+    #        layout:
+    #          type: FLEX
+    #          flex_flow: COLUMN_WRAP
+    #          #flex_align_main: CENTER
+    #          #flex_align_cross: CENTER
+    #        widgets:
+    #          - label:
+    #              align: CENTER
+    #              text: "Did Ralph Break It?"
+    #              text_color: 0xFFFFFF
+    #          - label:
+    #              align: CENTER
+    #              text: "Yes! Ralph Broke It!"
+    #              text_color: 0xFF0000
+
+    - id: home_page
+      styles: sunglasses
+      widgets:
+        - obj:
+            align: CENTER
+            width: 100%
+            height: 100%
+            pad_top: 50
+            pad_bottom: 70
+            layout:
+              type: FLEX
+              flex_flow: COLUMN
+              flex_align_main: SPACE_EVENLY
+              flex_align_cross: SPACE_EVENLY
+            widgets:
+              # ROW 1 - Living Room
+              - obj:
+                  #align: CENTER
+                  width: 100%
+                  height: SIZE_CONTENT
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW
+                    flex_align_main: SPACE_EVENLY
+                    #flex_align_cross: CENTER
+                  widgets:
+                    - !include {
+                        file: include/lvgl/button/home_room.yaml,
+                        vars: {
+                            id: room_living_room,
+                            show: test_page_1,
+                            text: "\U000F04B9", # sofa
+                          },
+                      }
+                    - !include {
+                        file: include/lvgl/button/home_click.yaml,
+                        vars: {
+                            id: btn_living_room,
+                            entity_id: light.living_room,
+                            action: light.toggle,
+                            text: "\U000F066F", # globe-light
+                          },
+                      }
+                    - !include {
+                        file: include/lvgl/button/home_click.yaml,
+                        vars: {
+                            id: btn_studio_light,
+                            entity_id: switch.studio_light,
+                            action: switch.toggle,
+                            text: "\U000F0A00", # lighthouse-on
+                          },
+                      }
+                    - button:
+                        width: 100
+                        height: 100
+                        widgets:
+                          - label:
+                              align: CENTER
+                              text: "\U000F0D91" # motion-sensor
+                              text_font: icons_48
+                    - !include {
+                        file: include/lvgl/button/home_click.yaml,
+                        vars: {
+                            id: btn_enable_wake_51,
+                            entity_id: switch.esptest51_enable_wake_51,
+                            action: switch.toggle,
+                            text: "\U000F05CB", # account-voice
+                          },
+                      }
+                    - !include {
+                        file: include/lvgl/obj/home_temp.yaml,
+                        vars:
+                          { temp: living_room_temp, humi: living_room_humi },
+                      }
+                    #- obj:
+                    #    align: CENTER
+                    #    width: 100
+                    #    height: 100
+                    #    border_opa: COVER
+                    #    border_color: 0xD3D3D3
+                    #    border_width: 2
+                    #    radius: 12
+                    #    layout:
+                    #      type: FLEX
+                    #      flex_flow: ROW
+                    #      flex_align_cross: CENTER
+                    #      flex_align_main: CENTER
+                    #    widgets:
+                    #      - label:
+                    #          align: CENTER
+                    #          text: "--.-"
+                    #          id: living_room_temp
+                    #          text_font: main_text36
+                    #      - label:
+                    #          align: CENTER
+                    #          text: "-- %"
+                    #          id: living_room_humi
+                    #          text_font: main_text36
+                    - !include {
+                        file: include/lvgl/obj/home_empty.yaml,
+                        vars: { text: "Ralf" },
+                      }
+              # ROW 2 - Kitchen
+              - obj:
+                  #align: CENTER
+                  width: 100%
+                  height: SIZE_CONTENT
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW
+                    flex_align_main: SPACE_EVENLY
+                    #flex_align_cross: CENTER
+                  widgets:
+                    - !include {
+                        file: include/lvgl/button/home_room.yaml,
+                        vars: {
+                            id: room_kitchen,
+                            show: test_page_2,
+                            text: "\U000F181C", # countertop
+                          },
+                      }
+                    - !include {
+                        file: include/lvgl/button/home_click.yaml,
+                        vars: {
+                            id: btn_kitchen,
+                            entity_id: light.kitchen,
+                            action: light.toggle,
+                            text: "\U000F066F", # globe-light
+                          },
+                      }
+                    - !include {
+                        file: include/lvgl/button/home_click.yaml,
+                        vars: {
+                            id: btn_alarm_arm,
+                            entity_id: input_boolean.alarm_arm,
+                            action: switch.toggle,
+                            text: "\U000F0CCB", # shield-home-outline
+                          },
+                      }
+                    - !include {
+                        file: include/lvgl/button/home_click.yaml,
+                        vars: {
+                            id: btn_motion_light_kitchen,
+                            entity_id: input_boolean.motion_light_kitchen,
+                            action: switch.toggle,
+                            text: "\U000F0D91", # motion-sensor
+                          },
+                      }
+                    - !include {
+                        file: include/lvgl/button/home_click.yaml,
+                        vars: {
+                            id: btn_enable_wake_52,
+                            entity_id: switch.esptest52_enable_wake_52,
+                            action: switch.toggle,
+                            text: "\U000F05CB", # account-voice
+                          },
+                      }
+                    - !include {
+                        file: include/lvgl/obj/home_temp.yaml,
+                        vars: { temp: kitchen_temp, humi: kitchen_humi },
+                      }
+                    #- obj:
+                    #    align: CENTER
+                    #    width: 100
+                    #    height: 100
+                    #    border_opa: COVER
+                    #    border_color: 0xD3D3D3
+                    #    border_width: 2
+                    #    radius: 12
+                    #    layout:
+                    #      type: FLEX
+                    #      flex_flow: ROW
+                    #      flex_align_cross: CENTER
+                    #      flex_align_main: CENTER
+                    #    widgets:
+                    #      - label:
+                    #          align: CENTER
+                    #          text: "--.-"
+                    #          id: kitchen_temp
+                    #          text_font: main_text36
+                    #      - label:
+                    #          align: CENTER
+                    #          text: "-- %"
+                    #          id: kitchen_humi
+                    #          text_font: main_text36
+                    - !include {
+                        file: include/lvgl/obj/home_empty.yaml,
+                        vars: { text: "Did" },
+                      }
+              # ROW 3 - Bedroom
+              - obj:
+                  #align: CENTER
+                  width: 100%
+                  height: SIZE_CONTENT
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW
+                    flex_align_main: SPACE_EVENLY
+                    #flex_align_cross: CENTER
+                  widgets:
+                    - !include {
+                        file: include/lvgl/button/home_room.yaml,
+                        vars: {
+                            id: room_bedroom,
+                            show: test_page_3,
+                            text: "\U000F08A0", # bed-empty
+                          },
+                      }
+                    - !include {
+                        file: include/lvgl/button/home_click.yaml,
+                        vars: {
+                            id: btn_bedroom_light,
+                            entity_id: light.bedroom_light,
+                            action: light.toggle,
+                            text: "\U000F066F", # globe-light
+                          },
+                      }
+                    - !include {
+                        file: include/lvgl/button/home_click.yaml,
+                        vars: {
+                            id: btn_bedroom_fan,
+                            entity_id: switch.bedroom_fan,
+                            action: switch.toggle,
+                            text: "\U000F0210", # fan
+                          },
+                      }
+                    - !include {
+                        file: include/lvgl/button/home_click.yaml,
+                        vars: {
+                            id: btn_motion_light_bedroom,
+                            entity_id: input_boolean.motion_light_bedroom,
+                            action: switch.toggle,
+                            text: "\U000F0D91", # motion-sensor
+                          },
+                      }
+                    - !include {
+                        file: include/lvgl/button/home_click.yaml,
+                        vars: {
+                            id: btn_enable_wake_48,
+                            entity_id: switch.esptest48_enable_wake_48,
+                            action: switch.toggle,
+                            text: "\U000F05CB", # account-voice
+                          },
+                      }
+                    - !include {
+                        file: include/lvgl/obj/home_temp.yaml,
+                        vars: { temp: bedroom_temp, humi: bedroom_humi },
+                      }
+                    #- obj:
+                    #    align: CENTER
+                    #    width: 100
+                    #    height: 100
+                    #    border_opa: COVER
+                    #    border_color: 0xD3D3D3
+                    #    border_width: 2
+                    #    radius: 12
+                    #    layout:
+                    #      type: FLEX
+                    #      flex_flow: ROW
+                    #      flex_align_cross: CENTER
+                    #      flex_align_main: CENTER
+                    #    widgets:
+                    #      - label:
+                    #          align: CENTER
+                    #          text: "--.-"
+                    #          id: bedroom_temp
+                    #          text_font: main_text36
+                    #      - label:
+                    #          align: CENTER
+                    #          text: "-- %"
+                    #          id: bedroom_humi
+                    #          text_font: main_text36
+                    - !include {
+                        file: include/lvgl/obj/home_empty.yaml,
+                        vars: { text: "It" },
+                      }
+
+    - id: test_page_1
+      styles: sunglasses
+      widgets:
+        - obj:
+            width: 100%
+            height: 100%
+            pad_top: 48
+            pad_bottom: 68
+            layout:
+              type: FLEX
+              flex_flow: COLUMN_WRAP
+              flex_align_main: SPACE_EVENLY
+              flex_align_cross: SPACE_EVENLY
+            widgets:
+              - obj:
+                  align: CENTER
+                  width: 100%
+                  height: 46%
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW
+                    flex_align_main: SPACE_EVENLY
+                    flex_align_cross: SPACE_EVENLY
+                  widgets:
+                    - obj:
+                        width: 48%
+                        height: 100%
+                        bg_opa: COVER
+                        bg_color: 0xC0C0C0
+                        radius: 10
+                        widgets:
+                          - label:
+                              text: "Top Left"
+                              text_color: 0x000000
+                    - obj:
+                        width: 48%
+                        height: 100%
+                        bg_opa: COVER
+                        bg_color: 0xC0C0C0
+                        radius: 10
+                        widgets:
+                          - label:
+                              text: "Top Right"
+                              text_color: 0x000000
+
+              - obj:
+                  align: CENTER
+                  width: 100%
+                  height: 46%
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW
+                    flex_align_main: SPACE_EVENLY
+                    flex_align_cross: SPACE_EVENLY
+                  widgets:
+                    - obj:
+                        width: 48%
+                        height: 100%
+                        bg_opa: COVER
+                        bg_color: 0xC0C0C0
+                        radius: 10
+                        widgets:
+                          - label:
+                              text: "Bottom Left"
+                              text_color: 0x000000
+                    - obj:
+                        width: 48%
+                        height: 100%
+                        bg_opa: COVER
+                        bg_color: 0xC0C0C0
+                        radius: 10
+                        widgets:
+                          - label:
+                              text: "Bottom Right"
+                              text_color: 0x000000
+
+    - id: test_page_2
+      styles: sunglasses
+      widgets:
+        - obj:
+            width: 100%
+            height: 100%
+            pad_top: 48
+            pad_bottom: 68
+            layout:
+              type: FLEX
+              flex_flow: COLUMN_WRAP
+              flex_align_main: SPACE_EVENLY
+              flex_align_cross: SPACE_EVENLY
+            widgets:
+              - obj:
+                  align: CENTER
+                  width: 100%
+                  height: 46%
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW
+                    flex_align_main: SPACE_EVENLY
+                    flex_align_cross: SPACE_EVENLY
+                  widgets:
+                    - obj:
+                        width: 48%
+                        height: 100%
+                        bg_opa: COVER
+                        bg_color: 0x708090
+                        radius: 10
+                        widgets:
+                          - label:
+                              text: "Top Left"
+                    - obj:
+                        width: 48%
+                        height: 100%
+                        bg_opa: COVER
+                        bg_color: 0x708090
+                        radius: 10
+                        widgets:
+                          - label:
+                              text: "Top Right"
+
+              - obj:
+                  align: CENTER
+                  width: 100%
+                  height: 46%
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW
+                    flex_align_main: SPACE_EVENLY
+                    flex_align_cross: SPACE_EVENLY
+                  widgets:
+                    - obj:
+                        width: 48%
+                        height: 100%
+                        bg_opa: COVER
+                        bg_color: 0x708090
+                        radius: 10
+                        widgets:
+                          - label:
+                              text: "Bottom Left"
+                    - obj:
+                        width: 48%
+                        height: 100%
+                        bg_opa: COVER
+                        bg_color: 0x708090
+                        radius: 10
+                        widgets:
+                          - label:
+                              text: "Bottom Right"
+
+    - id: test_page_3
+      styles: sunglasses
+      widgets:
+        - obj:
+            width: 100%
+            height: 100%
+            pad_top: 48
+            pad_bottom: 68
+            layout:
+              type: FLEX
+              flex_flow: COLUMN_WRAP
+              flex_align_main: SPACE_EVENLY
+              flex_align_cross: SPACE_EVENLY
+            widgets:
+              - obj:
+                  align: CENTER
+                  width: 100%
+                  height: 46%
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW
+                    flex_align_main: SPACE_EVENLY
+                    flex_align_cross: SPACE_EVENLY
+                  widgets:
+                    - obj:
+                        width: 48%
+                        height: 100%
+                        bg_opa: COVER
+                        bg_color: 0x373839
+                        radius: 10
+                        widgets:
+                          - label:
+                              text: "Top Left"
+                    - obj:
+                        width: 48%
+                        height: 100%
+                        bg_opa: COVER
+                        bg_color: 0x373839
+                        radius: 10
+                        widgets:
+                          - label:
+                              text: "Top Right"
+
+              - obj:
+                  align: CENTER
+                  width: 100%
+                  height: 46%
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW
+                    flex_align_main: SPACE_EVENLY
+                    flex_align_cross: SPACE_EVENLY
+                  widgets:
+                    - obj:
+                        width: 48%
+                        height: 100%
+                        bg_opa: COVER
+                        bg_color: 0x373839
+                        radius: 10
+                        widgets:
+                          - label:
+                              text: "Bottom Left"
+                    - obj:
+                        width: 48%
+                        height: 100%
+                        bg_opa: COVER
+                        bg_color: 0x373839
+                        radius: 10
+                        widgets:
+                          - label:
+                              text: "Bottom Right"
+
+    - id: stats_page
+      styles: sunglasses
+      widgets:
+        - obj:
+            align: TOP_MID
+            width: 100%
+            height: 100%
+            pad_top: 40
+            layout:
+              type: FLEX
+              flex_flow: COLUMN
+              #flex_align_main: START
+              #flex_align_cross: START
+            widgets:
+              - obj:
+                  width: 100%
+                  height: SIZE_CONTENT
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW
+                    flex_align_main: SPACE_EVENLY
+                    flex_align_cross: SPACE_EVENLY
+                  widgets:
+                    - obj:
+                        align: CENTER
+                        width: SIZE_CONTENT
+                        height: SIZE_CONTENT
+                        layout:
+                          type: FLEX
+                          flex_flow: COLUMN
+                          flex_align_main: SPACE_EVENLY
+                          flex_align_cross: SPACE_EVENLY
+                        widgets:
+                          - label:
+                              text: "Uptime:"
+                          - label:
+                              text: "Reset:"
+                          - label:
+                              text: "WiFi:"
+                          - label:
+                              text: "Heap:"
+                          - label:
+                              text: "Version:"
+                          #- label:
+                          #    text: "Info:"
+                    - obj:
+                        align: CENTER
+                        width: 100%
+                        height: SIZE_CONTENT
+                        scrollbar_mode: "OFF"
+                        flex_grow: 1
+                        layout:
+                          type: FLEX
+                          flex_flow: COLUMN
+                          flex_align_main: SPACE_EVENLY
+                          flex_align_cross: SPACE_EVENLY
+                        widgets:
+                          - label:
+                              text: "0 seconds"
+                              id: stats_uptime
+                          - label:
+                              text: "-"
+                              id: stats_reset
+                          - label:
+                              text: "Disconnected"
+                              id: stats_wifi
+                          - label:
+                              text: "- KB free / - KB max block / - KB psram"
+                              id: stats_heap
+                          - label:
+                              text: "-"
+                              id: stats_version
+                          #- label:
+                          #    text: "-"
+                          #    id: stats_info
+              - obj:
+                  width: 100%
+                  height: SIZE_CONTENT
+                  #border_opa: COVER
+                  #border_color: 0xFFFFFF
+                  #border_width: 1
+                  scrollbar_mode: "OFF"
+                  #layout:
+                  #  type: FLEX
+                  #  flex_flow: COLUMN_WRAP
+                  #  #flex_align_main: SPACE_EVENLY
+                  #  #flex_align_cross: SPACE_EVENLY
+                  widgets:
+                    - label:
+                        text: "Device Info: Updating..."
+                        id: stats_info
+
+script:
+  # https://esphome.io/components/script
+  - id: update_wifi_stats
+    mode: restart
+    then:
+      - logger.log: "Execute Script: update_wifi_stats"
+      - if:
+          condition:
+            wifi.connected:
+          then:
+            - logger.log: "WiFi is connected!"
+            - component.update: wifi_info_signal
+            - component.update: wifi_info_ssid
+            - component.update: wifi_info_ip
+            - lvgl.label.update:
+                id: stats_wifi
+                text:
+                  format: "%s (%s) %s"
+                  args:
+                    - "id(wifi_info_ssid).state.c_str()"
+                    - "id(wifi_info_ip).state.c_str()"
+                    - "id(wifi_info_mac).state.c_str()"
+          else:
+            - logger.log: "WiFi is disconnected!"
+            - lvgl.label.update:
+                id: stats_wifi
+                text: "Disconnected"
+
+  - id: update_debug_stats
+    mode: restart
+    then:
+      - logger.log: "Execute Script: update_debug_stats"
+      - delay: 3s
+      - logger.log:
+          format: "%.0f B free / %.0f B max block / %.0f B psram"
+          args:
+            - "id(debug_heap_free).state"
+            - "id(debug_heap_max).state"
+            - "id(debug_psram).state"
+      - lvgl.label.update:
+          id: stats_heap
+          text:
+            format: "%.1f KB free / %.1f KB max block / %.1f KB psram"
+            args:
+              - "id(debug_heap_free).state / 1024"
+              - "id(debug_heap_max).state / 1024"
+              - "id(debug_psram).state / 1024"
+      - lvgl.label.update:
+          id: stats_info
+          text:
+            format: "Device Info: %s"
+            args: ["id(debug_device_info).state.c_str()"]
+
+  # TODO: Determine why this is not working as a script...
+  - id: update_time
+    mode: restart
+    then:
+      - logger.log: "Execute Script: update_time"
+      - lvgl.label.update:
+          id: header_time
+          text: !lambda 'return id(ha_time).now().strftime("\U000F0150 %I:%M %p");' # clock-outline
+
+time:
+  # https://esphome.io/#time-components
+  - platform: homeassistant
+    id: ha_time
+    timezone: "America/Los_Angeles"
+    on_time_sync:
+      then:
+        - logger.log: "on_time_sync"
+        #- script.execute: update_time
+        #- script.execute: update_date
+        - lvgl.label.update:
+            id: header_time
+            text: !lambda 'return id(ha_time).now().strftime("\U000F0150 %I:%M %p");' # clock-outline
+        - lvgl.label.update:
+            id: header_date
+            text: !lambda 'return id(ha_time).now().strftime("\U000F0E17 %A %d %b");'
+
+    on_time:
+      - seconds: 0
+        minutes: "*"
+        then:
+          - logger.log: "on_time: every minute"
+          #- script.execute: update_time
+          - lvgl.label.update:
+              id: header_time
+              text: !lambda 'return id(ha_time).now().strftime("\U000F0150 %I:%M %p");' # clock-outline
+
+      - seconds: 0
+        minutes: 0
+        hours: 0
+        then:
+          - logger.log: "on_time: start of every day"
+          #- script.execute: update_date
+          - lvgl.label.update:
+              id: header_date
+              text: !lambda 'return id(ha_time).now().strftime("\U000F0E17 %A %d %b");'
+
+binary_sensor:
+  # https://esphome.io/#binary-sensor-components
+  - platform: homeassistant
+    id: living_room
+    entity_id: light.living_room
+    publish_initial_state: true
+    on_state:
+      then:
+        lvgl.widget.update:
+          id: btn_living_room
+          state:
+            checked: !lambda return x;
+
+  - platform: homeassistant
+    id: kitchen
+    entity_id: light.kitchen
+    publish_initial_state: true
+    on_state:
+      then:
+        lvgl.widget.update:
+          id: btn_kitchen
+          state:
+            checked: !lambda return x;
+
+  - platform: homeassistant
+    id: bedroom_light
+    entity_id: light.bedroom_light
+    publish_initial_state: true
+    on_state:
+      then:
+        lvgl.widget.update:
+          id: btn_bedroom_light
+          state:
+            checked: !lambda return x;
+
+  - platform: homeassistant
+    id: studio_light
+    entity_id: switch.studio_light
+    publish_initial_state: true
+    on_state:
+      then:
+        lvgl.widget.update:
+          id: btn_studio_light
+          state:
+            checked: !lambda return x;
+
+  - platform: homeassistant
+    id: bedroom_fan
+    entity_id: switch.bedroom_fan
+    publish_initial_state: true
+    on_state:
+      then:
+        lvgl.widget.update:
+          id: btn_bedroom_fan
+          state:
+            checked: !lambda return x;
+
+  - platform: homeassistant
+    id: motion_light_kitchen
+    entity_id: input_boolean.motion_light_kitchen
+    publish_initial_state: true
+    on_state:
+      then:
+        lvgl.widget.update:
+          id: btn_motion_light_kitchen
+          state:
+            checked: !lambda return x;
+
+  - platform: homeassistant
+    id: motion_light_bedroom
+    entity_id: input_boolean.motion_light_bedroom
+    publish_initial_state: true
+    on_state:
+      then:
+        lvgl.widget.update:
+          id: btn_motion_light_bedroom
+          state:
+            checked: !lambda return x;
+
+  - platform: homeassistant
+    id: alarm_arm
+    entity_id: input_boolean.alarm_arm
+    publish_initial_state: true
+    on_state:
+      then:
+        lvgl.widget.update:
+          id: btn_alarm_arm
+          state:
+            checked: !lambda return x;
+
+  - platform: homeassistant
+    id: enable_wake_48
+    entity_id: switch.esptest48_enable_wake_48
+    publish_initial_state: true
+    on_state:
+      then:
+        lvgl.widget.update:
+          id: btn_enable_wake_48
+          state:
+            checked: !lambda return x;
+
+  - platform: homeassistant
+    id: enable_wake_51
+    entity_id: switch.esptest51_enable_wake_51
+    publish_initial_state: true
+    on_state:
+      then:
+        lvgl.widget.update:
+          id: btn_enable_wake_51
+          state:
+            checked: !lambda return x;
+
+  - platform: homeassistant
+    id: enable_wake_52
+    entity_id: switch.esptest52_enable_wake_52
+    publish_initial_state: true
+    on_state:
+      then:
+        lvgl.widget.update:
+          id: btn_enable_wake_52
+          state:
+            checked: !lambda return x;
+
+text_sensor:
+  # https://esphome.io/#text-sensor-components
+  # https://esphome.io/components/text_sensor/version
+  - id: !extend esphome_version
+    disabled_by_default: true
+    on_value:
+      then:
+        lvgl.label.update:
+          id: stats_version
+          text:
+            format: "ESPHome Version: %s"
+            args: ["x.c_str()"]
+
+  # https://esphome.io/components/debug
+  - platform: debug
+    reset_reason:
+      name: "Reset Reason ${box_num}"
+      on_value:
+        then:
+          lvgl.label.update:
+            id: stats_reset
+            text:
+              format: "%s"
+              args: ["x.c_str()"]
+
+sensor:
+  # https://esphome.io/#sensor-components
+  - id: !extend wifi_info_signal
+    on_value:
+      then:
+        - if:
+            condition:
+              lambda: "return x <= -75;"
+            then:
+              lvgl.label.update:
+                id: header_wifi
+                text: "\U000F091F" # wifi-strength-1
+                #text:
+                #  format: "%.0f dBm \U000F091F" # wifi-strength-1
+                #  args: ["x"]
+        - if:
+            condition:
+              lambda: "return x <= -55 && x > -75;"
+            then:
+              lvgl.label.update:
+                id: header_wifi
+                text: "\U000F0922" # wifi-strength-2
+                #text:
+                #  format: "%.0f dBm \U000F0922" # wifi-strength-2
+                #  args: ["x"]
+        - if:
+            condition:
+              lambda: "return x <= -35 && x > -55;"
+            then:
+              lvgl.label.update:
+                id: header_wifi
+                text: "\U000F0925" # wifi-strength-3
+                #text:
+                #  format: "%.0f dBm \U000F0925" # wifi-strength-3
+                #  args: ["x"]
+        - if:
+            condition:
+              lambda: "return x > -35;"
+            then:
+              lvgl.label.update:
+                id: header_wifi
+                text: "\U000F0928" # wifi-strength-4
+                #text:
+                #  format: "%.0f dBm \U000F0928" # wifi-strength-4
+                #  args: ["x"]
+
+  ## TODO: Fix the lambda version for brevity compare to above...
+  #- id: !extend wifi_info_signal
+  #  on_value:
+  #    then:
+  #      - lambda: |-
+  #          char buffer[64];
+  #          if (x <= -75) {
+  #            snprintf(buffer, sizeof(buffer), "%.0f dBm \U000F091F", x);
+  #          } else if (x <= -55) {
+  #            snprintf(buffer, sizeof(buffer), "%.0f dBm \U000F0922", x);
+  #          } else if (x <= -35) {
+  #            snprintf(buffer, sizeof(buffer), "%.0f dBm \U000F0925", x);
+  #          } else {
+  #            snprintf(buffer, sizeof(buffer), "%.0f dBm \U000F0928", x);
+  #          }
+  #          lvgl.label_set_text(id(header_wifi), buffer);
+
+  - id: !extend api_uptime
+    on_value:
+      then:
+        lvgl.label.update:
+          id: stats_uptime
+          text: !lambda |-
+            int uptime_seconds = x;
+            int days = uptime_seconds / (24 * 3600);
+            int hours = (uptime_seconds % (24 * 3600)) / 3600;
+            int minutes = (uptime_seconds % 3600) / 60;
+            int seconds = uptime_seconds % 60;
+            std::string text;
+            if (days > 0) {
+              text += std::to_string(days) + " days, ";
+            }
+            if (hours > 0 || days > 0) {
+              text += std::to_string(hours) + " hours, ";
+            }
+            if (minutes > 0 || days > 0 || hours > 0) {
+              text += std::to_string(minutes) + " minutes, ";
+            }
+            text += std::to_string(seconds) + " seconds";
+            return text.c_str();
+
+  - platform: debug
+    psram:
+      name: "PSRAM ${box_num}"
+      id: debug_psram
+      disabled_by_default: true
+      on_value:
+        then:
+          - script.execute: update_debug_stats
+
+  - platform: homeassistant
+    # outside
+    id: temp02_22
+    entity_id: sensor.temp02_22
+    on_value:
+      - logger.log:
+          format: "temp02_22: on_value: x: %.1f"
+          args: ["x"]
+      - lvgl.label.update:
+          id: header_temp
+          text:
+            format: "%.1f \U000F0505"
+            args: ["x"]
+
+  #- platform: homeassistant
+  #  # outside
+  #  id: humi02_22
+  #  entity_id: sensor.humi02_22
+  #  on_value:
+  #    - logger.log:
+  #        format: "humi02_22: on_value: x: %.1f"
+  #        args: ["x"]
+  #    - lvgl.label.update:
+  #        id: header_humi
+  #        text:
+  #          format: "%.0f %"
+  #          args: ["x"]
+
+  - platform: homeassistant
+    # bedroom
+    id: temp01_22
+    entity_id: sensor.temp01_22
+    on_value:
+      - lvgl.label.update:
+          id: bedroom_temp
+          text:
+            format: "%.1f"
+            args: ["x"]
+
+  - platform: homeassistant
+    # bedroom
+    id: humi01_22
+    entity_id: sensor.humi01_22
+    on_value:
+      - logger.log:
+          format: "humi01_22: on_value: x: %.0f"
+          args: ["x"]
+      - lvgl.label.update:
+          id: bedroom_humi
+          text:
+            format: "%.0f %%"
+            args: ["x"]
+
+  - platform: homeassistant
+    # living room
+    id: temp03_22
+    entity_id: sensor.temp03_22
+    on_value:
+      - lvgl.label.update:
+          id: living_room_temp
+          text:
+            format: "%.1f"
+            args: ["x"]
+
+  - platform: homeassistant
+    # living room
+    id: humi03_22
+    entity_id: sensor.humi03_22
+    on_value:
+      - logger.log:
+          format: "humi03_22: on_value: x: %.0f"
+          args: ["x"]
+      - lvgl.label.update:
+          id: living_room_humi
+          text:
+            format: "%.0f %%"
+            args: ["x"]
+
+  - platform: homeassistant
+    # kitchen
+    id: temp04_22
+    entity_id: sensor.temp04_22
+    on_value:
+      - lvgl.label.update:
+          id: kitchen_temp
+          text:
+            format: "%.1f"
+            args: ["x"]
+
+  - platform: homeassistant
+    # kitchen
+    id: humi04_22
+    entity_id: sensor.humi04_22
+    on_value:
+      - logger.log:
+          format: "humi04_22: on_value: x: %.0f"
+          args: ["x"]
+      - lvgl.label.update:
+          id: kitchen_humi
+          text:
+            format: "%.0f %%"
+            args: ["x"]

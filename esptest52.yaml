@@ -1,4 +1,4 @@
-# BENCHED - VA TEST 2
+# BENCH - VA TEST
 
 substitutions:
   # https://esphome.io/components/substitutions
@@ -17,7 +17,7 @@ packages:
   micro_wake_word: !include
     file: include/va/micro_wake_word.yaml
     vars:
-      model: models/computer.json
+      model: hey_jarvis
   discord_logs: !include
     file: include/va/discord.yaml
     vars:
@@ -234,7 +234,7 @@ binary_sensor:
       - timing:
           - ON for at least 1s
         then:
-          - logger.log: "2+ Second Touch - Toggle Wake"
+          - logger.log: "1+ Second Touch - Toggle Wake"
           - switch.toggle: micro_wake_toggle
           #- light.turn_on:
           #    id: main_led

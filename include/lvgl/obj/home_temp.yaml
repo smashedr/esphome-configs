@@ -1,0 +1,25 @@
+obj:
+  align: CENTER
+  width: 100
+  height: 100
+  border_opa: COVER
+  border_color: 0xD3D3D3
+  border_width: 2
+  radius: 12
+  scrollbar_mode: "OFF"
+  layout:
+    type: FLEX
+    flex_flow: COLUMN
+    flex_align_main: SPACE_EVENLY
+    flex_align_cross: CENTER
+  widgets:
+    - label:
+        align: CENTER
+        text: "--.-"
+        id: "${temp}"
+        text_font: main_text32
+    - label:
+        align: CENTER
+        text: "-- %"
+        id: "${humi}"
+        text_font: main_text32

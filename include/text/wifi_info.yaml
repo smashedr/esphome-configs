@@ -1,4 +1,4 @@
-# https://esphome.io/components/wifi
+# https://esphome.io/components/text_sensor/wifi_info
 platform: wifi_info
 ip_address:
   name: "WiFi IP ${box_num}"
