@@ -1,0 +1,47 @@
+button:
+  id: "${id}"
+  width: 100
+  height: 100
+  border_color: "LightGrey"
+  border_width: 2
+  bg_opa: TRANSP
+  pad_all: 0
+  clip_corner: true
+  scrollbar_mode: "OFF"
+  checkable: true
+  checked:
+    bg_color: "DarkOrange"
+    #bg_opa: 80%
+    text_color: "Black"
+  on_click:
+    - logger.log: "${id}: on_click: light.toggle: ${entity_id}"
+    - homeassistant.action:
+        action: light.toggle
+        data:
+          entity_id: "${entity_id}"
+  widgets:
+    - obj:
+        align: CENTER
+        width: 100%
+        height: 100%
+        #clip_corner: true
+        scrollbar_mode: "OFF"
+        clickable: false
+        layout:
+          type: FLEX
+          flex_flow: COLUMN
+          flex_align_main: SPACE_EVENLY
+          flex_align_cross: CENTER
+        widgets:
+          - label:
+              align: CENTER
+              text: "--.-"
+              id: "${temp}"
+              text_font: main_text32
+              scrollbar_mode: "OFF"
+          - label:
+              align: CENTER
+              text: "-- %"
+              id: "${humi}"
+              text_font: main_text32
+              scrollbar_mode: "OFF"

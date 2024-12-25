@@ -1,7 +1,7 @@
 platform: template
-name: "Night Light ${box_num}"
+name: "Enable Night Light ${box_num}"
 id: night_light_switch
-icon: mdi:lightbulb-night
+icon: mdi:light-switch
 optimistic: true
 turn_on_action:
   - if:

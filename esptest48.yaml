@@ -253,7 +253,7 @@ light:
   - platform: monochromatic
     name: "Night Light ${box_num}"
     id: night_led
-    icon: mdi:lightbulb-outline
+    icon: mdi:lightbulb-night
     output: white_led
     effects: !include { file: include/light/effects/pulse.yaml }
     web_server:

@@ -68,8 +68,7 @@ esphome:
       then:
         - logger.log: "Boot 250"
         - lvgl.widget.hide: boot_screen
-        - lvgl.widget.show: top_overlay
-        - lvgl.widget.show: bottom_overlay
+        - lvgl.widget.show: [top_overlay, bottom_overlay]
 
     - priority: 240
       # NOT CONFIRMED: WiFi Connected
@@ -156,6 +155,15 @@ image:
     id: boot_logo
     type: RGB565
     use_transparency: true
+  - file: images/livingroom.jpg
+    id: living_room_img
+    type: RGB565
+  - file: images/kitchen.jpg
+    id: kitchen_img
+    type: RGB565
+  - file: images/bedroom.jpg
+    id: bedroom_img
+    type: RGB565
 
 touchscreen:
   # https://esphome.io/#touchscreen
@@ -228,6 +236,8 @@ font:
         glyphs: &glyphs
           - "\U000F004D" # arrow-left
           - "\U000F0054" # arrow-right
+          - "\U000F07C3" # dots-horizontal-circle
+          - "\U000F0EBA" # home-analytics
           - "\U000F07D0" # home-assistant
           - "\U000F1A47" # home-off-outline
           - "\U000F0150" # clock-outline
@@ -246,6 +256,7 @@ font:
           - "\U000F1802" # lightbulb-variant
           - "\U000F066F" # globe-light
           - "\U000F0A00" # lighthouse-on
+          - "\U000F1A4C" # lightbulb-night
           # Devices
           - "\U000F0210" # fan
           - "\U000F0D91" # motion-sensor
@@ -256,15 +267,18 @@ font:
           - "\U000F04B9" # sofa
           - "\U000F181C" # countertop
           - "\U000F08A0" # bed-empty
+          - "\U000F09A0" # shower
           # Weather
           - "\U000F0505" # temperature-fahrenheit
           - "\U000F0504" # temperature-celsius
           - "\U000F0533" # trending-down
           - "\U000F0534" # trending-neutral
           - "\U000F0535" # trending-up
+          # Menu
+          - "\U000F1C3A" # play-box-edit-outlineup
           # Unused
           - "\U000F092E" # wifi-strength-off-outline
-
+          - "\U000F097E" # light-switch
   - file:
       type: gfonts
       family: "Red Hat Text"
@@ -280,21 +294,17 @@ font:
   - file:
       type: gfonts
       family: "Red Hat Text"
-    id: main_text48
+    id: large_text48
     size: 48
     bpp: 4
     glyphsets:
       - GF_Latin_Core
-    #extras:
-    #  - file: "fonts/materialdesignicons-webfont.ttf"
-    #    glyphs: *glyphs
 
   - file: "fonts/materialdesignicons-webfont.ttf"
     id: icons_36
     size: 36
     bpp: 4
     glyphs: *glyphs
-
   - file: "fonts/materialdesignicons-webfont.ttf"
     id: icons_48
     size: 48
@@ -303,16 +313,27 @@ font:
 
 lvgl:
   # https://esphome.io/components/lvgl/
+  default_font: main_text26
+
   buffer_size: 25% # 100%
+
+  on_idle:
+    - timeout: 60s
+      then:
+        - logger.log: "LVGL is idle"
+        - lvgl.page.show: home_page
+        - lvgl.widget.hide: menu_overlay
+        #- switch.turn_off: backlight_switch
 
   theme:
     # https://esphome.io/components/lvgl/#themes
     label:
-      text_color: 0xFFFFFF
-      text_font: main_text26
+      text_color: "White"
+    button:
+      bg_color: "MediumSlateBlue"
     buttonmatrix:
       items:
-        text_color: 0xFFFFFF
+        text_color: "White"
         text_font: icons_36
     obj:
       border_opa: TRANSP
@@ -323,31 +344,23 @@ lvgl:
 
   style_definitions:
     - id: header_footer
-      bg_color: 0x2F8CD8
-      bg_grad_color: 0x005782
-      bg_grad_dir: VER
+      #bg_color: 0x2F8CD8
+      #bg_grad_color: 0x005782
+      #bg_grad_dir: VER
       bg_opa: COVER
       border_opa: TRANSP
       radius: 0
       pad_all: 0
       pad_row: 0
       pad_column: 0
-      border_color: 0x0077b3
-      text_color: 0xFFFFFF
+      #border_color: 0x0077b3
+      text_color: "White"
       width: 100%
-      height: 60
 
     - id: sunglasses
-      bg_color: 0x000000
-      text_color: 0xFFFFFF
+      bg_color: "Black"
+      text_color: "White"
       bg_opa: COVER
-
-  on_idle:
-    - timeout: 60s
-      then:
-        - logger.log: "LVGL is idle"
-        - lvgl.page.show: home_page
-        #- switch.turn_off: backlight_switch
 
   msgboxes:
     - id: ralph_broke_it
@@ -355,7 +368,7 @@ lvgl:
       title: "Everything"
       body:
         text: "Ralph Broke It!"
-        bg_color: 0x808080
+        bg_color: "Grey"
       buttons:
         - id: msgbox_close
           text: "Close"
@@ -367,12 +380,100 @@ lvgl:
   top_layer:
     widgets:
       - obj:
+          id: menu_overlay
+          hidden: true
+          x: 0
+          y: 0
+          align: CENTER
+          width: 100%
+          height: 100%
+          pad_top: 50 # TODO: Remove once full screen menu is fixed...
+          pad_bottom: 70 # TODO: Remove once full screen menu is fixed...
+          bg_color: "Black"
+          bg_opa: 80%
+          #floating: true
+          #border_opa: COVER
+          #border_color: "White"
+          #border_width: 2
+          layout:
+            type: FLEX
+            flex_flow: COLUMN
+            flex_align_main: SPACE_EVENLY
+            flex_align_cross: SPACE_EVENLY
+          on_press:
+            - lvgl.widget.hide: menu_overlay
+          widgets:
+            # ROW 1 - Rooms
+            - obj:
+                width: 100%
+                height: SIZE_CONTENT
+                layout:
+                  type: FLEX
+                  flex_flow: ROW
+                  flex_align_main: SPACE_EVENLY
+                widgets:
+                  - !include
+                    file: include/lvgl/button/menu_click.yaml
+                    vars:
+                      icon: "\U000F04B9" # sofa
+                      text: "Living"
+                      page: test_page_1
+                  - !include
+                    file: include/lvgl/button/menu_click.yaml
+                    vars:
+                      icon: "\U000F181C" # countertop
+                      text: "Kitchen"
+                      page: test_page_2
+                  - !include
+                    file: include/lvgl/button/menu_click.yaml
+                    vars:
+                      icon: "\U000F08A0" # bed-empty
+                      text: "Bedroom"
+                      page: test_page_3
+                  - !include
+                    file: include/lvgl/button/menu_click.yaml
+                    vars:
+                      icon: "\U000F09A0" # shower
+                      text: "Bathroom"
+                      page: test_page_3
+            # ROW 2 - Other Pages
+            - obj:
+                width: 100%
+                height: SIZE_CONTENT
+                layout:
+                  type: FLEX
+                  flex_flow: ROW
+                  flex_align_main: SPACE_EVENLY
+                widgets:
+                  - !include
+                    file: include/lvgl/button/menu_click.yaml
+                    vars:
+                      icon: "\U000F1C3A" # play-box-edit-outlineup
+                      text: "Start"
+                      page: first_page
+                  - !include
+                    file: include/lvgl/button/menu_click.yaml
+                    vars:
+                      icon: "\U000F0EBA" # home-analytics
+                      text: "Home"
+                      page: home_page
+                  - !include
+                    file: include/lvgl/button/menu_click.yaml
+                    vars:
+                      icon: "\U000F1C70" # information-variant-circle-outline
+                      text: "Info"
+                      page: stats_page
+
+      - obj:
           id: top_overlay
           hidden: true
           align: TOP_MID
           styles: header_footer
-          bg_opa: COVER
           height: 36
+          bg_color: 0x7B68EE # top
+          bg_grad_color: 0x241F47 # bottom
+          bg_grad_dir: VER
+          bg_opa: COVER
           on_press:
             - logger.log: "top_overlay: on_press"
             - lvgl.page.show: stats_page
@@ -390,10 +491,8 @@ lvgl:
             - obj:
                 align: TOP_RIGHT
                 #text_align: RIGHT
-                #border_opa: COVER
-                #border_color: 0xFFFFFF
-                #border_width: 1
                 width: 33%
+                clickable: false
                 layout:
                   type: FLEX
                   flex_flow: ROW
@@ -401,7 +500,7 @@ lvgl:
                   #flex_align_cross: SPACE_EVENLY
                 widgets:
                   - label:
-                      text: "--.- \U000F0505"
+                      text: "--.- \U000F0505" # temperature-fahrenheit
                       id: header_temp
                   - label:
                       text: "\U000F1A47" # home-off-outline
@@ -415,11 +514,18 @@ lvgl:
           hidden: true
           align: BOTTOM_MID
           styles: header_footer
-          bg_opa: COVER
-          pad_all: 0
+          height: 60
+          bg_color: 0x241F47 # top
+          bg_grad_color: 0x7B68EE # bottom
+          bg_grad_dir: VER
+          #bg_opa: COVER
+          #pad_all: 0
           outline_width: 0
           items:
             styles: header_footer
+            bg_color: 0x241F47 # top
+            bg_grad_color: 0x7B68EE # bottom
+            bg_grad_dir: VER
           rows:
             - buttons:
                 - id: page_prev
@@ -431,11 +537,18 @@ lvgl:
                           #animation: OUT_RIGHT
                           #time: 400ms
                 - id: page_home
-                  text: "\U000F07D0" # home-assistant
+                  text: "\U000F0EBA" # home-assistant
                   on_press:
                     then:
                       - logger.log: "on_press Home"
                       - lvgl.page.show: home_page
+                - id: page_menu
+                  text: "\U000F07C3" # dots-horizontal-circle
+                  on_press:
+                    then:
+                      - logger.log: "on_press Menu"
+                      # TODO: Make menu_page a widget and use lvgl.widget.show
+                      - lvgl.widget.show: menu_overlay
                 - id: page_next
                   text: "\U000F0054" # arrow-right
                   on_press:
@@ -463,6 +576,7 @@ lvgl:
                   #align: CENTER
                   width: 100%
                   height: SIZE_CONTENT
+                  pad_bottom: 20
                   layout:
                     type: FLEX
                     flex_flow: ROW_WRAP
@@ -472,7 +586,7 @@ lvgl:
                     - label:
                         align: CENTER
                         text: "This Is Your Life Now!"
-                        text_font: main_text48
+                        text_font: large_text48
               - obj:
                   #align: CENTER
                   width: 100%
@@ -485,7 +599,7 @@ lvgl:
                   widgets:
                     - button:
                         width: SIZE_CONTENT
-                        height: 70
+                        height: 80
                         widgets:
                           - label:
                               align: CENTER
@@ -496,7 +610,7 @@ lvgl:
                             - button.press: btn_restart
                     - button:
                         width: SIZE_CONTENT
-                        height: 70
+                        height: 80
                         widgets:
                           - label:
                               align: CENTER
@@ -513,7 +627,7 @@ lvgl:
                                 show_snow: true
                     - button:
                         width: SIZE_CONTENT
-                        height: 70
+                        height: 80
                         widgets:
                           - label:
                               align: CENTER
@@ -537,22 +651,22 @@ lvgl:
                   widgets:
                     - button:
                         width: SIZE_CONTENT
-                        height: 70
+                        height: 80
                         widgets:
                           - label:
                               align: CENTER
-                              text: "\U000F1C70 Info"
+                              text: "\U000F1C70 Info" # information-variant-circle-outline
                         on_press:
                           then:
                             - logger.log: "on_press Info"
                             - lvgl.page.show: stats_page
                     - button:
                         width: SIZE_CONTENT
-                        height: 70
+                        height: 80
                         widgets:
                           - label:
                               align: CENTER
-                              text: "\U000F01F7 Do Shit"
+                              text: "\U000F01F7 Do Shit" # emoticon-poop
                         on_press:
                           then:
                             - logger.log: "on_press Poop"
@@ -564,7 +678,7 @@ lvgl:
             y: 0
             width: 100%
             height: 100%
-            bg_color: 0x000000
+            bg_color: "Black"
             bg_opa: COVER
             widgets:
               - image:
@@ -580,40 +694,12 @@ lvgl:
                   arc_length: 60deg
                   arc_width: 8
                   indicator:
-                    arc_color: 0x18bcf2
+                    arc_color: "DeepSkyBlue"
                     arc_width: 8
             on_press:
               - lvgl.widget.hide: boot_screen
               - lvgl.widget.show: top_overlay
               - lvgl.widget.show: bottom_overlay
-
-    #- id: ralph_page
-    #  styles: sunglasses
-    #  widgets:
-    #    - obj:
-    #        align: CENTER
-    #        width: 100%
-    #        height: 100%
-    #        pad_top: 64
-    #        #bg_opa: TRANSP
-    #        #border_opa: TRANSP
-    #        #border_width: 1
-    #        #radius: 0
-    #        #pad_all: 0
-    #        layout:
-    #          type: FLEX
-    #          flex_flow: COLUMN_WRAP
-    #          #flex_align_main: CENTER
-    #          #flex_align_cross: CENTER
-    #        widgets:
-    #          - label:
-    #              align: CENTER
-    #              text: "Did Ralph Break It?"
-    #              text_color: 0xFFFFFF
-    #          - label:
-    #              align: CENTER
-    #              text: "Yes! Ralph Broke It!"
-    #              text_color: 0xFF0000
 
     - id: home_page
       styles: sunglasses
@@ -641,32 +727,36 @@ lvgl:
                     flex_align_main: SPACE_EVENLY
                     #flex_align_cross: CENTER
                   widgets:
-                    - !include {
-                        file: include/lvgl/button/home_room.yaml,
-                        vars: {
-                            id: room_living_room,
-                            show: test_page_1,
-                            text: "\U000F04B9", # sofa
-                          },
-                      }
-                    - !include {
-                        file: include/lvgl/button/home_click.yaml,
-                        vars: {
-                            id: btn_living_room,
-                            entity_id: light.living_room,
-                            action: light.toggle,
-                            text: "\U000F066F", # globe-light
-                          },
-                      }
-                    - !include {
-                        file: include/lvgl/button/home_click.yaml,
-                        vars: {
-                            id: btn_studio_light,
-                            entity_id: switch.studio_light,
-                            action: switch.toggle,
-                            text: "\U000F0A00", # lighthouse-on
-                          },
-                      }
+                    - !include
+                      file: include/lvgl/button/home_room.yaml
+                      vars:
+                        id: room_living_room
+                        show: test_page_1
+                        text: "\U000F04B9" # sofa
+
+                    - !include
+                      file: include/lvgl/button/home_temp.yaml
+                      vars:
+                        id: btn_living_room
+                        entity_id: light.living_room
+                        temp: living_room_temp
+                        humi: living_room_humi
+
+                    #- !include
+                    #  file: include/lvgl/button/home_click.yaml
+                    #  vars:
+                    #    id: btn_living_room
+                    #    entity_id: light.living_room
+                    #    action: light.toggle
+                    #    text: "\U000F066F" # globe-light
+
+                    - !include
+                      file: include/lvgl/button/home_click.yaml
+                      vars:
+                        id: btn_studio_light
+                        entity_id: switch.studio_light
+                        action: switch.toggle
+                        text: "\U000F0A00" # lighthouse-on
                     - button:
                         width: 100
                         height: 100
@@ -675,48 +765,28 @@ lvgl:
                               align: CENTER
                               text: "\U000F0D91" # motion-sensor
                               text_font: icons_48
-                    - !include {
-                        file: include/lvgl/button/home_click.yaml,
-                        vars: {
-                            id: btn_enable_wake_51,
-                            entity_id: switch.esptest51_enable_wake_51,
-                            action: switch.toggle,
-                            text: "\U000F05CB", # account-voice
-                          },
-                      }
-                    - !include {
-                        file: include/lvgl/obj/home_temp.yaml,
-                        vars:
-                          { temp: living_room_temp, humi: living_room_humi },
-                      }
-                    #- obj:
-                    #    align: CENTER
-                    #    width: 100
-                    #    height: 100
-                    #    border_opa: COVER
-                    #    border_color: 0xD3D3D3
-                    #    border_width: 2
-                    #    radius: 12
-                    #    layout:
-                    #      type: FLEX
-                    #      flex_flow: ROW
-                    #      flex_align_cross: CENTER
-                    #      flex_align_main: CENTER
-                    #    widgets:
-                    #      - label:
-                    #          align: CENTER
-                    #          text: "--.-"
-                    #          id: living_room_temp
-                    #          text_font: main_text36
-                    #      - label:
-                    #          align: CENTER
-                    #          text: "-- %"
-                    #          id: living_room_humi
-                    #          text_font: main_text36
-                    - !include {
-                        file: include/lvgl/obj/home_empty.yaml,
-                        vars: { text: "Ralf" },
-                      }
+                    - button:
+                        width: 100
+                        height: 100
+                        widgets:
+                          - label:
+                              align: CENTER
+                              text: "\U000F1A4C" # lightbulb-night
+                              text_font: icons_48
+                    - !include
+                      file: include/lvgl/button/home_click.yaml
+                      vars:
+                        id: btn_enable_wake_51
+                        entity_id: switch.esptest51_enable_wake_51
+                        action: switch.toggle
+                        text: "\U000F05CB" # account-voice
+
+                    #- !include {
+                    #    file: include/lvgl/obj/home_temp.yaml,
+                    #    vars:
+                    #      { temp: living_room_temp, humi: living_room_humi },
+                    #  }
+
               # ROW 2 - Kitchen
               - obj:
                   #align: CENTER
@@ -728,82 +798,64 @@ lvgl:
                     flex_align_main: SPACE_EVENLY
                     #flex_align_cross: CENTER
                   widgets:
-                    - !include {
-                        file: include/lvgl/button/home_room.yaml,
-                        vars: {
-                            id: room_kitchen,
-                            show: test_page_2,
-                            text: "\U000F181C", # countertop
-                          },
-                      }
-                    - !include {
-                        file: include/lvgl/button/home_click.yaml,
-                        vars: {
-                            id: btn_kitchen,
-                            entity_id: light.kitchen,
-                            action: light.toggle,
-                            text: "\U000F066F", # globe-light
-                          },
-                      }
-                    - !include {
-                        file: include/lvgl/button/home_click.yaml,
-                        vars: {
-                            id: btn_alarm_arm,
-                            entity_id: input_boolean.alarm_arm,
-                            action: switch.toggle,
-                            text: "\U000F0CCB", # shield-home-outline
-                          },
-                      }
-                    - !include {
-                        file: include/lvgl/button/home_click.yaml,
-                        vars: {
-                            id: btn_motion_light_kitchen,
-                            entity_id: input_boolean.motion_light_kitchen,
-                            action: switch.toggle,
-                            text: "\U000F0D91", # motion-sensor
-                          },
-                      }
-                    - !include {
-                        file: include/lvgl/button/home_click.yaml,
-                        vars: {
-                            id: btn_enable_wake_52,
-                            entity_id: switch.esptest52_enable_wake_52,
-                            action: switch.toggle,
-                            text: "\U000F05CB", # account-voice
-                          },
-                      }
-                    - !include {
-                        file: include/lvgl/obj/home_temp.yaml,
-                        vars: { temp: kitchen_temp, humi: kitchen_humi },
-                      }
-                    #- obj:
-                    #    align: CENTER
-                    #    width: 100
-                    #    height: 100
-                    #    border_opa: COVER
-                    #    border_color: 0xD3D3D3
-                    #    border_width: 2
-                    #    radius: 12
-                    #    layout:
-                    #      type: FLEX
-                    #      flex_flow: ROW
-                    #      flex_align_cross: CENTER
-                    #      flex_align_main: CENTER
-                    #    widgets:
-                    #      - label:
-                    #          align: CENTER
-                    #          text: "--.-"
-                    #          id: kitchen_temp
-                    #          text_font: main_text36
-                    #      - label:
-                    #          align: CENTER
-                    #          text: "-- %"
-                    #          id: kitchen_humi
-                    #          text_font: main_text36
-                    - !include {
-                        file: include/lvgl/obj/home_empty.yaml,
-                        vars: { text: "Did" },
-                      }
+                    - !include
+                      file: include/lvgl/button/home_room.yaml
+                      vars:
+                        id: room_kitchen
+                        show: test_page_2
+                        text: "\U000F181C" # countertop
+
+                    - !include
+                      file: include/lvgl/button/home_temp.yaml
+                      vars:
+                        id: btn_kitchen
+                        entity_id: light.kitchen
+                        temp: kitchen_temp
+                        humi: kitchen_humi
+
+                    #- !include
+                    #  file: include/lvgl/button/home_click.yaml
+                    #  vars:
+                    #    id: btn_kitchen
+                    #    entity_id: light.kitchen
+                    #    action: light.toggle
+                    #    text: "\U000F066F" # globe-light
+
+                    - !include
+                      file: include/lvgl/button/home_click.yaml
+                      vars:
+                        id: btn_alarm_arm
+                        entity_id: input_boolean.alarm_arm
+                        action: switch.toggle
+                        text: "\U000F0CCB" # shield-home-outline
+                    - !include
+                      file: include/lvgl/button/home_click.yaml
+                      vars:
+                        id: btn_motion_light_kitchen
+                        entity_id: input_boolean.motion_light_kitchen
+                        action: switch.toggle
+                        text: "\U000F0D91" # motion-sensor
+                    - button:
+                        width: 100
+                        height: 100
+                        widgets:
+                          - label:
+                              align: CENTER
+                              text: "\U000F1A4C" # lightbulb-night
+                              text_font: icons_48
+                    - !include
+                      file: include/lvgl/button/home_click.yaml
+                      vars:
+                        id: btn_enable_wake_52
+                        entity_id: switch.esptest52_enable_wake_52
+                        action: switch.toggle
+                        text: "\U000F05CB" # account-voice
+
+                    #- !include {
+                    #    file: include/lvgl/obj/home_temp.yaml,
+                    #    vars: { temp: kitchen_temp, humi: kitchen_humi },
+                    #  }
+
               # ROW 3 - Bedroom
               - obj:
                   #align: CENTER
@@ -815,82 +867,62 @@ lvgl:
                     flex_align_main: SPACE_EVENLY
                     #flex_align_cross: CENTER
                   widgets:
-                    - !include {
-                        file: include/lvgl/button/home_room.yaml,
-                        vars: {
-                            id: room_bedroom,
-                            show: test_page_3,
-                            text: "\U000F08A0", # bed-empty
-                          },
-                      }
-                    - !include {
-                        file: include/lvgl/button/home_click.yaml,
-                        vars: {
-                            id: btn_bedroom_light,
-                            entity_id: light.bedroom_light,
-                            action: light.toggle,
-                            text: "\U000F066F", # globe-light
-                          },
-                      }
-                    - !include {
-                        file: include/lvgl/button/home_click.yaml,
-                        vars: {
-                            id: btn_bedroom_fan,
-                            entity_id: switch.bedroom_fan,
-                            action: switch.toggle,
-                            text: "\U000F0210", # fan
-                          },
-                      }
-                    - !include {
-                        file: include/lvgl/button/home_click.yaml,
-                        vars: {
-                            id: btn_motion_light_bedroom,
-                            entity_id: input_boolean.motion_light_bedroom,
-                            action: switch.toggle,
-                            text: "\U000F0D91", # motion-sensor
-                          },
-                      }
-                    - !include {
-                        file: include/lvgl/button/home_click.yaml,
-                        vars: {
-                            id: btn_enable_wake_48,
-                            entity_id: switch.esptest48_enable_wake_48,
-                            action: switch.toggle,
-                            text: "\U000F05CB", # account-voice
-                          },
-                      }
-                    - !include {
-                        file: include/lvgl/obj/home_temp.yaml,
-                        vars: { temp: bedroom_temp, humi: bedroom_humi },
-                      }
-                    #- obj:
-                    #    align: CENTER
-                    #    width: 100
-                    #    height: 100
-                    #    border_opa: COVER
-                    #    border_color: 0xD3D3D3
-                    #    border_width: 2
-                    #    radius: 12
-                    #    layout:
-                    #      type: FLEX
-                    #      flex_flow: ROW
-                    #      flex_align_cross: CENTER
-                    #      flex_align_main: CENTER
-                    #    widgets:
-                    #      - label:
-                    #          align: CENTER
-                    #          text: "--.-"
-                    #          id: bedroom_temp
-                    #          text_font: main_text36
-                    #      - label:
-                    #          align: CENTER
-                    #          text: "-- %"
-                    #          id: bedroom_humi
-                    #          text_font: main_text36
-                    - !include {
-                        file: include/lvgl/obj/home_empty.yaml,
-                        vars: { text: "It" },
-                      }
+                    - !include
+                      file: include/lvgl/button/home_room.yaml
+                      vars:
+                        id: room_bedroom
+                        show: test_page_3
+                        text: "\U000F08A0" # bed-empty
+
+                    - !include
+                      file: include/lvgl/button/home_temp.yaml
+                      vars:
+                        id: btn_bedroom_light
+                        entity_id: light.bedroom_light
+                        temp: bedroom_temp
+                        humi: bedroom_humi
+
+                    #- !include
+                    #  file: include/lvgl/button/home_click.yaml
+                    #  vars:
+                    #    id: btn_bedroom_light
+                    #    entity_id: light.bedroom_light
+                    #    action: light.toggle
+                    #    text: "\U000F066F" # globe-light
+
+                    - !include
+                      file: include/lvgl/button/home_click.yaml
+                      vars:
+                        id: btn_bedroom_fan
+                        entity_id: switch.bedroom_fan
+                        action: switch.toggle
+                        text: "\U000F0210" # fan
+                    - !include
+                      file: include/lvgl/button/home_click.yaml
+                      vars:
+                        id: btn_motion_light_bedroom
+                        entity_id: input_boolean.motion_light_bedroom
+                        action: switch.toggle
+                        text: "\U000F0D91" # motion-sensor
+                    - !include
+                      file: include/lvgl/button/home_click.yaml
+                      vars:
+                        id: btn_night_light_48
+                        entity_id: switch.esptest48_night_light_48
+                        action: switch.toggle
+                        text: "\U000F1A4C" # lightbulb-night
+                    - !include
+                      file: include/lvgl/button/home_click.yaml
+                      vars:
+                        id: btn_enable_wake_48
+                        entity_id: switch.esptest48_enable_wake_48
+                        action: switch.toggle
+                        text: "\U000F05CB" # account-voice
+
+                    #- !include {
+                    #    file: include/lvgl/obj/home_temp.yaml,
+                    #    vars: { temp: bedroom_temp, humi: bedroom_humi },
+                    #  }
 
     - id: test_page_1
       styles: sunglasses
@@ -916,26 +948,29 @@ lvgl:
                     flex_align_main: SPACE_EVENLY
                     flex_align_cross: SPACE_EVENLY
                   widgets:
-                    - obj:
+                    - image:
+                        align: CENTER
                         width: 48%
                         height: 100%
-                        bg_opa: COVER
-                        bg_color: 0xC0C0C0
                         radius: 10
+                        src: living_room_img
+                        clip_corner: true
                         widgets:
                           - label:
                               text: "Top Left"
-                              text_color: 0x000000
+                              text_color: "Black"
                     - obj:
                         width: 48%
                         height: 100%
-                        bg_opa: COVER
-                        bg_color: 0xC0C0C0
+                        #bg_opa: COVER
+                        #bg_color: "LightGray"
+                        bg_image_src: living_room_img
+                        bg_image_opa: COVER
                         radius: 10
                         widgets:
                           - label:
                               text: "Top Right"
-                              text_color: 0x000000
+                              text_color: "Black"
 
               - obj:
                   align: CENTER
@@ -951,22 +986,22 @@ lvgl:
                         width: 48%
                         height: 100%
                         bg_opa: COVER
-                        bg_color: 0xC0C0C0
+                        bg_color: "LightGray"
                         radius: 10
                         widgets:
                           - label:
                               text: "Bottom Left"
-                              text_color: 0x000000
+                              text_color: "Black"
                     - obj:
                         width: 48%
                         height: 100%
                         bg_opa: COVER
-                        bg_color: 0xC0C0C0
+                        bg_color: "LightGray"
                         radius: 10
                         widgets:
                           - label:
                               text: "Bottom Right"
-                              text_color: 0x000000
+                              text_color: "Black"
 
     - id: test_page_2
       styles: sunglasses
@@ -992,20 +1027,23 @@ lvgl:
                     flex_align_main: SPACE_EVENLY
                     flex_align_cross: SPACE_EVENLY
                   widgets:
-                    - obj:
+                    - image:
+                        align: CENTER
                         width: 48%
                         height: 100%
-                        bg_opa: COVER
-                        bg_color: 0x708090
                         radius: 10
+                        src: kitchen_img
+                        clip_corner: true
                         widgets:
                           - label:
                               text: "Top Left"
                     - obj:
                         width: 48%
                         height: 100%
-                        bg_opa: COVER
-                        bg_color: 0x708090
+                        bg_opa: TRANSP
+                        #bg_color: "SlateGray"
+                        bg_image_src: kitchen_img
+                        bg_image_opa: COVER
                         radius: 10
                         widgets:
                           - label:
@@ -1025,7 +1063,7 @@ lvgl:
                         width: 48%
                         height: 100%
                         bg_opa: COVER
-                        bg_color: 0x708090
+                        bg_color: "SlateGray"
                         radius: 10
                         widgets:
                           - label:
@@ -1034,7 +1072,7 @@ lvgl:
                         width: 48%
                         height: 100%
                         bg_opa: COVER
-                        bg_color: 0x708090
+                        bg_color: "SlateGray"
                         radius: 10
                         widgets:
                           - label:
@@ -1064,12 +1102,13 @@ lvgl:
                     flex_align_main: SPACE_EVENLY
                     flex_align_cross: SPACE_EVENLY
                   widgets:
-                    - obj:
+                    - image:
+                        align: CENTER
                         width: 48%
                         height: 100%
-                        bg_opa: COVER
-                        bg_color: 0x373839
                         radius: 10
+                        src: bedroom_img
+                        clip_corner: true
                         widgets:
                           - label:
                               text: "Top Left"
@@ -1077,7 +1116,9 @@ lvgl:
                         width: 48%
                         height: 100%
                         bg_opa: COVER
-                        bg_color: 0x373839
+                        #bg_color: "SlateGray"
+                        bg_image_src: bedroom_img
+                        bg_image_opa: COVER
                         radius: 10
                         widgets:
                           - label:
@@ -1097,7 +1138,7 @@ lvgl:
                         width: 48%
                         height: 100%
                         bg_opa: COVER
-                        bg_color: 0x373839
+                        bg_color: "SlateGray"
                         radius: 10
                         widgets:
                           - label:
@@ -1106,7 +1147,7 @@ lvgl:
                         width: 48%
                         height: 100%
                         bg_opa: COVER
-                        bg_color: 0x373839
+                        bg_color: "SlateGray"
                         radius: 10
                         widgets:
                           - label:
@@ -1122,7 +1163,7 @@ lvgl:
             pad_top: 40
             layout:
               type: FLEX
-              flex_flow: COLUMN
+              flex_flow: COLUMN_WRAP
               #flex_align_main: START
               #flex_align_cross: START
             widgets:
@@ -1155,8 +1196,6 @@ lvgl:
                               text: "Heap:"
                           - label:
                               text: "Version:"
-                          #- label:
-                          #    text: "Info:"
                     - obj:
                         align: CENTER
                         width: 100%
@@ -1184,25 +1223,22 @@ lvgl:
                           - label:
                               text: "-"
                               id: stats_version
-                          #- label:
-                          #    text: "-"
-                          #    id: stats_info
               - obj:
                   width: 100%
                   height: SIZE_CONTENT
-                  #border_opa: COVER
-                  #border_color: 0xFFFFFF
-                  #border_width: 1
                   scrollbar_mode: "OFF"
-                  #layout:
-                  #  type: FLEX
-                  #  flex_flow: COLUMN_WRAP
-                  #  #flex_align_main: SPACE_EVENLY
-                  #  #flex_align_cross: SPACE_EVENLY
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW_WRAP
+                    #flex_align_main: SPACE_EVENLY
+                    #flex_align_cross: SPACE_EVENLY
                   widgets:
                     - label:
                         text: "Device Info: Updating..."
                         id: stats_info
+                        height: SIZE_CONTENT
+                        long_mode: WRAP
+                        width: 100%
 
 script:
   # https://esphome.io/components/script
@@ -1281,7 +1317,7 @@ time:
             text: !lambda 'return id(ha_time).now().strftime("\U000F0150 %I:%M %p");' # clock-outline
         - lvgl.label.update:
             id: header_date
-            text: !lambda 'return id(ha_time).now().strftime("\U000F0E17 %A %d %b");'
+            text: !lambda 'return id(ha_time).now().strftime("\U000F0E17 %A %d %b");' # calendar-month
 
     on_time:
       - seconds: 0
@@ -1297,134 +1333,139 @@ time:
         minutes: 0
         hours: 0
         then:
-          - logger.log: "on_time: start of every day"
+          - logger.log: "on_time: every day"
           #- script.execute: update_date
           - lvgl.label.update:
               id: header_date
-              text: !lambda 'return id(ha_time).now().strftime("\U000F0E17 %A %d %b");'
+              text: !lambda 'return id(ha_time).now().strftime("\U000F0E17 %A %d %b");' # calendar-month
 
 binary_sensor:
   # https://esphome.io/#binary-sensor-components
-  - platform: homeassistant
-    id: living_room
-    entity_id: light.living_room
-    publish_initial_state: true
-    on_state:
-      then:
-        lvgl.widget.update:
-          id: btn_living_room
-          state:
-            checked: !lambda return x;
+  - !include
+    file: include/lvgl/binary/ha_widget.yaml
+    vars:
+      id: living_room
+      entity_id: light.living_room
+      widget: btn_living_room
 
-  - platform: homeassistant
-    id: kitchen
-    entity_id: light.kitchen
-    publish_initial_state: true
-    on_state:
-      then:
-        lvgl.widget.update:
-          id: btn_kitchen
-          state:
-            checked: !lambda return x;
+  - !include
+    file: include/lvgl/binary/ha_widget.yaml
+    vars:
+      id: kitchen
+      entity_id: light.kitchen
+      widget: btn_kitchen
 
-  - platform: homeassistant
-    id: bedroom_light
-    entity_id: light.bedroom_light
-    publish_initial_state: true
-    on_state:
-      then:
-        lvgl.widget.update:
-          id: btn_bedroom_light
-          state:
-            checked: !lambda return x;
+  - !include
+    file: include/lvgl/binary/ha_widget.yaml
+    vars:
+      id: bedroom_light
+      entity_id: light.bedroom_light
+      widget: btn_bedroom_light
 
-  - platform: homeassistant
-    id: studio_light
-    entity_id: switch.studio_light
-    publish_initial_state: true
-    on_state:
-      then:
-        lvgl.widget.update:
-          id: btn_studio_light
-          state:
-            checked: !lambda return x;
+  - !include
+    file: include/lvgl/binary/ha_widget.yaml
+    vars:
+      id: studio_light
+      entity_id: switch.studio_light
+      widget: btn_studio_light
 
-  - platform: homeassistant
-    id: bedroom_fan
-    entity_id: switch.bedroom_fan
-    publish_initial_state: true
-    on_state:
-      then:
-        lvgl.widget.update:
-          id: btn_bedroom_fan
-          state:
-            checked: !lambda return x;
+  - !include
+    file: include/lvgl/binary/ha_widget.yaml
+    vars:
+      id: bedroom_fan
+      entity_id: switch.bedroom_fan
+      widget: btn_bedroom_fan
 
-  - platform: homeassistant
-    id: motion_light_kitchen
-    entity_id: input_boolean.motion_light_kitchen
-    publish_initial_state: true
-    on_state:
-      then:
-        lvgl.widget.update:
-          id: btn_motion_light_kitchen
-          state:
-            checked: !lambda return x;
+  - !include
+    file: include/lvgl/binary/ha_widget.yaml
+    vars:
+      id: motion_light_kitchen
+      entity_id: input_boolean.motion_light_kitchen
+      widget: btn_motion_light_kitchen
 
-  - platform: homeassistant
-    id: motion_light_bedroom
-    entity_id: input_boolean.motion_light_bedroom
-    publish_initial_state: true
-    on_state:
-      then:
-        lvgl.widget.update:
-          id: btn_motion_light_bedroom
-          state:
-            checked: !lambda return x;
+  - !include
+    file: include/lvgl/binary/ha_widget.yaml
+    vars:
+      id: motion_light_bedroom
+      entity_id: input_boolean.motion_light_bedroom
+      widget: btn_motion_light_bedroom
 
-  - platform: homeassistant
-    id: alarm_arm
-    entity_id: input_boolean.alarm_arm
-    publish_initial_state: true
-    on_state:
-      then:
-        lvgl.widget.update:
-          id: btn_alarm_arm
-          state:
-            checked: !lambda return x;
+  - !include
+    file: include/lvgl/binary/ha_widget.yaml
+    vars:
+      id: alarm_arm
+      entity_id: input_boolean.alarm_arm
+      widget: btn_alarm_arm
 
-  - platform: homeassistant
-    id: enable_wake_48
-    entity_id: switch.esptest48_enable_wake_48
-    publish_initial_state: true
-    on_state:
-      then:
-        lvgl.widget.update:
-          id: btn_enable_wake_48
-          state:
-            checked: !lambda return x;
+  - !include
+    file: include/lvgl/binary/ha_widget.yaml
+    vars:
+      id: enable_wake_48
+      entity_id: switch.esptest48_enable_wake_48
+      widget: btn_enable_wake_48
 
-  - platform: homeassistant
-    id: enable_wake_51
-    entity_id: switch.esptest51_enable_wake_51
-    publish_initial_state: true
-    on_state:
-      then:
-        lvgl.widget.update:
-          id: btn_enable_wake_51
-          state:
-            checked: !lambda return x;
+  - !include
+    file: include/lvgl/binary/ha_widget.yaml
+    vars:
+      id: enable_wake_51
+      entity_id: switch.esptest51_enable_wake_51
+      widget: btn_enable_wake_51
 
+  - !include
+    file: include/lvgl/binary/ha_widget.yaml
+    vars:
+      id: enable_wake_52
+      entity_id: switch.esptest52_enable_wake_52
+      widget: btn_enable_wake_52
+
+  - !include
+    file: include/lvgl/binary/ha_widget.yaml
+    vars:
+      id: night_light_48
+      entity_id: switch.esptest48_night_light_48
+      widget: btn_night_light_48
+
+  #- !include
+  #  file: include/lvgl/binary/ha_widget.yaml
+  #  vars:
+  #    id: presence_47
+  #    entity_id: binary_sensor.presence_47
+  #    widget: room_kitchen
   - platform: homeassistant
-    id: enable_wake_52
-    entity_id: switch.esptest52_enable_wake_52
+    id: presence_47
+    entity_id: binary_sensor.presence_47
     publish_initial_state: true
-    on_state:
+    on_press:
       then:
         lvgl.widget.update:
-          id: btn_enable_wake_52
-          state:
-            checked: !lambda return x;
+          id: room_kitchen
+          bg_color: "Yellow"
+    on_release:
+      then:
+        lvgl.widget.update:
+          id: room_kitchen
+          bg_color: "LightGray"
+
+  #- !include
+  #  file: include/lvgl/binary/ha_widget.yaml
+  #  vars:
+  #    id: presence_48
+  #    entity_id: binary_sensor.esptest48_presence_48
+  #    widget: room_bedroom
+  - platform: homeassistant
+    id: presence_48
+    entity_id: binary_sensor.esptest48_presence_48
+    publish_initial_state: true
+    on_press:
+      then:
+        lvgl.widget.update:
+          id: room_bedroom
+          bg_color: "Yellow"
+    on_release:
+      then:
+        lvgl.widget.update:
+          id: room_bedroom
+          bg_color: "LightGray"
 
 text_sensor:
   # https://esphome.io/#text-sensor-components
@@ -1547,105 +1588,59 @@ sensor:
         then:
           - script.execute: update_debug_stats
 
-  - platform: homeassistant
-    # outside
-    id: temp02_22
-    entity_id: sensor.temp02_22
-    on_value:
-      - logger.log:
-          format: "temp02_22: on_value: x: %.1f"
-          args: ["x"]
-      - lvgl.label.update:
-          id: header_temp
-          text:
-            format: "%.1f \U000F0505"
-            args: ["x"]
+  # Outside
+  - !include
+    file: include/lvgl/sensor/ha_label.yaml
+    vars:
+      id: temp02_22
+      entity_id: sensor.temp02_22
+      label: header_temp
+      format: "%.1f \U000F0505"
 
-  #- platform: homeassistant
-  #  # outside
-  #  id: humi02_22
-  #  entity_id: sensor.humi02_22
-  #  on_value:
-  #    - logger.log:
-  #        format: "humi02_22: on_value: x: %.1f"
-  #        args: ["x"]
-  #    - lvgl.label.update:
-  #        id: header_humi
-  #        text:
-  #          format: "%.0f %"
-  #          args: ["x"]
+  # Bedroom
+  - !include
+    file: include/lvgl/sensor/ha_label.yaml
+    vars:
+      id: temp01_22
+      entity_id: sensor.temp01_22
+      label: bedroom_temp
+      format: "%.1f"
+  - !include
+    file: include/lvgl/sensor/ha_label.yaml
+    vars:
+      id: humi01_22
+      entity_id: sensor.humi01_22
+      label: bedroom_humi
+      format: "%.0f %%"
 
-  - platform: homeassistant
-    # bedroom
-    id: temp01_22
-    entity_id: sensor.temp01_22
-    on_value:
-      - lvgl.label.update:
-          id: bedroom_temp
-          text:
-            format: "%.1f"
-            args: ["x"]
+  # Living Room
+  - !include
+    file: include/lvgl/sensor/ha_label.yaml
+    vars:
+      id: temp03_22
+      entity_id: sensor.temp03_22
+      label: living_room_temp
+      format: "%.1f"
+  - !include
+    file: include/lvgl/sensor/ha_label.yaml
+    vars:
+      id: humi03_22
+      entity_id: sensor.humi03_22
+      label: living_room_humi
+      format: "%.0f %%"
 
-  - platform: homeassistant
-    # bedroom
-    id: humi01_22
-    entity_id: sensor.humi01_22
-    on_value:
-      - logger.log:
-          format: "humi01_22: on_value: x: %.0f"
-          args: ["x"]
-      - lvgl.label.update:
-          id: bedroom_humi
-          text:
-            format: "%.0f %%"
-            args: ["x"]
-
-  - platform: homeassistant
-    # living room
-    id: temp03_22
-    entity_id: sensor.temp03_22
-    on_value:
-      - lvgl.label.update:
-          id: living_room_temp
-          text:
-            format: "%.1f"
-            args: ["x"]
-
-  - platform: homeassistant
-    # living room
-    id: humi03_22
-    entity_id: sensor.humi03_22
-    on_value:
-      - logger.log:
-          format: "humi03_22: on_value: x: %.0f"
-          args: ["x"]
-      - lvgl.label.update:
-          id: living_room_humi
-          text:
-            format: "%.0f %%"
-            args: ["x"]
-
-  - platform: homeassistant
-    # kitchen
-    id: temp04_22
-    entity_id: sensor.temp04_22
-    on_value:
-      - lvgl.label.update:
-          id: kitchen_temp
-          text:
-            format: "%.1f"
-            args: ["x"]
-
-  - platform: homeassistant
-    # kitchen
-    id: humi04_22
-    entity_id: sensor.humi04_22
-    on_value:
-      - logger.log:
-          format: "humi04_22: on_value: x: %.0f"
-          args: ["x"]
-      - lvgl.label.update:
-          id: kitchen_humi
-          text:
-            format: "%.0f %%"
-            args: ["x"]
+  # Kitchen
+  - !include
+    file: include/lvgl/sensor/ha_label.yaml
+    vars:
+      id: temp04_22
+      entity_id: sensor.temp04_22
+      label: kitchen_temp
+      format: "%.1f"
+  - !include
+    file: include/lvgl/sensor/ha_label.yaml
+    vars:
+      id: humi04_22
+      entity_id: sensor.humi04_22
+      label: kitchen_humi
+      format: "%.0f %%"

@@ -1,0 +1,13 @@
+platform: homeassistant
+id: "${id}"
+entity_id: "${entity_id}"
+publish_initial_state: true
+on_state:
+  then:
+    - logger.log:
+        format: "${id}: on_state: x: %.0f"
+        args: ["x"]
+    - lvgl.widget.update:
+        id: "${widget}"
+        state:
+          checked: !lambda return x;

@@ -1,0 +1,12 @@
+platform: homeassistant
+id: "${id}"
+entity_id: "${entity_id}"
+on_value:
+  - logger.log:
+      format: "${id}: on_value: x: %.0f"
+      args: ["x"]
+  - lvgl.label.update:
+      id: "${label}"
+      text:
+        format: "${format}"
+        args: ["x"]

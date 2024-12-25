@@ -1,0 +1,35 @@
+button:
+  width: 140
+  height: 140
+  bg_color: "SlateGrey"
+  pad_all: 0
+  clip_corner: true
+  on_press:
+    then:
+      - logger.log: "on_press: ${page}"
+      - lvgl.page.show: "${page}"
+      - lvgl.widget.hide: menu_overlay
+  widgets:
+    - obj:
+        #align: CENTER
+        width: 100%
+        height: 100%
+        scrollbar_mode: "OFF"
+        #clip_corner: true
+        clickable: false
+        layout:
+          type: FLEX
+          flex_flow: COLUMN
+          flex_align_main: SPACE_EVENLY
+          flex_align_cross: SPACE_EVENLY
+        widgets:
+          - label:
+              align: CENTER
+              text: "${icon}"
+              text_font: icons_48
+              scrollbar_mode: "OFF"
+          - label:
+              align: CENTER
+              text: "${text}"
+              #text_font: main_text32
+              scrollbar_mode: "OFF"
