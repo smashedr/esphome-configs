@@ -1,0 +1,14 @@
+platform: homeassistant
+id: "${id}"
+entity_id: "${entity_id}"
+publish_initial_state: true
+on_press:
+  then:
+    lvgl.widget.update:
+      id: ${widget}
+      bg_color: "${press_color}"
+on_release:
+  then:
+    lvgl.widget.update:
+      id: ${widget}
+      bg_color: "${release_color}"

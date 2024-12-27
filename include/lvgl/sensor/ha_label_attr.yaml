@@ -1,6 +1,7 @@
 platform: homeassistant
 id: "${id}"
 entity_id: "${entity_id}"
+attribute: "${attribute}"
 on_value:
   - logger.log:
       format: "${id}: on_value: x: %.0f"

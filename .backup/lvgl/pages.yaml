@@ -1,0 +1,497 @@
+
+- id: test_page_4
+  styles: page_styles
+  widgets:
+    - obj:
+        align: CENTER
+        width: 100%
+        height: SIZE_CONTENT
+        layout:
+          type: FLEX
+          flex_flow: COLUMN
+          flex_align_main: CENTER
+          flex_align_cross: CENTER
+        widgets:
+          # ROW 1
+          - obj:
+              width: 100%
+              height: SIZE_CONTENT
+              pad_bottom: 20
+              layout:
+                type: FLEX
+                flex_flow: ROW_WRAP
+                flex_align_main: SPACE_AROUND
+                flex_align_cross: CENTER
+              widgets:
+                - button:
+                    width: 128
+                    height: 128
+                    bg_color: "SlateGrey"
+                    pad_all: 0
+                    clip_corner: true
+                    on_click:
+                      then:
+                        - logger.log: "on_click"
+                    on_press:
+                      then:
+                        - logger.log: "on_press"
+                    widgets:
+                      - obj:
+                          styles: red_border
+                          #align: CENTER
+                          width: 100%
+                          height: 100%
+                          scrollbar_mode: "OFF"
+                          #clip_corner: true
+                          clickable: false
+                          layout:
+                            type: FLEX
+                            flex_flow: COLUMN
+                            flex_align_main: CENTER
+                            flex_align_cross: CENTER
+                            flex_align_track: CENTER
+                            pad_column: 0
+                            pad_row: 0
+                          widgets:
+                            - label:
+                                styles: red_border
+                                #align: CENTER
+                                text: "\U000F04B9" # sofa
+                                text_font: icons_48
+                                #text_align: CENTER
+                                scrollbar_mode: "OFF"
+                            - label:
+                                styles: red_border
+                                #align: CENTER
+                                text: "Living"
+                                #text_font: main_text32
+                                #text_align: CENTER
+                                scrollbar_mode: "OFF"
+                - button:
+                    width: 128
+                    height: 128
+                    bg_color: "SlateGrey"
+                    pad_all: 0
+                    clip_corner: true
+                    on_click:
+                      then:
+                        - logger.log: "on_click"
+                    on_press:
+                      then:
+                        - logger.log: "on_press"
+                    widgets:
+                      - obj:
+                          styles: red_border
+                          #align: CENTER
+                          width: 100%
+                          height: 100%
+                          scrollbar_mode: "OFF"
+                          #clip_corner: true
+                          clickable: false
+                          layout:
+                            type: FLEX
+                            flex_flow: COLUMN
+                            flex_align_main: CENTER
+                            flex_align_cross: CENTER
+                            #flex_align_track: CENTER
+                            pad_column: 0
+                            pad_row: 0
+                          widgets:
+                            - label:
+                                styles: red_border
+                                #align: CENTER
+                                text: "\U000F181C" # countertop
+                                text_font: icons_48
+                                #text_align: CENTER
+                                scrollbar_mode: "OFF"
+                            - label:
+                                styles: red_border
+                                #align: CENTER
+                                text: "Kitchen"
+                                #text_font: main_text32
+                                #text_align: CENTER
+                                scrollbar_mode: "OFF"
+                - button:
+                    width: 128
+                    height: 128
+                    bg_color: "SlateGrey"
+                    pad_all: 0
+                    clip_corner: true
+                    on_click:
+                      then:
+                        - logger.log: "on_click"
+                    on_press:
+                      then:
+                        - logger.log: "on_press"
+                    widgets:
+                      - obj:
+                          styles: red_border
+                          #align: CENTER
+                          width: 100%
+                          height: 100%
+                          scrollbar_mode: "OFF"
+                          #clip_corner: true
+                          clickable: false
+                          layout:
+                            type: FLEX
+                            flex_flow: COLUMN
+                            flex_align_main: CENTER
+                            flex_align_cross: CENTER
+                            flex_align_track: CENTER
+                            pad_column: 0
+                            pad_row: 0
+                          widgets:
+                            - label:
+                                styles: red_border
+                                align: CENTER
+                                text: "\U000F08A0" # bed-empty
+                                text_font: icons_48
+                                #text_align: CENTER
+                                scrollbar_mode: "OFF"
+                                #width: 100%
+                            - label:
+                                styles: red_border
+                                align: CENTER
+                                text: "Bedroom"
+                                #text_font: main_text32
+                                #text_align: CENTER
+                                scrollbar_mode: "OFF"
+                                #width: 100%
+                - button:
+                    width: 128
+                    height: 128
+                    bg_color: "SlateGrey"
+                    pad_all: 0
+                    clip_corner: true
+                    on_click:
+                      then:
+                        - logger.log: "on_click"
+                    on_press:
+                      then:
+                        - logger.log: "on_press"
+                    widgets:
+                      - obj:
+                          styles: red_border
+                          #align: CENTER
+                          width: 100%
+                          height: 100%
+                          scrollbar_mode: "OFF"
+                          #clip_corner: true
+                          clickable: false
+                          #layout:
+                          #  type: FLEX
+                          #  flex_flow: COLUMN
+                          #  flex_align_main: CENTER
+                          #  flex_align_cross: CENTER
+                          #  flex_align_track: CENTER
+                          #  pad_column: 0
+                          #  pad_row: 0
+                          widgets:
+                            - label:
+                                styles: red_border
+                                #align: CENTER
+                                text: "\U000F1818" # bathtub
+                                text_font: icons_48
+                                #text_align: CENTER
+                                scrollbar_mode: "OFF"
+                                #width: 100%
+                            - label:
+                                styles: red_border
+                                #align: CENTER
+                                text: "Bahtroom"
+                                #text_font: main_text32
+                                #text_align: CENTER
+                                scrollbar_mode: "OFF"
+                                #width: 100%
+
+          # ROW 2
+          - obj:
+              width: 100%
+              height: SIZE_CONTENT
+              layout:
+                type: FLEX
+                flex_flow: ROW_WRAP
+                flex_align_main: SPACE_AROUND
+                flex_align_cross: CENTER
+              widgets:
+                - button:
+                    #id: "${id}"
+                    width: 120
+                    height: 100
+                    border_color: "LightGrey"
+                    border_width: 2
+                    bg_opa: TRANSP
+                    pad_all: 0
+                    clip_corner: true
+                    scrollbar_mode: "OFF"
+                    checkable: true
+                    checked:
+                      bg_color: "DarkOrange"
+                      #bg_opa: 80%
+                      text_color: "Black"
+                    on_click:
+                      then:
+                        - logger.log: ""
+                    widgets:
+                      - obj:
+                          styles: red_border
+                          #align: CENTER
+                          width: 100%
+                          height: 100%
+                          scrollbar_mode: "OFF"
+                          #clip_corner: true
+                          clickable: false
+                          layout:
+                            type: FLEX
+                            flex_flow: COLUMN
+                            flex_align_main: CENTER
+                            flex_align_cross: CENTER
+                            flex_align_track: CENTER
+                            pad_column: 0
+                            pad_row: 0
+                          widgets:
+                            - label:
+                                styles: red_border
+                                #align: CENTER
+                                text: "1.1"
+                                #id: "${temp}"
+                                text_font: main_text32
+                                #text_align: CENTER
+                                pad_all: 0
+                                scrollbar_mode: "OFF"
+                                #width: 100%
+                            - label:
+                                styles: red_border
+                                #align: CENTER
+                                text: "1 %"
+                                #id: "${humi}"
+                                text_font: main_text32
+                                #text_align: CENTER
+                                pad_all: 0
+                                scrollbar_mode: "OFF"
+                                #width: 100%
+                - button:
+                    #id: "${id}"
+                    width: 120
+                    height: 100
+                    border_color: "LightGrey"
+                    border_width: 2
+                    bg_opa: TRANSP
+                    pad_all: 0
+                    clip_corner: true
+                    scrollbar_mode: "OFF"
+                    checkable: true
+                    checked:
+                      bg_color: "DarkOrange"
+                      #bg_opa: 80%
+                      text_color: "Black"
+                    on_click:
+                      then:
+                        - logger.log: ""
+                    widgets:
+                      - obj:
+                          styles: red_border
+                          #align: CENTER
+                          width: 100%
+                          height: 100%
+                          scrollbar_mode: "OFF"
+                          #clip_corner: true
+                          clickable: false
+                          layout:
+                            type: FLEX
+                            flex_flow: COLUMN
+                            flex_align_main: CENTER
+                            flex_align_cross: CENTER
+                            #flex_align_track: CENTER
+                            pad_column: 0
+                            pad_row: 0
+                          widgets:
+                            - label:
+                                styles: red_border
+                                #align: CENTER
+                                text: "1.9"
+                                #id: "${temp}"
+                                text_font: main_text32
+                                #text_align: CENTER
+                                pad_all: 0
+                                scrollbar_mode: "OFF"
+                                #width: 100%
+                            - label:
+                                styles: red_border
+                                #align: CENTER
+                                text: "9 %"
+                                #id: "${humi}"
+                                text_font: main_text32
+                                #text_align: CENTER
+                                pad_all: 0
+                                scrollbar_mode: "OFF"
+                                #width: 100%
+                - button:
+                    #id: "${id}"
+                    width: 120
+                    height: 100
+                    border_color: "LightGrey"
+                    border_width: 2
+                    bg_opa: TRANSP
+                    pad_all: 0
+                    clip_corner: true
+                    scrollbar_mode: "OFF"
+                    checkable: true
+                    checked:
+                      bg_color: "DarkOrange"
+                      #bg_opa: 80%
+                      text_color: "Black"
+                    on_click:
+                      then:
+                        - logger.log: ""
+                    widgets:
+                      - obj:
+                          styles: red_border
+                          #align: CENTER
+                          width: 100%
+                          height: 100%
+                          scrollbar_mode: "OFF"
+                          #clip_corner: true
+                          clickable: false
+                          layout:
+                            type: FLEX
+                            flex_flow: COLUMN
+                            flex_align_main: CENTER
+                            flex_align_cross: CENTER
+                            #flex_align_track: CENTER
+                            pad_column: 0
+                            pad_row: 0
+                          widgets:
+                            - label:
+                                styles: red_border
+                                #align: CENTER
+                                text: "9.9"
+                                #id: "${temp}"
+                                text_font: main_text32
+                                #text_align: CENTER
+                                pad_all: 0
+                                scrollbar_mode: "OFF"
+                                #width: 100%
+                            - label:
+                                styles: red_border
+                                #align: CENTER
+                                text: "11 %"
+                                #id: "${humi}"
+                                text_font: main_text32
+                                #text_align: CENTER
+                                pad_all: 0
+                                scrollbar_mode: "OFF"
+                                #width: 100%
+                - button:
+                    #id: "${id}"
+                    width: 120
+                    height: 100
+                    border_color: "LightGrey"
+                    border_width: 2
+                    bg_opa: TRANSP
+                    pad_all: 0
+                    clip_corner: true
+                    scrollbar_mode: "OFF"
+                    checkable: true
+                    checked:
+                      bg_color: "DarkOrange"
+                      #bg_opa: 80%
+                      text_color: "Black"
+                    on_click:
+                      then:
+                        - logger.log: ""
+                    widgets:
+                      - obj:
+                          styles: red_border
+                          #align: CENTER
+                          width: 100%
+                          height: 100%
+                          scrollbar_mode: "OFF"
+                          #clip_corner: true
+                          clickable: false
+                          #layout:
+                          #  type: FLEX
+                          #  flex_flow: COLUMN
+                          #  flex_align_main: CENTER
+                          #  flex_align_cross: CENTER
+                          #  flex_align_track: CENTER
+                          #  pad_column: 0
+                          #  pad_row: 0
+                          widgets:
+                            - label:
+                                styles: red_border
+                                #align: CENTER
+                                text: "99.9"
+                                #id: "${temp}"
+                                text_font: main_text32
+                                #text_align: CENTER
+                                pad_all: 0
+                                scrollbar_mode: "OFF"
+                                #width: 100%
+                            - label:
+                                styles: red_border
+                                #align: CENTER
+                                text: "99 %"
+                                #id: "${humi}"
+                                text_font: main_text32
+                                #text_align: CENTER
+                                pad_all: 0
+                                scrollbar_mode: "OFF"
+                                #width: 100%
+
+                - button:
+                    #id: "${id}"
+                    width: 120
+                    height: 100
+                    border_color: "LightGrey"
+                    border_width: 2
+                    bg_opa: TRANSP
+                    pad_all: 0
+                    clip_corner: true
+                    scrollbar_mode: "OFF"
+                    checkable: true
+                    checked:
+                      bg_color: "DarkOrange"
+                      #bg_opa: 80%
+                      text_color: "Black"
+                    on_click:
+                      then:
+                        - logger.log: ""
+                    widgets:
+                      - obj:
+                          styles: red_border
+                          #align: CENTER
+                          width: 100%
+                          height: 100%
+                          scrollbar_mode: "OFF"
+                          #clip_corner: true
+                          clickable: false
+                          #layout:
+                          #  type: FLEX
+                          #  flex_flow: COLUMN
+                          #  flex_align_main: CENTER
+                          #  flex_align_cross: CENTER
+                          #  flex_align_track: CENTER
+                          #  pad_column: 0
+                          #  pad_row: 0
+                          widgets:
+                            - label:
+                                styles: red_border
+                                align: CENTER
+                                text: "9.9"
+                                #id: "${temp}"
+                                text_font: main_text32
+                                #text_align: CENTER
+                                pad_all: 0
+                                scrollbar_mode: "OFF"
+                                #width: 100%
+                            - label:
+                                styles: red_border
+                                align: CENTER
+                                text: "11 %"
+                                #id: "${humi}"
+                                text_font: main_text32
+                                #text_align: CENTER
+                                pad_all: 0
+                                scrollbar_mode: "OFF"
+                                #width: 100%

@@ -155,6 +155,9 @@ image:
     id: boot_logo
     type: RGB565
     use_transparency: true
+  #- file: images/background.jpg
+  #  id: background_img
+  #  type: RGB565
   - file: images/livingroom.jpg
     id: living_room_img
     type: RGB565
@@ -168,25 +171,24 @@ image:
 touchscreen:
   # https://esphome.io/#touchscreen
   platform: gt911
-  id: my_touch
   interrupt_pin: GPIO4
   #reset_pin:
   #  ch422g: ch422g_hub
   #  number: 1
   on_touch:
-    - lambda: |-
-        ESP_LOGD("touch", "x=%d y=%d", touch.x, touch.y);
-    #- if:
-    #    condition:
-    #      - switch.is_off: backlight_switch
-    #    then:
-    #      - logger.log: "switch.turn_on: backlight_switch"
-    #      - switch.turn_on: backlight_switch
+    then:
+      - lambda: |-
+          ESP_LOGD("touch", "x=%d y=%d", touch.x, touch.y);
+      #- if:
+      #    condition:
+      #      - switch.is_off: backlight_switch
+      #    then:
+      #      - logger.log: "switch.turn_on: backlight_switch"
+      #      - switch.turn_on: backlight_switch
 
 display:
   # https://esphome.io/#display-components
   - platform: rpi_dpi_rgb
-    id: my_display
     auto_clear_enabled: false
     color_order: RGB
     update_interval: never # for LVGL
@@ -247,11 +249,12 @@ font:
           - "\U000F0922" # wifi-strength-2
           - "\U000F0925" # wifi-strength-3
           - "\U000F0928" # wifi-strength-4
-          # Home Page Buttons
+          # Home Page
           - "\U000F110B" # reload-alert
           - "\U000F01F7" # emoticon-poop
           - "\U000F0717" # snowflake
-          - "\U000F1C70" # information-variant-circle-outline
+          - "\U000F1C6F" # information-variant-circle
+          - "\U000F040A" # play
           # Lights
           - "\U000F1802" # lightbulb-variant
           - "\U000F066F" # globe-light
@@ -267,18 +270,26 @@ font:
           - "\U000F04B9" # sofa
           - "\U000F181C" # countertop
           - "\U000F08A0" # bed-empty
-          - "\U000F09A0" # shower
+          - "\U000F1818" # bathtub
           # Weather
+          - "\U000F050F" # thermometer
+          - "\U000F058E" # water-percent
+          - "\U000F059D" # weather-windy
+          - "\U000F018B" # compass
+          - "\U000F015F" # cloud
+          # Weather Unused
           - "\U000F0505" # temperature-fahrenheit
           - "\U000F0504" # temperature-celsius
           - "\U000F0533" # trending-down
           - "\U000F0534" # trending-neutral
           - "\U000F0535" # trending-up
-          # Menu
-          - "\U000F1C3A" # play-box-edit-outlineup
           # Unused
           - "\U000F092E" # wifi-strength-off-outline
           - "\U000F097E" # light-switch
+          - "\U000F0156" # close
+          - "\U000F05AD" # window-close
+          - "\U000F1398" # close-thick
+          - "\U000F06C9" # close-outline
   - file:
       type: gfonts
       family: "Red Hat Text"
@@ -294,7 +305,19 @@ font:
   - file:
       type: gfonts
       family: "Red Hat Text"
-    id: large_text48
+    id: main_text48
+    size: 48
+    bpp: 4
+    glyphsets:
+      - GF_Latin_Core
+    extras:
+      - file: "fonts/materialdesignicons-webfont.ttf"
+        glyphs: *glyphs
+
+  - file:
+      type: gfonts
+      family: "Azeret Mono"
+    id: mono_text48
     size: 48
     bpp: 4
     glyphsets:
@@ -318,7 +341,7 @@ lvgl:
   buffer_size: 25% # 100%
 
   on_idle:
-    - timeout: 60s
+    - timeout: 300s
       then:
         - logger.log: "LVGL is idle"
         - lvgl.page.show: home_page
@@ -331,6 +354,8 @@ lvgl:
       text_color: "White"
     button:
       bg_color: "MediumSlateBlue"
+      checked:
+        bg_color: "DarkOrchid"
     buttonmatrix:
       items:
         text_color: "White"
@@ -344,34 +369,39 @@ lvgl:
 
   style_definitions:
     - id: header_footer
-      #bg_color: 0x2F8CD8
-      #bg_grad_color: 0x005782
-      #bg_grad_dir: VER
       bg_opa: COVER
       border_opa: TRANSP
       radius: 0
       pad_all: 0
       pad_row: 0
       pad_column: 0
-      #border_color: 0x0077b3
       text_color: "White"
       width: 100%
 
-    - id: sunglasses
-      bg_color: "Black"
+    - id: page_styles
       text_color: "White"
+      bg_color: 0x1B1B1B
       bg_opa: COVER
+      #bg_image_src: background_img
+      #bg_image_opa: COVER
+
+    - id: red_border
+      #border_opa: COVER
+      #border_color: "Red"
+      #border_width: 1
+      outline_width: 1
+      outline_color: red
 
   msgboxes:
     - id: ralph_broke_it
-      close_button: true
-      title: "Everything"
+      close_button: false
+      title: "Who Broke It?"
       body:
-        text: "Ralph Broke It!"
+        text: "- Ralph"
         bg_color: "Grey"
       buttons:
         - id: msgbox_close
-          text: "Close"
+          text: "Confirm Name"
           on_click:
             then:
               - logger.log: "msgbox_close: on_click"
@@ -387,70 +417,78 @@ lvgl:
           align: CENTER
           width: 100%
           height: 100%
-          pad_top: 50 # TODO: Remove once full screen menu is fixed...
-          pad_bottom: 70 # TODO: Remove once full screen menu is fixed...
+          pad_top: 50 # TODO: Fix full screen menu
+          pad_bottom: 70 # TODO: Fix full screen menu
           bg_color: "Black"
           bg_opa: 80%
-          #floating: true
-          #border_opa: COVER
-          #border_color: "White"
-          #border_width: 2
           layout:
             type: FLEX
             flex_flow: COLUMN
             flex_align_main: SPACE_EVENLY
             flex_align_cross: SPACE_EVENLY
           on_press:
-            - lvgl.widget.hide: menu_overlay
+            then:
+              - logger.log: "menu_overlay: on_press"
+              - lvgl.widget.hide: menu_overlay
           widgets:
             # ROW 1 - Rooms
             - obj:
                 width: 100%
                 height: SIZE_CONTENT
+                clickable: false
                 layout:
                   type: FLEX
                   flex_flow: ROW
                   flex_align_main: SPACE_EVENLY
+                  #flex_align_cross: START
                 widgets:
                   - !include
                     file: include/lvgl/button/menu_click.yaml
                     vars:
                       icon: "\U000F04B9" # sofa
                       text: "Living"
-                      page: test_page_1
+                      page: living_room_page
                   - !include
                     file: include/lvgl/button/menu_click.yaml
                     vars:
                       icon: "\U000F181C" # countertop
                       text: "Kitchen"
-                      page: test_page_2
+                      page: kitchen_page
                   - !include
                     file: include/lvgl/button/menu_click.yaml
                     vars:
                       icon: "\U000F08A0" # bed-empty
                       text: "Bedroom"
-                      page: test_page_3
+                      page: bedroom_page
                   - !include
                     file: include/lvgl/button/menu_click.yaml
                     vars:
-                      icon: "\U000F09A0" # shower
+                      icon: "\U000F1818" # bathtub
                       text: "Bathroom"
-                      page: test_page_3
+                      page: test_page_1
             # ROW 2 - Other Pages
             - obj:
                 width: 100%
                 height: SIZE_CONTENT
+                clickable: false
                 layout:
                   type: FLEX
                   flex_flow: ROW
                   flex_align_main: SPACE_EVENLY
+                  #flex_align_cross: START
                 widgets:
                   - !include
                     file: include/lvgl/button/menu_click.yaml
                     vars:
-                      icon: "\U000F1C3A" # play-box-edit-outlineup
+                      icon: "\U000F040A" # play
                       text: "Start"
                       page: first_page
+                  - !include
+                    file: include/lvgl/button/menu_click.yaml
+                    vars:
+                      icon: "\U000F015F" # cloud
+                      text: "Weather"
+                      page: weather_page
                   - !include
                     file: include/lvgl/button/menu_click.yaml
                     vars:
@@ -460,7 +498,7 @@ lvgl:
                   - !include
                     file: include/lvgl/button/menu_click.yaml
                     vars:
-                      icon: "\U000F1C70" # information-variant-circle-outline
+                      icon: "\U000F1C6F" # information-variant-circle
                       text: "Info"
                       page: stats_page
 
@@ -470,13 +508,15 @@ lvgl:
           align: TOP_MID
           styles: header_footer
           height: 36
-          bg_color: 0x7B68EE # top
-          bg_grad_color: 0x241F47 # bottom
+          bg_color: 0x241F47 # top
+          bg_grad_color: 0x7B68EE # bottom
           bg_grad_dir: VER
           bg_opa: COVER
           on_press:
-            - logger.log: "top_overlay: on_press"
-            - lvgl.page.show: stats_page
+            then:
+              - logger.log: "top_overlay: on_press"
+              - lvgl.page.show: stats_page
+              - lvgl.widget.hide: menu_overlay # TODO: Fix full screen menu
           widgets:
             - label:
                 align: TOP_LEFT
@@ -500,7 +540,7 @@ lvgl:
                   #flex_align_cross: SPACE_EVENLY
                 widgets:
                   - label:
-                      text: "--.- \U000F0505" # temperature-fahrenheit
+                      text: "--.- °F" # temperature-fahrenheit
                       id: header_temp
                   - label:
                       text: "\U000F1A47" # home-off-outline
@@ -515,16 +555,16 @@ lvgl:
           align: BOTTOM_MID
           styles: header_footer
           height: 60
-          bg_color: 0x241F47 # top
-          bg_grad_color: 0x7B68EE # bottom
+          bg_color: 0x7B68EE # top
+          bg_grad_color: 0x241F47 # bottom
           bg_grad_dir: VER
           #bg_opa: COVER
-          #pad_all: 0
+          pad_all: 0
           outline_width: 0
           items:
             styles: header_footer
-            bg_color: 0x241F47 # top
-            bg_grad_color: 0x7B68EE # bottom
+            bg_color: 0x7B68EE # top
+            bg_grad_color: 0x241F47 # bottom
             bg_grad_dir: VER
           rows:
             - buttons:
@@ -536,18 +576,19 @@ lvgl:
                       - lvgl.page.previous:
                           #animation: OUT_RIGHT
                           #time: 400ms
+                      - lvgl.widget.hide: menu_overlay # TODO: Fix full screen menu
                 - id: page_home
                   text: "\U000F0EBA" # home-assistant
                   on_press:
                     then:
                       - logger.log: "on_press Home"
                       - lvgl.page.show: home_page
+                      - lvgl.widget.hide: menu_overlay # TODO: Fix full screen menu
                 - id: page_menu
                   text: "\U000F07C3" # dots-horizontal-circle
                   on_press:
                     then:
                       - logger.log: "on_press Menu"
-                      # TODO: Make menu_page a widget and use lvgl.widget.show
                       - lvgl.widget.show: menu_overlay
                 - id: page_next
                   text: "\U000F0054" # arrow-right
@@ -557,11 +598,12 @@ lvgl:
                       - lvgl.page.next:
                           #animation: OUT_LEFT
                           #time: 400ms
+                      - lvgl.widget.hide: menu_overlay # TODO: Fix full screen menu
 
   pages:
     # https://esphome.io/components/lvgl/#main-configuration
     - id: first_page
-      styles: sunglasses
+      styles: page_styles
       widgets:
         - obj:
             align: CENTER
@@ -569,33 +611,34 @@ lvgl:
             height: SIZE_CONTENT
             layout:
               type: FLEX
-              flex_flow: ROW_WRAP
+              flex_flow: COLUMN
+              flex_align_main: CENTER
               flex_align_cross: CENTER
             widgets:
+              # ROW 1
               - obj:
-                  #align: CENTER
                   width: 100%
                   height: SIZE_CONTENT
                   pad_bottom: 20
                   layout:
                     type: FLEX
                     flex_flow: ROW_WRAP
-                    flex_align_cross: CENTER
                     flex_align_main: CENTER
+                    flex_align_cross: CENTER
                   widgets:
                     - label:
                         align: CENTER
                         text: "This Is Your Life Now!"
-                        text_font: large_text48
+                        text_font: main_text48
+              # ROW 2
               - obj:
-                  #align: CENTER
                   width: 100%
                   height: SIZE_CONTENT
                   layout:
                     type: FLEX
                     flex_flow: ROW_WRAP
-                    flex_align_cross: CENTER
                     flex_align_main: CENTER
+                    flex_align_cross: CENTER
                   widgets:
                     - button:
                         width: SIZE_CONTENT
@@ -637,17 +680,16 @@ lvgl:
                             - logger.log: "on_click Display"
                             #- switch.turn_off: backlight_switch
                             - lvgl.widget.show: ralph_broke_it
-                            #- lvgl.page.show: test_page_1
-
+                            #- lvgl.page.show: living_room_page
+              # ROW 3
               - obj:
-                  #align: CENTER
                   width: 100%
                   height: SIZE_CONTENT
                   layout:
                     type: FLEX
                     flex_flow: ROW_WRAP
-                    flex_align_cross: CENTER
                     flex_align_main: CENTER
+                    flex_align_cross: CENTER
                   widgets:
                     - button:
                         width: SIZE_CONTENT
@@ -655,7 +697,7 @@ lvgl:
                         widgets:
                           - label:
                               align: CENTER
-                              text: "\U000F1C70 Info" # information-variant-circle-outline
+                              text: "\U000F1C6F Info" # information-variant-circle
                         on_press:
                           then:
                             - logger.log: "on_press Info"
@@ -670,7 +712,18 @@ lvgl:
                         on_press:
                           then:
                             - logger.log: "on_press Poop"
-                            - lvgl.page.show: test_page_2
+                            - lvgl.page.show: test_page_1
+                    - button:
+                        width: SIZE_CONTENT
+                        height: 80
+                        widgets:
+                          - label:
+                              align: CENTER
+                              text: "\U000F01F7 Do Shit" # emoticon-poop
+                        on_press:
+                          then:
+                            - logger.log: "on_press Poop"
+                            - lvgl.page.show: weather_page
 
         - obj:
             id: boot_screen
@@ -697,12 +750,13 @@ lvgl:
                     arc_color: "DeepSkyBlue"
                     arc_width: 8
             on_press:
-              - lvgl.widget.hide: boot_screen
-              - lvgl.widget.show: top_overlay
-              - lvgl.widget.show: bottom_overlay
+              then:
+                - lvgl.widget.hide: boot_screen
+                - lvgl.widget.show: top_overlay
+                - lvgl.widget.show: bottom_overlay
 
     - id: home_page
-      styles: sunglasses
+      styles: page_styles
       widgets:
         - obj:
             align: CENTER
@@ -718,7 +772,6 @@ lvgl:
             widgets:
               # ROW 1 - Living Room
               - obj:
-                  #align: CENTER
                   width: 100%
                   height: SIZE_CONTENT
                   layout:
@@ -731,9 +784,8 @@ lvgl:
                       file: include/lvgl/button/home_room.yaml
                       vars:
                         id: room_living_room
-                        show: test_page_1
+                        show: living_room_page
                         text: "\U000F04B9" # sofa
-
                     - !include
                       file: include/lvgl/button/home_temp.yaml
                       vars:
@@ -741,15 +793,6 @@ lvgl:
                         entity_id: light.living_room
                         temp: living_room_temp
                         humi: living_room_humi
-
-                    #- !include
-                    #  file: include/lvgl/button/home_click.yaml
-                    #  vars:
-                    #    id: btn_living_room
-                    #    entity_id: light.living_room
-                    #    action: light.toggle
-                    #    text: "\U000F066F" # globe-light
-
                     - !include
                       file: include/lvgl/button/home_click.yaml
                       vars:
@@ -781,15 +824,8 @@ lvgl:
                         action: switch.toggle
                         text: "\U000F05CB" # account-voice
 
-                    #- !include {
-                    #    file: include/lvgl/obj/home_temp.yaml,
-                    #    vars:
-                    #      { temp: living_room_temp, humi: living_room_humi },
-                    #  }
-
               # ROW 2 - Kitchen
               - obj:
-                  #align: CENTER
                   width: 100%
                   height: SIZE_CONTENT
                   layout:
@@ -802,9 +838,8 @@ lvgl:
                       file: include/lvgl/button/home_room.yaml
                       vars:
                         id: room_kitchen
-                        show: test_page_2
+                        show: kitchen_page
                         text: "\U000F181C" # countertop
-
                     - !include
                       file: include/lvgl/button/home_temp.yaml
                       vars:
@@ -812,15 +847,6 @@ lvgl:
                         entity_id: light.kitchen
                         temp: kitchen_temp
                         humi: kitchen_humi
-
-                    #- !include
-                    #  file: include/lvgl/button/home_click.yaml
-                    #  vars:
-                    #    id: btn_kitchen
-                    #    entity_id: light.kitchen
-                    #    action: light.toggle
-                    #    text: "\U000F066F" # globe-light
-
                     - !include
                       file: include/lvgl/button/home_click.yaml
                       vars:
@@ -851,14 +877,8 @@ lvgl:
                         action: switch.toggle
                         text: "\U000F05CB" # account-voice
 
-                    #- !include {
-                    #    file: include/lvgl/obj/home_temp.yaml,
-                    #    vars: { temp: kitchen_temp, humi: kitchen_humi },
-                    #  }
-
               # ROW 3 - Bedroom
               - obj:
-                  #align: CENTER
                   width: 100%
                   height: SIZE_CONTENT
                   layout:
@@ -871,9 +891,8 @@ lvgl:
                       file: include/lvgl/button/home_room.yaml
                       vars:
                         id: room_bedroom
-                        show: test_page_3
+                        show: bedroom_page
                         text: "\U000F08A0" # bed-empty
-
                     - !include
                       file: include/lvgl/button/home_temp.yaml
                       vars:
@@ -881,15 +900,6 @@ lvgl:
                         entity_id: light.bedroom_light
                         temp: bedroom_temp
                         humi: bedroom_humi
-
-                    #- !include
-                    #  file: include/lvgl/button/home_click.yaml
-                    #  vars:
-                    #    id: btn_bedroom_light
-                    #    entity_id: light.bedroom_light
-                    #    action: light.toggle
-                    #    text: "\U000F066F" # globe-light
-
                     - !include
                       file: include/lvgl/button/home_click.yaml
                       vars:
@@ -919,13 +929,8 @@ lvgl:
                         action: switch.toggle
                         text: "\U000F05CB" # account-voice
 
-                    #- !include {
-                    #    file: include/lvgl/obj/home_temp.yaml,
-                    #    vars: { temp: bedroom_temp, humi: bedroom_humi },
-                    #  }
-
-    - id: test_page_1
-      styles: sunglasses
+    - id: living_room_page
+      styles: page_styles
       widgets:
         - obj:
             width: 100%
@@ -1003,8 +1008,8 @@ lvgl:
                               text: "Bottom Right"
                               text_color: "Black"
 
-    - id: test_page_2
-      styles: sunglasses
+    - id: kitchen_page
+      styles: page_styles
       widgets:
         - obj:
             width: 100%
@@ -1078,8 +1083,8 @@ lvgl:
                           - label:
                               text: "Bottom Right"
 
-    - id: test_page_3
-      styles: sunglasses
+    - id: bedroom_page
+      styles: page_styles
       widgets:
         - obj:
             width: 100%
@@ -1153,8 +1158,323 @@ lvgl:
                           - label:
                               text: "Bottom Right"
 
+    - id: test_page_1
+      styles: page_styles
+      #bg_opa: COVER
+      #bg_color: "LightGray"
+      #bg_image_src: background_img
+      #bg_image_opa: COVER
+      widgets:
+        - obj:
+            styles: red_border
+            align: CENTER
+            width: 100%
+            height: 100%
+            pad_top: 36 # TODO: Fix full screen sleep page
+            layout:
+              type: FLEX
+              flex_flow: COLUMN
+              #flex_align_main: START
+              #flex_align_cross: START
+              pad_column: 0
+              pad_row: 0
+            widgets:
+              # TOP ROW
+              - obj:
+                  styles: red_border
+                  width: 100%
+                  height: SIZE_CONTENT
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW
+                    flex_align_main: SPACE_EVENLY
+                    flex_align_cross: SPACE_EVENLY
+                    flex_align_track: CENTER
+                    pad_column: 0
+                    pad_row: 0
+                  widgets:
+                    - obj:
+                        styles: red_border
+                        #align: CENTER
+                        width: 25%
+                        height: SIZE_CONTENT
+                        widgets:
+                          - label:
+                              text: "Top Left"
+                              text_align: CENTER
+                    - obj:
+                        styles: red_border
+                        #align: CENTER
+                        height: SIZE_CONTENT
+                        flex_grow: 1
+                        widgets:
+                          - label:
+                              text: "Middle"
+                              text_font: mono_text48
+                              text_align: CENTER
+                    - obj:
+                        styles: red_border
+                        #align: CENTER
+                        width: 25%
+                        height: SIZE_CONTENT
+                        widgets:
+                          - label:
+                              text: "Top Right"
+                              text_align: CENTER
+              # ROW 1
+              - obj:
+                  styles: red_border
+                  width: 100%
+                  height: SIZE_CONTENT
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW
+                    #flex_align_main: SPACE_EVENLY
+                    #flex_align_cross: SPACE_EVENLY
+                    #flex_align_track: CENTER
+                  widgets:
+                    - label:
+                        text: "Bottom Row 1"
+                        text_align: CENTER
+              # ROW 2
+              - obj:
+                  styles: red_border
+                  width: 100%
+                  height: SIZE_CONTENT
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW
+                    flex_align_main: CENTER
+                    #flex_align_cross: CENTER
+                    #flex_align_track: CENTER
+                  widgets:
+                    - label:
+                        text: "Bottom Row 2"
+                        text_align: CENTER
+              # ROW 3
+              - obj:
+                  styles: red_border
+                  width: 100%
+                  height: SIZE_CONTENT
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW
+                    flex_align_main: END
+                    #flex_align_cross: CENTER
+                    #flex_align_track: CENTER
+                  widgets:
+                    - label:
+                        text: "Bottom Row 3"
+                        text_align: CENTER
+
+    - id: weather_page
+      styles: page_styles
+      widgets:
+        - obj:
+            styles: red_border
+            align: CENTER
+            width: 100%
+            height: 100%
+            pad_top: 36 # TODO: Remove once full screen is fixed
+            layout:
+              type: FLEX
+              flex_flow: ROW
+              flex_align_main: SPACE_EVENLY
+              #flex_align_cross: START
+            text_font: main_text48
+            widgets:
+              # COLUMN 1
+              - obj:
+                  styles: red_border
+                  align: CENTER
+                  width: SIZE_CONTENT
+                  height: 100%
+                  layout:
+                    type: FLEX
+                    flex_flow: COLUMN
+                    #flex_align_main: START
+                    #flex_align_cross: START
+                    pad_column: 0
+                    pad_row: 0
+                  widgets:
+                    - label:
+                        styles: red_border
+                        #align: CENTER
+                        width: SIZE_CONTENT
+                        height: SIZE_CONTENT
+                        text: "NOAA"
+                        #id: weather_name
+                    - obj:
+                        styles: red_border
+                        #align: CENTER
+                        width: SIZE_CONTENT
+                        height: SIZE_CONTENT
+                        layout:
+                          type: grid
+                          grid_columns: [CONTENT, CONTENT]
+                          grid_rows: [CONTENT, CONTENT, CONTENT, CONTENT]
+                          pad_row: 10
+                          pad_column: 20
+                        widgets:
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 0
+                              grid_cell_column_pos: 0
+                              text: "\U000F050F"
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 0
+                              grid_cell_column_pos: 1
+                              text: "--.- °F"
+                              id: weather_temperature
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 1
+                              grid_cell_column_pos: 0
+                              text: "\U000F058E"
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 1
+                              grid_cell_column_pos: 1
+                              text: "-- %"
+                              id: weather_humidity
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 2
+                              grid_cell_column_pos: 0
+                              text: "\U000F059D"
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 2
+                              grid_cell_column_pos: 1
+                              text: "-- mph"
+                              id: weather_wind_mph
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 3
+                              grid_cell_column_pos: 0
+                              text: "\U000F018B"
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 3
+                              grid_cell_column_pos: 1
+                              text: "-- °"
+                              id: weather_wind_deg
+              # COLUMN 2
+              - obj:
+                  styles: red_border
+                  align: CENTER
+                  width: SIZE_CONTENT
+                  height: 100%
+                  layout:
+                    type: FLEX
+                    flex_flow: COLUMN
+                    #flex_align_main: START
+                    #flex_align_cross: START
+                    pad_column: 0
+                    pad_row: 0
+                  widgets:
+                    - label:
+                        styles: red_border
+                        #align: CENTER
+                        width: SIZE_CONTENT
+                        height: SIZE_CONTENT
+                        text: "Outside"
+                        #id: weather_name
+                    - obj:
+                        outline_width: 1
+                        styles: red_border
+                        #align: CENTER
+                        width: SIZE_CONTENT
+                        height: SIZE_CONTENT
+                        layout:
+                          type: grid
+                          grid_columns: [CONTENT, CONTENT]
+                          grid_rows: [CONTENT, CONTENT]
+                          pad_row: 10
+                          pad_column: 20
+                        widgets:
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 0
+                              grid_cell_column_pos: 0
+                              text: "\U000F050F"
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 0
+                              grid_cell_column_pos: 1
+                              text: "--.- °F"
+                              id: outside_temperature
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 1
+                              grid_cell_column_pos: 0
+                              text: "\U000F058E"
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 1
+                              grid_cell_column_pos: 1
+                              text: "-- %"
+                              id: outside_humidity
+              # COLUMN 3
+              - obj:
+                  styles: red_border
+                  align: CENTER
+                  width: SIZE_CONTENT
+                  height: 100%
+                  layout:
+                    type: FLEX
+                    flex_flow: COLUMN
+                    #flex_align_main: START
+                    #flex_align_cross: START
+                    pad_column: 0
+                    pad_row: 0
+                  widgets:
+                    - label:
+                        styles: red_border
+                        #align: CENTER
+                        width: SIZE_CONTENT
+                        height: SIZE_CONTENT
+                        text: "Inside"
+                        #id: weather_name
+                    - obj:
+                        outline_width: 1
+                        styles: red_border
+                        #align: CENTER
+                        width: SIZE_CONTENT
+                        height: SIZE_CONTENT
+                        layout:
+                          type: grid
+                          grid_columns: [CONTENT, CONTENT]
+                          grid_rows: [CONTENT, CONTENT]
+                          pad_row: 10
+                          pad_column: 20
+                        widgets:
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 0
+                              grid_cell_column_pos: 0
+                              text: "\U000F050F"
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 0
+                              grid_cell_column_pos: 1
+                              text: "--.- °F"
+                              id: inside_temperature
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 1
+                              grid_cell_column_pos: 0
+                              text: "\U000F058E"
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 1
+                              grid_cell_column_pos: 1
+                              text: "-- %"
+                              id: inside_humidity
+
     - id: stats_page
-      styles: sunglasses
+      styles: page_styles
       widgets:
         - obj:
             align: TOP_MID
@@ -1163,7 +1483,7 @@ lvgl:
             pad_top: 40
             layout:
               type: FLEX
-              flex_flow: COLUMN_WRAP
+              flex_flow: COLUMN
               #flex_align_main: START
               #flex_align_cross: START
             widgets:
@@ -1229,7 +1549,7 @@ lvgl:
                   scrollbar_mode: "OFF"
                   layout:
                     type: FLEX
-                    flex_flow: ROW_WRAP
+                    flex_flow: ROW
                     #flex_align_main: SPACE_EVENLY
                     #flex_align_cross: SPACE_EVENLY
                   widgets:
@@ -1341,131 +1661,99 @@ time:
 
 binary_sensor:
   # https://esphome.io/#binary-sensor-components
+  # Devices - Lights
   - !include
     file: include/lvgl/binary/ha_widget.yaml
     vars:
       id: living_room
       entity_id: light.living_room
       widget: btn_living_room
-
   - !include
     file: include/lvgl/binary/ha_widget.yaml
     vars:
       id: kitchen
       entity_id: light.kitchen
       widget: btn_kitchen
-
   - !include
     file: include/lvgl/binary/ha_widget.yaml
     vars:
       id: bedroom_light
       entity_id: light.bedroom_light
       widget: btn_bedroom_light
-
   - !include
     file: include/lvgl/binary/ha_widget.yaml
     vars:
       id: studio_light
       entity_id: switch.studio_light
       widget: btn_studio_light
-
+  # Devices - Other
   - !include
     file: include/lvgl/binary/ha_widget.yaml
     vars:
       id: bedroom_fan
       entity_id: switch.bedroom_fan
       widget: btn_bedroom_fan
-
+  # HA - Switches
   - !include
     file: include/lvgl/binary/ha_widget.yaml
     vars:
       id: motion_light_kitchen
       entity_id: input_boolean.motion_light_kitchen
       widget: btn_motion_light_kitchen
-
   - !include
     file: include/lvgl/binary/ha_widget.yaml
     vars:
       id: motion_light_bedroom
       entity_id: input_boolean.motion_light_bedroom
       widget: btn_motion_light_bedroom
-
   - !include
     file: include/lvgl/binary/ha_widget.yaml
     vars:
       id: alarm_arm
       entity_id: input_boolean.alarm_arm
       widget: btn_alarm_arm
-
-  - !include
-    file: include/lvgl/binary/ha_widget.yaml
-    vars:
-      id: enable_wake_48
-      entity_id: switch.esptest48_enable_wake_48
-      widget: btn_enable_wake_48
-
-  - !include
-    file: include/lvgl/binary/ha_widget.yaml
-    vars:
-      id: enable_wake_51
-      entity_id: switch.esptest51_enable_wake_51
-      widget: btn_enable_wake_51
-
-  - !include
-    file: include/lvgl/binary/ha_widget.yaml
-    vars:
-      id: enable_wake_52
-      entity_id: switch.esptest52_enable_wake_52
-      widget: btn_enable_wake_52
-
   - !include
     file: include/lvgl/binary/ha_widget.yaml
     vars:
       id: night_light_48
       entity_id: switch.esptest48_night_light_48
       widget: btn_night_light_48
-
-  #- !include
-  #  file: include/lvgl/binary/ha_widget.yaml
-  #  vars:
-  #    id: presence_47
-  #    entity_id: binary_sensor.presence_47
-  #    widget: room_kitchen
-  - platform: homeassistant
-    id: presence_47
-    entity_id: binary_sensor.presence_47
-    publish_initial_state: true
-    on_press:
-      then:
-        lvgl.widget.update:
-          id: room_kitchen
-          bg_color: "Yellow"
-    on_release:
-      then:
-        lvgl.widget.update:
-          id: room_kitchen
-          bg_color: "LightGray"
-
-  #- !include
-  #  file: include/lvgl/binary/ha_widget.yaml
-  #  vars:
-  #    id: presence_48
-  #    entity_id: binary_sensor.esptest48_presence_48
-  #    widget: room_bedroom
-  - platform: homeassistant
-    id: presence_48
-    entity_id: binary_sensor.esptest48_presence_48
-    publish_initial_state: true
-    on_press:
-      then:
-        lvgl.widget.update:
-          id: room_bedroom
-          bg_color: "Yellow"
-    on_release:
-      then:
-        lvgl.widget.update:
-          id: room_bedroom
-          bg_color: "LightGray"
+  # Boxes - Micro Wake Word
+  - !include
+    file: include/lvgl/binary/ha_widget.yaml
+    vars:
+      id: enable_wake_48
+      entity_id: switch.esptest48_enable_wake_48
+      widget: btn_enable_wake_48
+  - !include
+    file: include/lvgl/binary/ha_widget.yaml
+    vars:
+      id: enable_wake_51
+      entity_id: switch.esptest51_enable_wake_51
+      widget: btn_enable_wake_51
+  - !include
+    file: include/lvgl/binary/ha_widget.yaml
+    vars:
+      id: enable_wake_52
+      entity_id: switch.esptest52_enable_wake_52
+      widget: btn_enable_wake_52
+  # Boxes - Presence
+  - !include
+    file: include/lvgl/binary/ha_press_bg.yaml
+    vars:
+      id: presence_47
+      entity_id: binary_sensor.presence_47
+      widget: room_kitchen
+      press_color: "MediumOrchid"
+      release_color: "LightGray"
+  - !include
+    file: include/lvgl/binary/ha_press_bg.yaml
+    vars:
+      id: presence_48
+      entity_id: binary_sensor.esptest48_presence_48
+      widget: room_bedroom
+      press_color: "MediumOrchid"
+      release_color: "LightGray"
 
 text_sensor:
   # https://esphome.io/#text-sensor-components
@@ -1497,6 +1785,9 @@ sensor:
   - id: !extend wifi_info_signal
     on_value:
       then:
+        #- logger.log:
+        #    format: "wifi_info_signal: on_value: x: %.0f"
+        #    args: ["x"]
         - if:
             condition:
               lambda: "return x <= -75;"
@@ -1589,13 +1880,30 @@ sensor:
           - script.execute: update_debug_stats
 
   # Outside
+  #- !include
+  #  file: include/lvgl/sensor/ha_label.yaml
+  #  vars:
+  #    id: temp02_22
+  #    entity_id: sensor.temp02_22
+  #    label: [header_temp, outside_temperature]
+  #    format: "%.1f °F"
+  - platform: homeassistant
+    id: temp02_22
+    entity_id: sensor.temp02_22
+    on_value:
+      - lvgl.label.update:
+          id: [header_temp, outside_temperature]
+          text:
+            format: "%.1f °F"
+            args: ["x"]
+
   - !include
     file: include/lvgl/sensor/ha_label.yaml
     vars:
-      id: temp02_22
-      entity_id: sensor.temp02_22
-      label: header_temp
-      format: "%.1f \U000F0505"
+      id: humi02_22
+      entity_id: sensor.humi02_22
+      label: outside_humidity
+      format: "%.0f %%"
 
   # Bedroom
   - !include
@@ -1614,20 +1922,29 @@ sensor:
       format: "%.0f %%"
 
   # Living Room
-  - !include
-    file: include/lvgl/sensor/ha_label.yaml
-    vars:
-      id: temp03_22
-      entity_id: sensor.temp03_22
-      label: living_room_temp
-      format: "%.1f"
-  - !include
-    file: include/lvgl/sensor/ha_label.yaml
-    vars:
-      id: humi03_22
-      entity_id: sensor.humi03_22
-      label: living_room_humi
-      format: "%.0f %%"
+  - platform: homeassistant
+    id: temp03_22
+    entity_id: sensor.temp03_22
+    on_value:
+      - lvgl.label.update:
+          id: living_room_temp
+          text:
+            format: "%.1f"
+            args: ["x"]
+      - lvgl.label.update:
+          id: inside_temperature
+          text:
+            format: "%.1f °F"
+            args: ["x"]
+  - platform: homeassistant
+    id: humi03_22
+    entity_id: sensor.humi03_22
+    on_value:
+      - lvgl.label.update:
+          id: [living_room_humi, inside_humidity]
+          text:
+            format: "%.0f %%"
+            args: ["x"]
 
   # Kitchen
   - !include
@@ -1644,3 +1961,45 @@ sensor:
       entity_id: sensor.humi04_22
       label: kitchen_humi
       format: "%.0f %%"
+
+  # Weather
+  #- !include
+  #  file: include/lvgl/sensor/ha_label_attr.yaml
+  #  vars:
+  #    id: nws_friendly_name
+  #    entity_id: weather.f6219
+  #    label: weather_name
+  #    format: "%s"
+  #    attribute: friendly_name
+  - !include
+    file: include/lvgl/sensor/ha_label_attr.yaml
+    vars:
+      id: nws_temperature
+      entity_id: weather.f6219
+      label: weather_temperature
+      format: "%.1f °F"
+      attribute: temperature
+  - !include
+    file: include/lvgl/sensor/ha_label_attr.yaml
+    vars:
+      id: nws_humidity
+      entity_id: weather.f6219
+      label: weather_humidity
+      format: "%.0f %%"
+      attribute: humidity
+  - !include
+    file: include/lvgl/sensor/ha_label_attr.yaml
+    vars:
+      id: nws_wind_speed
+      entity_id: weather.f6219
+      label: weather_wind_mph
+      format: "%.0f mph"
+      attribute: wind_speed
+  - !include
+    file: include/lvgl/sensor/ha_label_attr.yaml
+    vars:
+      id: nws_wind_bearing
+      entity_id: weather.f6219
+      label: weather_wind_deg
+      format: "%.0f °"
+      attribute: wind_bearing

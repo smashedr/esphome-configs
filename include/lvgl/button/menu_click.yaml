@@ -1,12 +1,12 @@
 button:
-  width: 140
-  height: 140
+  width: 128
+  height: 128
   bg_color: "SlateGrey"
   pad_all: 0
   clip_corner: true
   on_press:
     then:
-      - logger.log: "on_press: ${page}"
+      - logger.log: "on_press: lvgl.page.show: ${page}"
       - lvgl.page.show: "${page}"
       - lvgl.widget.hide: menu_overlay
   widgets:
@@ -20,16 +20,21 @@ button:
         layout:
           type: FLEX
           flex_flow: COLUMN
-          flex_align_main: SPACE_EVENLY
-          flex_align_cross: SPACE_EVENLY
+          flex_align_main: CENTER
+          flex_align_cross: CENTER
+          flex_align_track: CENTER
+          pad_column: 0
+          pad_row: 0
         widgets:
           - label:
-              align: CENTER
+              #align: CENTER
               text: "${icon}"
               text_font: icons_48
+              #text_align: CENTER
               scrollbar_mode: "OFF"
           - label:
-              align: CENTER
+              #align: CENTER
               text: "${text}"
               #text_font: main_text32
+              #text_align: CENTER
               scrollbar_mode: "OFF"

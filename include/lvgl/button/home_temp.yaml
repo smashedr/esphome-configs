@@ -1,6 +1,6 @@
 button:
   id: "${id}"
-  width: 100
+  width: 120
   height: 100
   border_color: "LightGrey"
   border_width: 2
@@ -9,10 +9,10 @@ button:
   clip_corner: true
   scrollbar_mode: "OFF"
   checkable: true
-  checked:
-    bg_color: "DarkOrange"
-    #bg_opa: 80%
-    text_color: "Black"
+  #checked:
+  #  bg_color: "DarkOrchid"
+  #  #bg_opa: 80%
+  #  text_color: "Black"
   on_click:
     - logger.log: "${id}: on_click: light.toggle: ${entity_id}"
     - homeassistant.action:
@@ -21,27 +21,34 @@ button:
           entity_id: "${entity_id}"
   widgets:
     - obj:
-        align: CENTER
+        #align: CENTER
         width: 100%
         height: 100%
-        #clip_corner: true
         scrollbar_mode: "OFF"
+        #clip_corner: true
         clickable: false
         layout:
           type: FLEX
           flex_flow: COLUMN
-          flex_align_main: SPACE_EVENLY
+          flex_align_main: CENTER
           flex_align_cross: CENTER
+          flex_align_track: CENTER
+          pad_column: 0
+          pad_row: 0
         widgets:
           - label:
-              align: CENTER
+              #align: CENTER
               text: "--.-"
               id: "${temp}"
               text_font: main_text32
+              #text_align: CENTER
+              pad_all: 0
               scrollbar_mode: "OFF"
           - label:
-              align: CENTER
+              #align: CENTER
               text: "-- %"
               id: "${humi}"
               text_font: main_text32
+              #text_align: CENTER
+              pad_all: 0
               scrollbar_mode: "OFF"

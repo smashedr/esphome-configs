@@ -8,6 +8,6 @@ on_state:
         format: "${id}: on_state: x: %.0f"
         args: ["x"]
     - lvgl.widget.update:
-        id: "${widget}"
+        id: ${widget}
         state:
           checked: !lambda return x;
