@@ -333,8 +333,8 @@ font:
   - file:
       type: gfonts
       family: "Azeret Mono"
-    id: mono_text72
-    size: 72
+    id: mono_text128
+    size: 128
     bpp: 4
     glyphsets: [GF_Latin_Core]
 
@@ -1327,38 +1327,41 @@ lvgl:
                     type: FLEX
                     flex_flow: ROW
                     flex_align_main: SPACE_EVENLY
-                    flex_align_cross: SPACE_EVENLY
+                    flex_align_cross: CENTER
                     flex_align_track: CENTER
                     pad_column: 0
                     pad_row: 0
                   widgets:
                     - obj:
                         styles: red_border
-                        align: CENTER
+                        #align: CENTER
                         width: 25%
                         height: SIZE_CONTENT
                         widgets:
                           - label:
+                              styles: red_border
                               text: "Left"
                               text_font: mono_text48
                               #text_align: CENTER
                     - obj:
                         styles: red_border
-                        align: CENTER
+                        #align: CENTER
                         height: SIZE_CONTENT
                         flex_grow: 1
                         widgets:
                           - label:
+                              styles: red_border
                               text: "Middle"
-                              text_font: mono_text72
+                              text_font: mono_text128
                               #text_align: CENTER
                     - obj:
                         styles: red_border
-                        align: CENTER
+                        #align: CENTER
                         width: 25%
                         height: SIZE_CONTENT
                         widgets:
                           - label:
+                              styles: red_border
                               text: "Right"
                               text_font: mono_text48
                               #text_align: CENTER
@@ -1375,8 +1378,9 @@ lvgl:
                     #flex_align_track: CENTER
                   widgets:
                     - label:
+                        styles: red_border
                         text: "Bottom Row 3"
-                        text_align: CENTER
+                        #text_align: CENTER
 
     - id: weather_page
       styles: page_styles
