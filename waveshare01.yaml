@@ -231,8 +231,7 @@ font:
     id: main_text26
     size: 26
     bpp: 4
-    glyphsets:
-      - GF_Latin_Core
+    glyphsets: [GF_Latin_Core]
     extras:
       - file: "fonts/materialdesignicons-webfont.ttf"
         glyphs: &glyphs
@@ -296,8 +295,7 @@ font:
     id: main_text32
     size: 32
     bpp: 4
-    glyphsets:
-      - GF_Latin_Core
+    glyphsets: [GF_Latin_Core]
     extras:
       - file: "fonts/materialdesignicons-webfont.ttf"
         glyphs: *glyphs
@@ -308,10 +306,20 @@ font:
     id: main_text48
     size: 48
     bpp: 4
-    glyphsets:
-      - GF_Latin_Core
+    glyphsets: [GF_Latin_Core]
     extras:
       - file: "fonts/materialdesignicons-webfont.ttf"
+        glyphs: *glyphs
+
+  - file:
+      type: gfonts
+      family: "Red Hat Text"
+    id: red_hat_mdi_48
+    size: 48
+    bpp: 4
+    glyphsets: [GF_Latin_Core]
+    extras:
+      - file: "fonts/red_hat_text_mdi.ttf"
         glyphs: *glyphs
 
   - file:
@@ -320,8 +328,15 @@ font:
     id: mono_text48
     size: 48
     bpp: 4
-    glyphsets:
-      - GF_Latin_Core
+    glyphsets: [GF_Latin_Core]
+
+  - file:
+      type: gfonts
+      family: "Azeret Mono"
+    id: mono_text72
+    size: 72
+    bpp: 4
+    glyphsets: [GF_Latin_Core]
 
   - file: "fonts/materialdesignicons-webfont.ttf"
     id: icons_36
@@ -1267,6 +1282,102 @@ lvgl:
                         text: "Bottom Row 3"
                         text_align: CENTER
 
+    - id: test_page_2
+      styles: page_styles
+      #bg_opa: COVER
+      #bg_color: "LightGray"
+      #bg_image_src: background_img
+      #bg_image_opa: COVER
+      widgets:
+        - obj:
+            styles: red_border
+            align: CENTER
+            width: 100%
+            height: 100%
+            pad_top: 36 # TODO: Fix full screen sleep page
+            layout:
+              type: FLEX
+              flex_flow: COLUMN
+              flex_align_main: CENTER
+              flex_align_cross: CENTER
+              pad_column: 0
+              pad_row: 0
+            widgets:
+              # ROW 1
+              - obj:
+                  styles: red_border
+                  width: 100%
+                  height: SIZE_CONTENT
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW
+                    flex_align_main: CENTER
+                    #flex_align_cross: SPACE_EVENLY
+                    #flex_align_track: CENTER
+                  widgets:
+                    - label:
+                        text: "Top Row 1"
+                        text_align: CENTER
+              # ROW 2
+              - obj:
+                  styles: red_border
+                  width: 100%
+                  height: SIZE_CONTENT
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW
+                    flex_align_main: SPACE_EVENLY
+                    flex_align_cross: SPACE_EVENLY
+                    flex_align_track: CENTER
+                    pad_column: 0
+                    pad_row: 0
+                  widgets:
+                    - obj:
+                        styles: red_border
+                        align: CENTER
+                        width: 25%
+                        height: SIZE_CONTENT
+                        widgets:
+                          - label:
+                              text: "Left"
+                              text_font: mono_text48
+                              #text_align: CENTER
+                    - obj:
+                        styles: red_border
+                        align: CENTER
+                        height: SIZE_CONTENT
+                        flex_grow: 1
+                        widgets:
+                          - label:
+                              text: "Middle"
+                              text_font: mono_text72
+                              #text_align: CENTER
+                    - obj:
+                        styles: red_border
+                        align: CENTER
+                        width: 25%
+                        height: SIZE_CONTENT
+                        widgets:
+                          - label:
+                              text: "Right"
+                              text_font: mono_text48
+                              #text_align: CENTER
+              # ROW 3
+              - obj:
+                  styles: red_border
+                  width: 100%
+                  height: SIZE_CONTENT
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW
+                    flex_align_main: CENTER
+                    #flex_align_cross: CENTER
+                    #flex_align_track: CENTER
+                  widgets:
+                    - label:
+                        text: "Bottom Row 3"
+                        text_align: CENTER
+
     - id: weather_page
       styles: page_styles
       widgets:
@@ -1281,7 +1392,7 @@ lvgl:
               flex_flow: ROW
               flex_align_main: SPACE_EVENLY
               #flex_align_cross: START
-            text_font: main_text48
+            text_font: red_hat_mdi_48
             widgets:
               # COLUMN 1
               - obj:
