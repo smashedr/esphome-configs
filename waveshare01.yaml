@@ -225,102 +225,97 @@ display:
 
 font:
   # https://esphome.io/components/font
-  - file:
-      type: gfonts
-      family: "Red Hat Text"
+  - file: fonts/red_hat_text_mdi.ttf
+    #  type: gfonts
+    #  family: "Red Hat Text"
     id: main_text26
     size: 26
     bpp: 4
     glyphsets: [GF_Latin_Core]
-    extras:
-      - file: "fonts/materialdesignicons-webfont.ttf"
-        glyphs: &glyphs
-          - "\U000F004D" # arrow-left
-          - "\U000F0054" # arrow-right
-          - "\U000F07C3" # dots-horizontal-circle
-          - "\U000F0EBA" # home-analytics
-          - "\U000F07D0" # home-assistant
-          - "\U000F1A47" # home-off-outline
-          - "\U000F0150" # clock-outline
-          - "\U000F0E17" # calendar-month
-          - "\U000F092B" # wifi-strength-alert-outline
-          - "\U000F091F" # wifi-strength-1
-          - "\U000F0922" # wifi-strength-2
-          - "\U000F0925" # wifi-strength-3
-          - "\U000F0928" # wifi-strength-4
-          # Home Page
-          - "\U000F110B" # reload-alert
-          - "\U000F01F7" # emoticon-poop
-          - "\U000F0717" # snowflake
-          - "\U000F1C6F" # information-variant-circle
-          - "\U000F040A" # play
-          # Lights
-          - "\U000F1802" # lightbulb-variant
-          - "\U000F066F" # globe-light
-          - "\U000F0A00" # lighthouse-on
-          - "\U000F1A4C" # lightbulb-night
-          # Devices
-          - "\U000F0210" # fan
-          - "\U000F0D91" # motion-sensor
-          - "\U000F0CCB" # shield-home-outline
-          - "\U000F05CB" # account-voice
-          - "\U000F0D90" # monitor-off
-          # Areas
-          - "\U000F04B9" # sofa
-          - "\U000F181C" # countertop
-          - "\U000F08A0" # bed-empty
-          - "\U000F1818" # bathtub
-          # Weather
-          - "\U000F050F" # thermometer
-          - "\U000F058E" # water-percent
-          - "\U000F059D" # weather-windy
-          - "\U000F018B" # compass
-          - "\U000F015F" # cloud
-          # Weather Unused
-          - "\U000F0505" # temperature-fahrenheit
-          - "\U000F0504" # temperature-celsius
-          - "\U000F0533" # trending-down
-          - "\U000F0534" # trending-neutral
-          - "\U000F0535" # trending-up
-          # Unused
-          - "\U000F092E" # wifi-strength-off-outline
-          - "\U000F097E" # light-switch
-          - "\U000F0156" # close
-          - "\U000F05AD" # window-close
-          - "\U000F1398" # close-thick
-          - "\U000F06C9" # close-outline
-  - file:
-      type: gfonts
-      family: "Red Hat Text"
+    glyphs: &glyphs
+      - "\U000F004D" # arrow-left
+      - "\U000F0054" # arrow-right
+      - "\U000F07C3" # dots-horizontal-circle
+      - "\U000F0EBA" # home-analytics
+      - "\U000F07D0" # home-assistant
+      - "\U000F1A47" # home-off-outline
+      - "\U000F0150" # clock-outline
+      - "\U000F0E17" # calendar-month
+      - "\U000F092B" # wifi-strength-alert-outline
+      - "\U000F091F" # wifi-strength-1
+      - "\U000F0922" # wifi-strength-2
+      - "\U000F0925" # wifi-strength-3
+      - "\U000F0928" # wifi-strength-4
+      # Home Page
+      - "\U000F110B" # reload-alert
+      - "\U000F01F7" # emoticon-poop
+      - "\U000F0717" # snowflake
+      - "\U000F1C6F" # information-variant-circle
+      - "\U000F040A" # play
+      # Lights
+      - "\U000F1802" # lightbulb-variant
+      - "\U000F066F" # globe-light
+      - "\U000F0A00" # lighthouse-on
+      - "\U000F1A4C" # lightbulb-night
+      # Devices
+      - "\U000F0210" # fan
+      - "\U000F0D91" # motion-sensor
+      - "\U000F0CCB" # shield-home-outline
+      - "\U000F05CB" # account-voice
+      - "\U000F0D90" # monitor-off
+      # Areas
+      - "\U000F04B9" # sofa
+      - "\U000F181C" # countertop
+      - "\U000F08A0" # bed-empty
+      - "\U000F1818" # bathtub
+      # Weather
+      - "\U000F050F" # thermometer
+      - "\U000F058E" # water-percent
+      - "\U000F059D" # weather-windy
+      - "\U000F018B" # compass
+      - "\U000F015F" # cloud
+      # Weather Unused
+      - "\U000F0505" # temperature-fahrenheit
+      - "\U000F0504" # temperature-celsius
+      - "\U000F0533" # trending-down
+      - "\U000F0534" # trending-neutral
+      - "\U000F0535" # trending-up
+      # Unused
+      - "\U000F092E" # wifi-strength-off-outline
+      - "\U000F097E" # light-switch
+      - "\U000F0156" # close
+      - "\U000F05AD" # window-close
+      - "\U000F1398" # close-thick
+      - "\U000F06C9" # close-outline
+
+  - file: fonts/red_hat_text_mdi.ttf
+    #  type: gfonts
+    #  family: "Red Hat Text"
     id: main_text32
     size: 32
     bpp: 4
     glyphsets: [GF_Latin_Core]
-    extras:
-      - file: "fonts/materialdesignicons-webfont.ttf"
-        glyphs: *glyphs
+    glyphs: *glyphs
 
-  - file:
-      type: gfonts
-      family: "Red Hat Text"
+  - file: fonts/red_hat_text_mdi.ttf
+    #  type: gfonts
+    #  family: "Red Hat Text"
     id: main_text48
     size: 48
     bpp: 4
     glyphsets: [GF_Latin_Core]
-    extras:
-      - file: "fonts/materialdesignicons-webfont.ttf"
-        glyphs: *glyphs
+    glyphs: *glyphs
 
-  - file:
-      type: gfonts
-      family: "Red Hat Text"
-    id: red_hat_mdi_48
-    size: 48
-    bpp: 4
-    glyphsets: [GF_Latin_Core]
-    extras:
-      - file: "fonts/red_hat_text_mdi.ttf"
-        glyphs: *glyphs
+  #- file: fonts/red_hat_text_mdi.ttf
+  #  #  type: gfonts
+  #  #  family: "Red Hat Text"
+  #  id: red_hat_mdi_48
+  #  size: 48
+  #  bpp: 4
+  #  glyphsets: [GF_Latin_Core]
+  #  extras:
+  #    - file: "fonts/red_hat_text_mdi.ttf"
+  #      glyphs: *glyphs
 
   - file:
       type: gfonts
@@ -338,12 +333,13 @@ font:
     bpp: 4
     glyphsets: [GF_Latin_Core]
 
-  - file: "fonts/materialdesignicons-webfont.ttf"
+  - file: fonts/red_hat_text_mdi.ttf
     id: icons_36
     size: 36
     bpp: 4
     glyphs: *glyphs
-  - file: "fonts/materialdesignicons-webfont.ttf"
+
+  - file: fonts/red_hat_text_mdi.ttf
     id: icons_48
     size: 48
     bpp: 4
@@ -1335,7 +1331,7 @@ lvgl:
                     - obj:
                         styles: red_border
                         #align: CENTER
-                        width: 25%
+                        width: 20%
                         height: SIZE_CONTENT
                         widgets:
                           - label:
@@ -1354,10 +1350,11 @@ lvgl:
                               text: "Middle"
                               text_font: mono_text128
                               #text_align: CENTER
+                              id: test_time
                     - obj:
                         styles: red_border
                         #align: CENTER
-                        width: 25%
+                        width: 20%
                         height: SIZE_CONTENT
                         widgets:
                           - label:
@@ -1396,7 +1393,7 @@ lvgl:
               flex_flow: ROW
               flex_align_main: SPACE_EVENLY
               #flex_align_cross: START
-            text_font: red_hat_mdi_48
+            text_font: main_text48
             widgets:
               # COLUMN 1
               - obj:
@@ -1736,6 +1733,17 @@ script:
       - lvgl.label.update:
           id: header_time
           text: !lambda 'return id(ha_time).now().strftime("\U000F0150 %I:%M %p");' # clock-outline
+      - lvgl.label.update:
+          id: test_time
+          text: !lambda 'return id(ha_time).now().strftime("%r");'
+
+  - id: update_date
+    mode: restart
+    then:
+      - logger.log: "Execute Script: update_date"
+      - lvgl.label.update:
+          id: header_date
+          text: !lambda 'return id(ha_time).now().strftime("\U000F0E17 %A %d %b");' # calendar-month
 
 time:
   # https://esphome.io/#time-components
@@ -1745,34 +1753,34 @@ time:
     on_time_sync:
       then:
         - logger.log: "on_time_sync"
-        #- script.execute: update_time
-        #- script.execute: update_date
-        - lvgl.label.update:
-            id: header_time
-            text: !lambda 'return id(ha_time).now().strftime("\U000F0150 %I:%M %p");' # clock-outline
-        - lvgl.label.update:
-            id: header_date
-            text: !lambda 'return id(ha_time).now().strftime("\U000F0E17 %A %d %b");' # calendar-month
+        - script.execute: update_time
+        - script.execute: update_date
+        #- lvgl.label.update:
+        #    id: header_time
+        #    text: !lambda 'return id(ha_time).now().strftime("\U000F0150 %I:%M %p");' # clock-outline
+        #- lvgl.label.update:
+        #    id: header_date
+        #    text: !lambda 'return id(ha_time).now().strftime("\U000F0E17 %A %d %b");' # calendar-month
 
     on_time:
       - seconds: 0
         minutes: "*"
         then:
           - logger.log: "on_time: every minute"
-          #- script.execute: update_time
-          - lvgl.label.update:
-              id: header_time
-              text: !lambda 'return id(ha_time).now().strftime("\U000F0150 %I:%M %p");' # clock-outline
+          - script.execute: update_time
+          #- lvgl.label.update:
+          #    id: header_time
+          #    text: !lambda 'return id(ha_time).now().strftime("\U000F0150 %I:%M %p");' # clock-outline
 
       - seconds: 0
         minutes: 0
         hours: 0
         then:
           - logger.log: "on_time: every day"
-          #- script.execute: update_date
-          - lvgl.label.update:
-              id: header_date
-              text: !lambda 'return id(ha_time).now().strftime("\U000F0E17 %A %d %b");' # calendar-month
+          - script.execute: update_date
+          #- lvgl.label.update:
+          #    id: header_date
+          #    text: !lambda 'return id(ha_time).now().strftime("\U000F0E17 %A %d %b");' # calendar-month
 
 binary_sensor:
   # https://esphome.io/#binary-sensor-components
