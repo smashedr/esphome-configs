@@ -232,7 +232,7 @@ font:
     glyphsets: &glyphsets
       - GF_Latin_Core
     glyphs: &glyphs
-      - "\U000F00B5"
+      - "\U000000B5" # µ
       # Header and Footer
       - "\U000F004D" # arrow-left
       - "\U000F0054" # arrow-right
@@ -328,13 +328,13 @@ font:
     #  - file: fonts/materialdesignicons-webfont.ttf
     #    glyphs: *glyphs
 
-  - file: fonts/materialdesignicons-webfont.ttf
+  - file: fonts/red_hat_text_mdi.ttf
     id: icons_36
     size: 36
     bpp: 4
     glyphs: *glyphs
 
-  - file: fonts/materialdesignicons-webfont.ttf
+  - file: fonts/red_hat_text_mdi.ttf
     id: icons_48
     size: 48
     bpp: 4
@@ -528,20 +528,22 @@ lvgl:
               - lvgl.widget.hide: menu_overlay # TODO: Fix full screen menu
           widgets:
             - label:
-                align: TOP_LEFT
-                text_align: LEFT
-                text: "--:--" # clock-outline
-                id: header_time
-            - label:
                 align: CENTER
                 text_align: CENTER
-                text: "Connecting..."
+                pad_left: 10
+                text: "---- -- ---"
                 id: header_date
+            - label:
+                align: TOP_LEFT
+                text_align: LEFT
+                text: "--:-- --"
+                id: header_time
             - obj:
                 align: TOP_RIGHT
                 #text_align: RIGHT
                 width: 33% #TODO: Determine why SIZE_CONTENT does not work...
                 height: 100%
+                pad_right: 10
                 clickable: false
                 layout:
                   type: FLEX
@@ -1591,23 +1593,55 @@ lvgl:
                               grid_cell_row_pos: 0
                               grid_cell_column_pos: 0
                               text: "\U000F050F"
-                          - label:
+                          - obj:
                               styles: red_border
                               grid_cell_row_pos: 0
                               grid_cell_column_pos: 1
-                              text: "--.- °F"
-                              id: inside_temperature
+                              align: CENTER
+                              width: 100%
+                              height: 100%
+                              layout:
+                                type: FLEX
+                                flex_flow: COLUMN
+                                #flex_align_main: START
+                                flex_align_cross: CENTER
+                                #pad_column: 0
+                                #pad_row: 0
+                              widgets:
+                                - label:
+                                    styles: red_border
+                                    text: "--.-"
+                                    id: inside_temperature
+                                - label:
+                                    styles: red_border
+                                    text: "°F"
                           - label:
                               styles: red_border
                               grid_cell_row_pos: 1
                               grid_cell_column_pos: 0
                               text: "\U000F058E"
-                          - label:
+                          - obj:
                               styles: red_border
                               grid_cell_row_pos: 1
                               grid_cell_column_pos: 1
-                              text: "-- %"
-                              id: inside_humidity
+                              align: CENTER
+                              width: 100%
+                              height: 100%
+                              layout:
+                                type: FLEX
+                                flex_flow: COLUMN
+                                #flex_align_main: START
+                                flex_align_cross: CENTER
+                                pad_column: 0
+                                pad_row: 0
+                              widgets:
+                                - label:
+                                    styles: red_border
+                                    text: "--"
+                                    id: inside_humidity
+                                - label:
+                                    styles: red_border
+                                    text: "%"
                           - label:
                               styles: red_border
                               grid_cell_row_pos: 2
@@ -2165,4 +2199,4 @@ sensor:
       id: pres03_280
       entity_id: sensor.pres03_280
       label: weather_pressure
-      format: "%.0f Hg"
+      format: "%.2f"
