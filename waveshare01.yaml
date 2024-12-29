@@ -232,6 +232,7 @@ font:
     glyphsets: &glyphsets
       - GF_Latin_Core
     glyphs: &glyphs
+      - "\U000000B3" # ³
       - "\U000000B5" # µ
       # Header and Footer
       - "\U000F004D" # arrow-left
@@ -277,7 +278,7 @@ font:
       - "\U000F015F" # cloud
       - "\U000F013B" # chemical-weapon
       - "\U000F029A" # gauge
-      - "\U000F00B6" # blur-linear
+      - "\U000F00B5" # blur
       # Weather Unused
       - "\U000F0505" # temperature-fahrenheit
       - "\U000F0504" # temperature-celsius
@@ -320,13 +321,24 @@ font:
   - file:
       type: gfonts
       family: "Azeret Mono"
-    id: mono_text128
-    size: 128
+    id: mono_text96
+    size: 96
     bpp: 4
     glyphsets: *glyphsets
     #extras:
     #  - file: fonts/materialdesignicons-webfont.ttf
     #    glyphs: *glyphs
+
+  #- file:
+  #    type: gfonts
+  #    family: "Azeret Mono"
+  #  id: mono_text128
+  #  size: 128
+  #  bpp: 4
+  #  glyphsets: *glyphsets
+  #  #extras:
+  #  #  - file: fonts/materialdesignicons-webfont.ttf
+  #  #    glyphs: *glyphs
 
   - file: fonts/red_hat_text_mdi.ttf
     id: icons_36
@@ -1296,7 +1308,7 @@ lvgl:
             layout:
               type: FLEX
               flex_flow: COLUMN
-              flex_align_main: CENTER
+              #flex_align_main: CENTER
               flex_align_cross: CENTER
               pad_column: 0
               pad_row: 0
@@ -1317,7 +1329,7 @@ lvgl:
                   widgets:
                     - label:
                         text: "Top Row 1"
-                        text_font: mono_text128
+                        text_font: mono_text96
                         text_align: CENTER
                         id: test_date
               # ROW 2
@@ -1354,7 +1366,7 @@ lvgl:
                           - label:
                               styles: red_border
                               text: "Middle"
-                              text_font: mono_text128
+                              text_font: mono_text96
                               #text_align: CENTER
                               id: test_time
                     - obj:
@@ -1391,7 +1403,6 @@ lvgl:
       styles: page_styles
       widgets:
         - obj:
-            styles: red_border
             align: CENTER
             width: 100%
             height: 100%
@@ -1407,160 +1418,6 @@ lvgl:
             widgets:
               # COLUMN 1 - NOAA
               - obj:
-                  styles: red_border
-                  align: CENTER
-                  width: 33%
-                  height: 100%
-                  layout:
-                    type: FLEX
-                    flex_flow: COLUMN
-                    #flex_align_main: START
-                    #flex_align_cross: START
-                    pad_column: 0
-                    pad_row: 0
-                  widgets:
-                    - label:
-                        styles: red_border
-                        #align: CENTER
-                        width: SIZE_CONTENT
-                        height: SIZE_CONTENT
-                        text: "NOAA"
-                        id: weather_name
-                    - obj:
-                        styles: red_border
-                        #align: CENTER
-                        width: SIZE_CONTENT
-                        height: SIZE_CONTENT
-                        layout:
-                          type: grid
-                          grid_columns: [CONTENT, CONTENT]
-                          grid_rows: [CONTENT, CONTENT, CONTENT, CONTENT]
-                          pad_row: 10
-                          pad_column: 10
-                        widgets:
-                          - label:
-                              styles: red_border
-                              grid_cell_row_pos: 0
-                              grid_cell_column_pos: 0
-                              text: "\U000F050F"
-                          - label:
-                              styles: red_border
-                              grid_cell_row_pos: 0
-                              grid_cell_column_pos: 1
-                              text: "--.- °F"
-                              id: weather_temperature
-                          - label:
-                              styles: red_border
-                              grid_cell_row_pos: 1
-                              grid_cell_column_pos: 0
-                              text: "\U000F058E"
-                          - label:
-                              styles: red_border
-                              grid_cell_row_pos: 1
-                              grid_cell_column_pos: 1
-                              text: "-- %"
-                              id: weather_humidity
-                          - label:
-                              styles: red_border
-                              grid_cell_row_pos: 2
-                              grid_cell_column_pos: 0
-                              text: "\U000F059D"
-                          - label:
-                              styles: red_border
-                              grid_cell_row_pos: 2
-                              grid_cell_column_pos: 1
-                              text: "-- mph"
-                              id: weather_wind_mph
-                          - label:
-                              styles: red_border
-                              grid_cell_row_pos: 3
-                              grid_cell_column_pos: 0
-                              text: "\U000F018B"
-                          - label:
-                              styles: red_border
-                              grid_cell_row_pos: 3
-                              grid_cell_column_pos: 1
-                              text: "-- °"
-                              id: weather_wind_deg
-              # COLUMN 2 - OUTSIDE
-              - obj:
-                  styles: red_border
-                  align: CENTER
-                  width: 33%
-                  height: 100%
-                  layout:
-                    type: FLEX
-                    flex_flow: COLUMN
-                    #flex_align_main: START
-                    #flex_align_cross: START
-                    pad_column: 0
-                    pad_row: 0
-                  widgets:
-                    - label:
-                        styles: red_border
-                        #align: CENTER
-                        width: SIZE_CONTENT
-                        height: SIZE_CONTENT
-                        text: "Outside"
-                    - obj:
-                        styles: red_border
-                        #align: CENTER
-                        width: SIZE_CONTENT
-                        height: SIZE_CONTENT
-                        layout:
-                          type: grid
-                          grid_columns: [CONTENT, CONTENT]
-                          grid_rows: [CONTENT, CONTENT, CONTENT, CONTENT]
-                          pad_row: 10
-                          pad_column: 10
-                        widgets:
-                          - label:
-                              styles: red_border
-                              grid_cell_row_pos: 0
-                              grid_cell_column_pos: 0
-                              text: "\U000F050F"
-                          - label:
-                              styles: red_border
-                              grid_cell_row_pos: 0
-                              grid_cell_column_pos: 1
-                              text: "--.- °F"
-                              id: outside_temperature
-                          - label:
-                              styles: red_border
-                              grid_cell_row_pos: 1
-                              grid_cell_column_pos: 0
-                              text: "\U000F058E"
-                          - label:
-                              styles: red_border
-                              grid_cell_row_pos: 1
-                              grid_cell_column_pos: 1
-                              text: "-- %"
-                              id: outside_humidity
-                          - label:
-                              styles: red_border
-                              grid_cell_row_pos: 2
-                              grid_cell_column_pos: 0
-                              text: "\U000F00B6"
-                          - label:
-                              styles: red_border
-                              grid_cell_row_pos: 2
-                              grid_cell_column_pos: 1
-                              text: "-- µg"
-                              id: airnow_pm_25
-                          - label:
-                              styles: red_border
-                              grid_cell_row_pos: 3
-                              grid_cell_column_pos: 0
-                              text: "\U000F029A"
-                          - label:
-                              styles: red_border
-                              grid_cell_row_pos: 3
-                              grid_cell_column_pos: 1
-                              text: "-- Hg"
-                              id: weather_pressure
-              # COLUMN 3 - INSIDE
-              - obj:
-                  styles: red_border
                   align: CENTER
                   width: 33%
                   height: 100%
@@ -1573,7 +1430,197 @@ lvgl:
                     #pad_row: 0
                   widgets:
                     - label:
-                        styles: red_border
+                        #align: CENTER
+                        width: 100%
+                        height: SIZE_CONTENT
+                        text_align: CENTER
+                        text: "NOAA"
+                        id: weather_name
+                    # ROW 1
+                    - obj:
+                        width: 100%
+                        height: SIZE_CONTENT
+                        layout:
+                          type: FLEX
+                          flex_flow: ROW
+                          #flex_align_main: SPACE_EVENLY
+                          #flex_align_cross: START
+                          #flex_align_track: CENTER
+                        widgets:
+                          - label:
+                              text: "\U000F050F"
+                          - label:
+                              text: "--.-"
+                              id: weather_temperature
+                          - label:
+                              text: "°F"
+                              text_font: main_text32
+                    # ROW 2
+                    - obj:
+                        width: 100%
+                        height: SIZE_CONTENT
+                        layout:
+                          type: FLEX
+                          flex_flow: ROW
+                          #flex_align_main: SPACE_EVENLY
+                          #flex_align_cross: START
+                          #flex_align_track: CENTER
+                        widgets:
+                          - label:
+                              text: "\U000F058E"
+                          - label:
+                              text: "--"
+                              id: weather_humidity
+                          - label:
+                              text: "%"
+                              text_font: main_text32
+                    # ROW 3
+                    - obj:
+                        width: 100%
+                        height: SIZE_CONTENT
+                        layout:
+                          type: FLEX
+                          flex_flow: ROW
+                          #flex_align_main: SPACE_EVENLY
+                          #flex_align_cross: START
+                          #flex_align_track: CENTER
+                        widgets:
+                          - label:
+                              text: "\U000F059D"
+                          - label:
+                              text: "--"
+                              id: weather_wind_mph
+                          - label:
+                              text: "mph"
+                              text_font: main_text32
+                    # ROW 4
+                    - obj:
+                        width: 100%
+                        height: SIZE_CONTENT
+                        layout:
+                          type: FLEX
+                          flex_flow: ROW
+                          #flex_align_main: SPACE_EVENLY
+                          #flex_align_cross: START
+                          #flex_align_track: CENTER
+                        widgets:
+                          - label:
+                              text: "\U000F018B"
+                          - label:
+                              text: "--"
+                              id: weather_wind_deg
+                          - label:
+                              text: "°"
+                              text_font: main_text32
+              # COLUMN 2 - OUTSIDE
+              - obj:
+                  align: CENTER
+                  width: 33%
+                  height: 100%
+                  layout:
+                    type: FLEX
+                    flex_flow: COLUMN
+                    #flex_align_main: START
+                    #flex_align_cross: START
+                    #pad_column: 0
+                    #pad_row: 0
+                  widgets:
+                    - label:
+                        #align: CENTER
+                        width: 100%
+                        height: SIZE_CONTENT
+                        text: "Outside"
+                        text_align: CENTER
+                    # ROW 1
+                    - obj:
+                        width: 100%
+                        height: SIZE_CONTENT
+                        layout:
+                          type: FLEX
+                          flex_flow: ROW
+                          #flex_align_main: SPACE_EVENLY
+                          #flex_align_cross: START
+                          #flex_align_track: CENTER
+                        widgets:
+                          - label:
+                              text: "\U000F050F"
+                          - label:
+                              text: "--.-"
+                              id: outside_temperature
+                          - label:
+                              text: "°F"
+                              text_font: main_text26
+                    # ROW 2
+                    - obj:
+                        width: 100%
+                        height: SIZE_CONTENT
+                        layout:
+                          type: FLEX
+                          flex_flow: ROW
+                          #flex_align_main: SPACE_EVENLY
+                          #flex_align_cross: START
+                          #flex_align_track: CENTER
+                        widgets:
+                          - label:
+                              text: "\U000F058E"
+                          - label:
+                              text: "--"
+                              id: outside_humidity
+                          - label:
+                              text: "%"
+                              text_font: main_text26
+                    # ROW 3
+                    - obj:
+                        width: 100%
+                        height: SIZE_CONTENT
+                        layout:
+                          type: FLEX
+                          flex_flow: ROW
+                          #flex_align_main: SPACE_EVENLY
+                          #flex_align_cross: START
+                          #flex_align_track: CENTER
+                        widgets:
+                          - label:
+                              text: "\U000F00B5"
+                          - label:
+                              text: "--"
+                              id: airnow_pm_25
+                          - label:
+                              text: "μg/m³"
+                              text_font: main_text26
+                    # ROW 4
+                    - obj:
+                        width: 100%
+                        height: SIZE_CONTENT
+                        layout:
+                          type: FLEX
+                          flex_flow: ROW
+                          #flex_align_main: SPACE_EVENLY
+                          #flex_align_cross: START
+                          #flex_align_track: CENTER
+                        widgets:
+                          - label:
+                              text: "\U000F029A"
+                          - label:
+                              text: "--"
+                              id: weather_pressure
+                          - label:
+                              text: "inHg"
+                              text_font: main_text26
+              # COLUMN 3 - INSIDE
+              - obj:
+                  align: CENTER
+                  width: 33%
+                  height: 100%
+                  layout:
+                    type: FLEX
+                    flex_flow: COLUMN
+                    #flex_align_main: START
+                    #flex_align_cross: START
+                    #pad_column: 0
+                    #pad_row: 0
+                  widgets:
+                    - label:
                         #align: CENTER
                         width: 100%
                         height: SIZE_CONTENT
@@ -1591,14 +1638,11 @@ lvgl:
                           #flex_align_track: CENTER
                         widgets:
                           - label:
-                              styles: red_border
                               text: "\U000F050F"
                           - label:
-                              styles: red_border
                               text: "--.-"
                               id: inside_temperature
                           - label:
-                              styles: red_border
                               text: "°F"
                               text_font: main_text26
                     # ROW 2
@@ -1613,14 +1657,11 @@ lvgl:
                           #flex_align_track: CENTER
                         widgets:
                           - label:
-                              styles: red_border
                               text: "\U000F058E"
                           - label:
-                              styles: red_border
                               text: "--"
                               id: inside_humidity
                           - label:
-                              styles: red_border
                               text: "%"
                               text_font: main_text32
                     # ROW 3
@@ -1635,15 +1676,13 @@ lvgl:
                           #flex_align_track: CENTER
                         widgets:
                           - label:
-                              styles: red_border
-                              text: "\U000F00B6"
+                              text: "\U000F00B5"
                           - label:
-                              styles: red_border
                               text: "--"
                               id: inside_pm_25
                           - label:
-                              styles: red_border
-                              text: "µg"
+                              text: "μg/m³"
+                              text_font: main_text32
 
     - id: stats_page
       styles: page_styles
@@ -2067,9 +2106,14 @@ sensor:
     entity_id: sensor.temp02_22
     on_value:
       - lvgl.label.update:
-          id: [header_temp, outside_temperature]
+          id: header_temp
           text:
             format: "%.1f °F"
+            args: ["x"]
+      - lvgl.label.update:
+          id: outside_temperature
+          text:
+            format: "%.1f"
             args: ["x"]
 
   - !include
@@ -2078,7 +2122,7 @@ sensor:
       id: humi02_22
       entity_id: sensor.humi02_22
       label: outside_humidity
-      format: "%.0f %%"
+      format: "%.0f"
 
   # Bedroom
   - !include
@@ -2102,23 +2146,23 @@ sensor:
     entity_id: sensor.temp03_22
     on_value:
       - lvgl.label.update:
-          id: living_room_temp
+          id: [living_room_temp, inside_temperature]
           text:
             format: "%.1f"
-            args: ["x"]
-      - lvgl.label.update:
-          id: inside_temperature
-          text:
-            format: "%.1f °F"
             args: ["x"]
   - platform: homeassistant
     id: humi03_22
     entity_id: sensor.humi03_22
     on_value:
       - lvgl.label.update:
-          id: [living_room_humi, inside_humidity]
+          id: living_room_humi
           text:
             format: "%.0f %%"
+            args: ["x"]
+      - lvgl.label.update:
+          id: inside_humidity
+          text:
+            format: "%.0f"
             args: ["x"]
 
   # Kitchen
@@ -2144,7 +2188,7 @@ sensor:
       id: nws_temperature
       entity_id: weather.f6219
       label: weather_temperature
-      format: "%.1f °F"
+      format: "%.1f"
       attribute: temperature
   - !include
     file: include/lvgl/sensor/ha_label_attr.yaml
@@ -2152,7 +2196,7 @@ sensor:
       id: nws_humidity
       entity_id: weather.f6219
       label: weather_humidity
-      format: "%.0f %%"
+      format: "%.0f"
       attribute: humidity
   - !include
     file: include/lvgl/sensor/ha_label_attr.yaml
@@ -2160,7 +2204,7 @@ sensor:
       id: nws_wind_speed
       entity_id: weather.f6219
       label: weather_wind_mph
-      format: "%.0f mph"
+      format: "%.0f"
       attribute: wind_speed
   - !include
     file: include/lvgl/sensor/ha_label_attr.yaml
@@ -2168,7 +2212,7 @@ sensor:
       id: nws_wind_bearing
       entity_id: weather.f6219
       label: weather_wind_deg
-      format: "%.0f °"
+      format: "%.0f"
       attribute: wind_bearing
   - !include
     file: include/lvgl/sensor/ha_label.yaml
@@ -2176,14 +2220,14 @@ sensor:
       id: pm_2_5_01
       entity_id: sensor.pm_2_5_01
       label: inside_pm_25
-      format: "%.0f µg"
+      format: "%.0f"
   - !include
     file: include/lvgl/sensor/ha_label.yaml
     vars:
       id: airnow_pm2_5
       entity_id: sensor.airnow_pm2_5
       label: airnow_pm_25
-      format: "%.0f µg"
+      format: "%.0f"
   - !include
     file: include/lvgl/sensor/ha_label.yaml
     vars:
