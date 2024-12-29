@@ -226,13 +226,14 @@ display:
 font:
   # https://esphome.io/components/font
   - file: fonts/red_hat_text_mdi.ttf
-    #  type: gfonts
-    #  family: "Red Hat Text"
     id: main_text26
     size: 26
     bpp: 4
-    glyphsets: [GF_Latin_Core]
+    glyphsets: &glyphsets
+      - GF_Latin_Core
     glyphs: &glyphs
+      - "\U000F00B5"
+      # Header and Footer
       - "\U000F004D" # arrow-left
       - "\U000F0054" # arrow-right
       - "\U000F07C3" # dots-horizontal-circle
@@ -292,33 +293,18 @@ font:
       - "\U000F06C9" # close-outline
 
   - file: fonts/red_hat_text_mdi.ttf
-    #  type: gfonts
-    #  family: "Red Hat Text"
     id: main_text32
     size: 32
     bpp: 4
-    glyphsets: [GF_Latin_Core]
+    glyphsets: *glyphsets
     glyphs: *glyphs
 
   - file: fonts/red_hat_text_mdi.ttf
-    #  type: gfonts
-    #  family: "Red Hat Text"
     id: main_text48
     size: 48
     bpp: 4
-    glyphsets: [GF_Latin_Core]
+    glyphsets: *glyphsets
     glyphs: *glyphs
-
-  #- file: fonts/red_hat_text_mdi.ttf
-  #  #  type: gfonts
-  #  #  family: "Red Hat Text"
-  #  id: red_hat_mdi_48
-  #  size: 48
-  #  bpp: 4
-  #  glyphsets: [GF_Latin_Core]
-  #  extras:
-  #    - file: "fonts/red_hat_text_mdi.ttf"
-  #      glyphs: *glyphs
 
   - file:
       type: gfonts
@@ -326,7 +312,10 @@ font:
     id: mono_text48
     size: 48
     bpp: 4
-    glyphsets: [GF_Latin_Core]
+    glyphsets: *glyphsets
+    #extras:
+    #  - file: fonts/materialdesignicons-webfont.ttf
+    #    glyphs: *glyphs
 
   - file:
       type: gfonts
@@ -334,15 +323,18 @@ font:
     id: mono_text128
     size: 128
     bpp: 4
-    glyphsets: [GF_Latin_Core]
+    glyphsets: *glyphsets
+    #extras:
+    #  - file: fonts/materialdesignicons-webfont.ttf
+    #    glyphs: *glyphs
 
-  - file: fonts/red_hat_text_mdi.ttf
+  - file: fonts/materialdesignicons-webfont.ttf
     id: icons_36
     size: 36
     bpp: 4
     glyphs: *glyphs
 
-  - file: fonts/red_hat_text_mdi.ttf
+  - file: fonts/materialdesignicons-webfont.ttf
     id: icons_48
     size: 48
     bpp: 4
@@ -548,7 +540,7 @@ lvgl:
             - obj:
                 align: TOP_RIGHT
                 #text_align: RIGHT
-                width: SIZE_CONTENT
+                width: 33% #TODO: Determine why SIZE_CONTENT does not work...
                 height: 100%
                 clickable: false
                 layout:
@@ -556,8 +548,8 @@ lvgl:
                   flex_flow: ROW
                   flex_align_main: END
                   #flex_align_cross: SPACE_EVENLY
-                  pad_column: 0
-                  pad_row: 0
+                  #pad_column: 0
+                  #pad_row: 0
                 widgets:
                   - label:
                       text: "--.- °F" # temperature-fahrenheit
@@ -624,8 +616,8 @@ lvgl:
               flex_flow: COLUMN
               flex_align_main: CENTER
               flex_align_cross: CENTER
-              pad_column: 0
-              pad_row: 0
+              #pad_column: 0
+              #pad_row: 0
             widgets:
               # ROW 1
               - obj:
@@ -1036,8 +1028,8 @@ lvgl:
               flex_flow: COLUMN_WRAP
               flex_align_main: SPACE_EVENLY
               flex_align_cross: SPACE_EVENLY
-              pad_column: 0
-              pad_row: 0
+              #pad_column: 0
+              #pad_row: 0
             widgets:
               - obj:
                   align: CENTER
@@ -1113,8 +1105,8 @@ lvgl:
               flex_flow: COLUMN_WRAP
               flex_align_main: SPACE_EVENLY
               flex_align_cross: SPACE_EVENLY
-              pad_column: 0
-              pad_row: 0
+              #pad_column: 0
+              #pad_row: 0
             widgets:
               - obj:
                   align: CENTER
@@ -1318,6 +1310,8 @@ lvgl:
                     flex_align_main: CENTER
                     #flex_align_cross: SPACE_EVENLY
                     #flex_align_track: CENTER
+                    pad_column: 0
+                    pad_row: 0
                   widgets:
                     - label:
                         text: "Top Row 1"
@@ -1381,6 +1375,8 @@ lvgl:
                     flex_align_main: CENTER
                     #flex_align_cross: CENTER
                     #flex_align_track: CENTER
+                    pad_column: 0
+                    pad_row: 0
                   widgets:
                     - label:
                         styles: red_border
@@ -1409,7 +1405,7 @@ lvgl:
               - obj:
                   styles: red_border
                   align: CENTER
-                  width: SIZE_CONTENT
+                  width: 33%
                   height: 100%
                   layout:
                     type: FLEX
@@ -1422,7 +1418,7 @@ lvgl:
                     - label:
                         styles: red_border
                         #align: CENTER
-                        width: 33%
+                        width: SIZE_CONTENT
                         height: SIZE_CONTENT
                         text: "NOAA"
                         id: weather_name
@@ -1436,7 +1432,7 @@ lvgl:
                           grid_columns: [CONTENT, CONTENT]
                           grid_rows: [CONTENT, CONTENT, CONTENT, CONTENT]
                           pad_row: 10
-                          pad_column: 20
+                          pad_column: 10
                         widgets:
                           - label:
                               styles: red_border
@@ -1503,7 +1499,6 @@ lvgl:
                         height: SIZE_CONTENT
                         text: "Outside"
                     - obj:
-                        outline_width: 1
                         styles: red_border
                         #align: CENTER
                         width: SIZE_CONTENT
@@ -1511,9 +1506,9 @@ lvgl:
                         layout:
                           type: grid
                           grid_columns: [CONTENT, CONTENT]
-                          grid_rows: [CONTENT, CONTENT]
+                          grid_rows: [CONTENT, CONTENT, CONTENT, CONTENT]
                           pad_row: 10
-                          pad_column: 20
+                          pad_column: 10
                         widgets:
                           - label:
                               styles: red_border
@@ -1539,23 +1534,23 @@ lvgl:
                               id: outside_humidity
                           - label:
                               styles: red_border
-                              grid_cell_row_pos: 1
+                              grid_cell_row_pos: 2
                               grid_cell_column_pos: 0
                               text: "\U000F00B6"
                           - label:
                               styles: red_border
-                              grid_cell_row_pos: 1
+                              grid_cell_row_pos: 2
                               grid_cell_column_pos: 1
-                              text: "-- µg/m³"
+                              text: "-- µg"
                               id: airnow_pm_25
                           - label:
                               styles: red_border
-                              grid_cell_row_pos: 1
+                              grid_cell_row_pos: 3
                               grid_cell_column_pos: 0
                               text: "\U000F029A"
                           - label:
                               styles: red_border
-                              grid_cell_row_pos: 1
+                              grid_cell_row_pos: 3
                               grid_cell_column_pos: 1
                               text: "-- Hg"
                               id: weather_pressure
@@ -1580,7 +1575,6 @@ lvgl:
                         height: SIZE_CONTENT
                         text: "Inside"
                     - obj:
-                        outline_width: 1
                         styles: red_border
                         #align: CENTER
                         width: SIZE_CONTENT
@@ -1588,9 +1582,9 @@ lvgl:
                         layout:
                           type: grid
                           grid_columns: [CONTENT, CONTENT]
-                          grid_rows: [CONTENT, CONTENT]
+                          grid_rows: [CONTENT, CONTENT, CONTENT]
                           pad_row: 10
-                          pad_column: 20
+                          pad_column: 10
                         widgets:
                           - label:
                               styles: red_border
@@ -1616,14 +1610,14 @@ lvgl:
                               id: inside_humidity
                           - label:
                               styles: red_border
-                              grid_cell_row_pos: 1
+                              grid_cell_row_pos: 2
                               grid_cell_column_pos: 0
                               text: "\U000F00B6"
                           - label:
                               styles: red_border
-                              grid_cell_row_pos: 1
+                              grid_cell_row_pos: 2
                               grid_cell_column_pos: 1
-                              text: "-- µg/m³"
+                              text: "-- µg"
                               id: inside_pm_25
 
     - id: stats_page
@@ -2157,14 +2151,14 @@ sensor:
       id: pm_2_5_01
       entity_id: sensor.pm_2_5_01
       label: inside_pm_25
-      format: "%.0f µg/m³"
+      format: "%.0f µg"
   - !include
     file: include/lvgl/sensor/ha_label.yaml
     vars:
       id: airnow_pm2_5
       entity_id: sensor.airnow_pm2_5
       label: airnow_pm_25
-      format: "%.0f µg/m³"
+      format: "%.0f µg"
   - !include
     file: include/lvgl/sensor/ha_label.yaml
     vars:
