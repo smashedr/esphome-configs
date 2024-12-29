@@ -528,16 +528,16 @@ lvgl:
               - lvgl.widget.hide: menu_overlay # TODO: Fix full screen menu
           widgets:
             - label:
-                align: CENTER
-                text_align: CENTER
-                pad_left: 10
-                text: "---- -- ---"
-                id: header_date
-            - label:
                 align: TOP_LEFT
+                pad_left: 10
                 text_align: LEFT
                 text: "--:-- --"
                 id: header_time
+            - label:
+                align: CENTER
+                text_align: CENTER
+                text: "---- -- ---"
+                id: header_date
             - obj:
                 align: TOP_RIGHT
                 #text_align: RIGHT
@@ -1317,7 +1317,9 @@ lvgl:
                   widgets:
                     - label:
                         text: "Top Row 1"
+                        text_font: mono_text128
                         text_align: CENTER
+                        id: test_date
               # ROW 2
               - obj:
                   styles: red_border
@@ -1345,7 +1347,7 @@ lvgl:
                               #text_align: CENTER
                     - obj:
                         styles: red_border
-                        #align: CENTER
+                        align: CENTER
                         height: SIZE_CONTENT
                         flex_grow: 1
                         widgets:
@@ -1403,7 +1405,7 @@ lvgl:
               pad_row: 0
             text_font: main_text48
             widgets:
-              # COLUMN 1
+              # COLUMN 1 - NOAA
               - obj:
                   styles: red_border
                   align: CENTER
@@ -1480,7 +1482,7 @@ lvgl:
                               grid_cell_column_pos: 1
                               text: "-- °"
                               id: weather_wind_deg
-              # COLUMN 2
+              # COLUMN 2 - OUTSIDE
               - obj:
                   styles: red_border
                   align: CENTER
@@ -1556,7 +1558,7 @@ lvgl:
                               grid_cell_column_pos: 1
                               text: "-- Hg"
                               id: weather_pressure
-              # COLUMN 3
+              # COLUMN 3 - INSIDE
               - obj:
                   styles: red_border
                   align: CENTER
@@ -1567,92 +1569,81 @@ lvgl:
                     flex_flow: COLUMN
                     #flex_align_main: START
                     #flex_align_cross: START
-                    pad_column: 0
-                    pad_row: 0
+                    #pad_column: 0
+                    #pad_row: 0
                   widgets:
                     - label:
                         styles: red_border
                         #align: CENTER
-                        width: SIZE_CONTENT
+                        width: 100%
                         height: SIZE_CONTENT
                         text: "Inside"
+                        text_align: CENTER
+                    # ROW 1
                     - obj:
-                        styles: red_border
-                        #align: CENTER
-                        width: SIZE_CONTENT
+                        width: 100%
                         height: SIZE_CONTENT
                         layout:
-                          type: grid
-                          grid_columns: [CONTENT, CONTENT]
-                          grid_rows: [CONTENT, CONTENT, CONTENT]
-                          pad_row: 10
-                          pad_column: 10
+                          type: FLEX
+                          flex_flow: ROW
+                          #flex_align_main: SPACE_EVENLY
+                          #flex_align_cross: START
+                          #flex_align_track: CENTER
                         widgets:
                           - label:
                               styles: red_border
-                              grid_cell_row_pos: 0
-                              grid_cell_column_pos: 0
                               text: "\U000F050F"
-                          - obj:
-                              styles: red_border
-                              grid_cell_row_pos: 0
-                              grid_cell_column_pos: 1
-                              align: CENTER
-                              width: 100%
-                              height: 100%
-                              layout:
-                                type: FLEX
-                                flex_flow: COLUMN
-                                #flex_align_main: START
-                                flex_align_cross: CENTER
-                                #pad_column: 0
-                                #pad_row: 0
-                              widgets:
-                                - label:
-                                    styles: red_border
-                                    text: "--.-"
-                                    id: inside_temperature
-                                - label:
-                                    styles: red_border
-                                    text: "°F"
                           - label:
                               styles: red_border
-                              grid_cell_row_pos: 1
-                              grid_cell_column_pos: 0
+                              text: "--.-"
+                              id: inside_temperature
+                          - label:
+                              styles: red_border
+                              text: "°F"
+                              text_font: main_text26
+                    # ROW 2
+                    - obj:
+                        width: 100%
+                        height: SIZE_CONTENT
+                        layout:
+                          type: FLEX
+                          flex_flow: ROW
+                          #flex_align_main: SPACE_EVENLY
+                          #flex_align_cross: START
+                          #flex_align_track: CENTER
+                        widgets:
+                          - label:
+                              styles: red_border
                               text: "\U000F058E"
-                          - obj:
-                              styles: red_border
-                              grid_cell_row_pos: 1
-                              grid_cell_column_pos: 1
-                              align: CENTER
-                              width: 100%
-                              height: 100%
-                              layout:
-                                type: FLEX
-                                flex_flow: COLUMN
-                                #flex_align_main: START
-                                flex_align_cross: CENTER
-                                pad_column: 0
-                                pad_row: 0
-                              widgets:
-                                - label:
-                                    styles: red_border
-                                    text: "--"
-                                    id: inside_humidity
-                                - label:
-                                    styles: red_border
-                                    text: "%"
                           - label:
                               styles: red_border
-                              grid_cell_row_pos: 2
-                              grid_cell_column_pos: 0
+                              text: "--"
+                              id: inside_humidity
+                          - label:
+                              styles: red_border
+                              text: "%"
+                              text_font: main_text32
+                    # ROW 3
+                    - obj:
+                        width: 100%
+                        height: SIZE_CONTENT
+                        layout:
+                          type: FLEX
+                          flex_flow: ROW
+                          #flex_align_main: SPACE_EVENLY
+                          #flex_align_cross: START
+                          #flex_align_track: CENTER
+                        widgets:
+                          - label:
+                              styles: red_border
                               text: "\U000F00B6"
                           - label:
                               styles: red_border
-                              grid_cell_row_pos: 2
-                              grid_cell_column_pos: 1
-                              text: "-- µg"
+                              text: "--"
                               id: inside_pm_25
+                          - label:
+                              styles: red_border
+                              text: "µg"
 
     - id: stats_page
       styles: page_styles
@@ -1813,7 +1804,7 @@ script:
     then:
       - logger.log: "Execute Script: update_date"
       - lvgl.label.update:
-          id: header_date
+          id: [header_date, test_date]
           text: !lambda 'return id(ha_time).now().strftime("%A %d %b");' # calendar-month
 
 time:
