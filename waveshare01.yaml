@@ -321,8 +321,8 @@ font:
   - file:
       type: gfonts
       family: "Azeret Mono"
-    id: mono_text96
-    size: 96
+    id: mono_text72
+    size: 72
     bpp: 4
     glyphsets: *glyphsets
     #extras:
@@ -1213,7 +1213,7 @@ lvgl:
                     type: FLEX
                     flex_flow: ROW
                     flex_align_main: SPACE_EVENLY
-                    flex_align_cross: SPACE_EVENLY
+                    flex_align_cross: CENTER
                     flex_align_track: CENTER
                     pad_column: 0
                     pad_row: 0
@@ -1225,8 +1225,9 @@ lvgl:
                         height: SIZE_CONTENT
                         widgets:
                           - label:
+                              align: CENTER
                               text: "Top Left"
-                              text_align: CENTER
+                              #text_align: CENTER
                     - obj:
                         styles: red_border
                         #align: CENTER
@@ -1234,9 +1235,10 @@ lvgl:
                         flex_grow: 1
                         widgets:
                           - label:
+                              align: CENTER
                               text: "Middle"
                               text_font: mono_text48
-                              text_align: CENTER
+                              #text_align: CENTER
                     - obj:
                         styles: red_border
                         #align: CENTER
@@ -1244,8 +1246,9 @@ lvgl:
                         height: SIZE_CONTENT
                         widgets:
                           - label:
+                              align: CENTER
                               text: "Top Right"
-                              text_align: CENTER
+                              #text_align: CENTER
               # ROW 1
               - obj:
                   styles: red_border
@@ -1322,15 +1325,15 @@ lvgl:
                     type: FLEX
                     flex_flow: ROW
                     flex_align_main: CENTER
-                    #flex_align_cross: SPACE_EVENLY
+                    #flex_align_cross: CENTER
                     #flex_align_track: CENTER
                     pad_column: 0
                     pad_row: 0
                   widgets:
                     - label:
-                        text: "Top Row 1"
-                        text_font: mono_text96
-                        text_align: CENTER
+                        text: "Loading..."
+                        text_font: mono_text72
+                        #text_align: CENTER
                         id: test_date
               # ROW 2
               - obj:
@@ -1353,6 +1356,7 @@ lvgl:
                         height: SIZE_CONTENT
                         widgets:
                           - label:
+                              align: CENTER
                               styles: red_border
                               text: "Left"
                               text_font: mono_text48
@@ -1364,9 +1368,10 @@ lvgl:
                         flex_grow: 1
                         widgets:
                           - label:
+                              align: CENTER
                               styles: red_border
-                              text: "Middle"
-                              text_font: mono_text96
+                              text: "--:--"
+                              text_font: mono_text72
                               #text_align: CENTER
                               id: test_time
                     - obj:
@@ -1376,6 +1381,7 @@ lvgl:
                         height: SIZE_CONTENT
                         widgets:
                           - label:
+                              align: CENTER
                               styles: red_border
                               text: "Right"
                               text_font: mono_text48
@@ -1454,7 +1460,7 @@ lvgl:
                               id: weather_temperature
                           - label:
                               text: "°F"
-                              text_font: main_text32
+                              text_font: main_text26
                     # ROW 2
                     - obj:
                         width: 100%
@@ -1473,7 +1479,7 @@ lvgl:
                               id: weather_humidity
                           - label:
                               text: "%"
-                              text_font: main_text32
+                              text_font: main_text26
                     # ROW 3
                     - obj:
                         width: 100%
@@ -1492,7 +1498,7 @@ lvgl:
                               id: weather_wind_mph
                           - label:
                               text: "mph"
-                              text_font: main_text32
+                              text_font: main_text26
                     # ROW 4
                     - obj:
                         width: 100%
@@ -1511,7 +1517,7 @@ lvgl:
                               id: weather_wind_deg
                           - label:
                               text: "°"
-                              text_font: main_text32
+                              text_font: main_text26
               # COLUMN 2 - OUTSIDE
               - obj:
                   align: CENTER
@@ -1663,7 +1669,7 @@ lvgl:
                               id: inside_humidity
                           - label:
                               text: "%"
-                              text_font: main_text32
+                              text_font: main_text26
                     # ROW 3
                     - obj:
                         width: 100%
@@ -1682,7 +1688,7 @@ lvgl:
                               id: inside_pm_25
                           - label:
                               text: "μg/m³"
-                              text_font: main_text32
+                              text_font: main_text26
 
     - id: stats_page
       styles: page_styles
