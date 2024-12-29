@@ -274,6 +274,9 @@ font:
       - "\U000F059D" # weather-windy
       - "\U000F018B" # compass
       - "\U000F015F" # cloud
+      - "\U000F013B" # chemical-weapon
+      - "\U000F029A" # gauge
+      - "\U000F00B6" # blur-linear
       # Weather Unused
       - "\U000F0505" # temperature-fahrenheit
       - "\U000F0504" # temperature-celsius
@@ -437,6 +440,8 @@ lvgl:
             flex_flow: COLUMN
             flex_align_main: SPACE_EVENLY
             flex_align_cross: SPACE_EVENLY
+            pad_column: 0
+            pad_row: 0
           on_press:
             then:
               - logger.log: "menu_overlay: on_press"
@@ -482,6 +487,7 @@ lvgl:
                 width: 100%
                 height: SIZE_CONTENT
                 clickable: false
+                #scrollbar_mode: "OFF"
                 layout:
                   type: FLEX
                   flex_flow: ROW
@@ -522,6 +528,7 @@ lvgl:
           bg_color: 0x241F47 # top
           bg_grad_color: 0x7B68EE # bottom
           bg_opa: COVER
+          #scrollbar_mode: "OFF"
           on_press:
             then:
               - logger.log: "top_overlay: on_press"
@@ -531,7 +538,7 @@ lvgl:
             - label:
                 align: TOP_LEFT
                 text_align: LEFT
-                text: "\U000F0150 --:--" # clock-outline
+                text: "--:--" # clock-outline
                 id: header_time
             - label:
                 align: CENTER
@@ -541,13 +548,16 @@ lvgl:
             - obj:
                 align: TOP_RIGHT
                 #text_align: RIGHT
-                width: 33%
+                width: SIZE_CONTENT
+                height: 100%
                 clickable: false
                 layout:
                   type: FLEX
                   flex_flow: ROW
                   flex_align_main: END
                   #flex_align_cross: SPACE_EVENLY
+                  pad_column: 0
+                  pad_row: 0
                 widgets:
                   - label:
                       text: "--.- °F" # temperature-fahrenheit
@@ -614,6 +624,8 @@ lvgl:
               flex_flow: COLUMN
               flex_align_main: CENTER
               flex_align_cross: CENTER
+              pad_column: 0
+              pad_row: 0
             widgets:
               # ROW 1
               - obj:
@@ -768,6 +780,8 @@ lvgl:
               flex_flow: COLUMN
               flex_align_main: SPACE_EVENLY
               flex_align_cross: SPACE_EVENLY
+              pad_column: 0
+              pad_row: 0
             widgets:
               # ROW 1 - Living Room
               - obj:
@@ -941,6 +955,8 @@ lvgl:
               flex_flow: COLUMN_WRAP
               flex_align_main: SPACE_EVENLY
               flex_align_cross: SPACE_EVENLY
+              #pad_column: 0
+              #pad_row: 0
             widgets:
               - obj:
                   align: CENTER
@@ -1020,6 +1036,8 @@ lvgl:
               flex_flow: COLUMN_WRAP
               flex_align_main: SPACE_EVENLY
               flex_align_cross: SPACE_EVENLY
+              pad_column: 0
+              pad_row: 0
             widgets:
               - obj:
                   align: CENTER
@@ -1095,6 +1113,8 @@ lvgl:
               flex_flow: COLUMN_WRAP
               flex_align_main: SPACE_EVENLY
               flex_align_cross: SPACE_EVENLY
+              pad_column: 0
+              pad_row: 0
             widgets:
               - obj:
                   align: CENTER
@@ -1381,6 +1401,8 @@ lvgl:
               flex_flow: ROW
               flex_align_main: SPACE_EVENLY
               #flex_align_cross: START
+              pad_column: 0
+              pad_row: 0
             text_font: main_text48
             widgets:
               # COLUMN 1
@@ -1400,7 +1422,7 @@ lvgl:
                     - label:
                         styles: red_border
                         #align: CENTER
-                        width: SIZE_CONTENT
+                        width: 33%
                         height: SIZE_CONTENT
                         text: "NOAA"
                         id: weather_name
@@ -1464,7 +1486,7 @@ lvgl:
               - obj:
                   styles: red_border
                   align: CENTER
-                  width: SIZE_CONTENT
+                  width: 33%
                   height: 100%
                   layout:
                     type: FLEX
@@ -1515,11 +1537,33 @@ lvgl:
                               grid_cell_column_pos: 1
                               text: "-- %"
                               id: outside_humidity
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 1
+                              grid_cell_column_pos: 0
+                              text: "\U000F00B6"
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 1
+                              grid_cell_column_pos: 1
+                              text: "-- µg/m³"
+                              id: airnow_pm_25
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 1
+                              grid_cell_column_pos: 0
+                              text: "\U000F029A"
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 1
+                              grid_cell_column_pos: 1
+                              text: "-- Hg"
+                              id: weather_pressure
               # COLUMN 3
               - obj:
                   styles: red_border
                   align: CENTER
-                  width: SIZE_CONTENT
+                  width: 33%
                   height: 100%
                   layout:
                     type: FLEX
@@ -1570,6 +1614,17 @@ lvgl:
                               grid_cell_column_pos: 1
                               text: "-- %"
                               id: inside_humidity
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 1
+                              grid_cell_column_pos: 0
+                              text: "\U000F00B6"
+                          - label:
+                              styles: red_border
+                              grid_cell_row_pos: 1
+                              grid_cell_column_pos: 1
+                              text: "-- µg/m³"
+                              id: inside_pm_25
 
     - id: stats_page
       styles: page_styles
@@ -1584,6 +1639,8 @@ lvgl:
               flex_flow: COLUMN
               #flex_align_main: START
               #flex_align_cross: START
+              pad_column: 0
+              pad_row: 0
             widgets:
               - obj:
                   width: 100%
@@ -1675,8 +1732,9 @@ script:
             - lvgl.label.update:
                 id: stats_wifi
                 text:
-                  format: "%s (%s) %s"
+                  format: "%.0f dBm / %s (%s) %s"
                   args:
+                    - "id(wifi_info_signal).state"
                     - "id(wifi_info_ssid).state.c_str()"
                     - "id(wifi_info_ip).state.c_str()"
                     - "id(wifi_info_mac).state.c_str()"
@@ -1717,7 +1775,7 @@ script:
       - logger.log: "Execute Script: update_time"
       - lvgl.label.update:
           id: header_time
-          text: !lambda 'return id(ha_time).now().strftime("\U000F0150 %I:%M %p");' # clock-outline
+          text: !lambda 'return id(ha_time).now().strftime("%I:%M %p");' # clock-outline
       - lvgl.label.update:
           id: test_time
           text: !lambda 'return id(ha_time).now().strftime("%R");'
@@ -1728,7 +1786,7 @@ script:
       - logger.log: "Execute Script: update_date"
       - lvgl.label.update:
           id: header_date
-          text: !lambda 'return id(ha_time).now().strftime("\U000F0E17 %A %d %b");' # calendar-month
+          text: !lambda 'return id(ha_time).now().strftime("%A %d %b");' # calendar-month
 
 time:
   # https://esphome.io/#time-components
@@ -1924,66 +1982,32 @@ sensor:
   - id: !extend wifi_info_signal
     on_value:
       then:
-        #- logger.log:
-        #    format: "wifi_info_signal: on_value: x: %.0f"
-        #    args: ["x"]
-        - if:
-            condition:
-              lambda: "return x <= -75;"
-            then:
-              lvgl.label.update:
-                id: header_wifi
-                text: "\U000F091F" # wifi-strength-1
-                #text:
-                #  format: "%.0f dBm \U000F091F" # wifi-strength-1
-                #  args: ["x"]
-        - if:
-            condition:
-              lambda: "return x <= -55 && x > -75;"
-            then:
-              lvgl.label.update:
-                id: header_wifi
-                text: "\U000F0922" # wifi-strength-2
-                #text:
-                #  format: "%.0f dBm \U000F0922" # wifi-strength-2
-                #  args: ["x"]
-        - if:
-            condition:
-              lambda: "return x <= -35 && x > -55;"
-            then:
-              lvgl.label.update:
-                id: header_wifi
-                text: "\U000F0925" # wifi-strength-3
-                #text:
-                #  format: "%.0f dBm \U000F0925" # wifi-strength-3
-                #  args: ["x"]
-        - if:
-            condition:
-              lambda: "return x > -35;"
-            then:
-              lvgl.label.update:
-                id: header_wifi
-                text: "\U000F0928" # wifi-strength-4
-                #text:
-                #  format: "%.0f dBm \U000F0928" # wifi-strength-4
-                #  args: ["x"]
-
-  ## TODO: Fix the lambda version for brevity compare to above...
-  #- id: !extend wifi_info_signal
-  #  on_value:
-  #    then:
-  #      - lambda: |-
-  #          char buffer[64];
-  #          if (x <= -75) {
-  #            snprintf(buffer, sizeof(buffer), "%.0f dBm \U000F091F", x);
-  #          } else if (x <= -55) {
-  #            snprintf(buffer, sizeof(buffer), "%.0f dBm \U000F0922", x);
-  #          } else if (x <= -35) {
-  #            snprintf(buffer, sizeof(buffer), "%.0f dBm \U000F0925", x);
-  #          } else {
-  #            snprintf(buffer, sizeof(buffer), "%.0f dBm \U000F0928", x);
-  #          }
-  #          lvgl.label_set_text(id(header_wifi), buffer);
+        #- lvgl.label.update:
+        #    id: header_wifi
+        #    text: !lambda |-
+        #      std::string text;
+        #      if (x <= -75) {
+        #        text = std::to_string(static_cast<int>(x)) + " dBm \U000F091F";
+        #      } else if (x > -75 && x <= -55) {
+        #        text = std::to_string(static_cast<int>(x)) + " dBm \U000F0922";
+        #      } else if (x > -55 && x <= -35) {
+        #        text = std::to_string(static_cast<int>(x)) + " dBm \U000F0925";
+        #      } else {
+        #        text = std::to_string(static_cast<int>(x)) + " dBm \U000F0928";
+        #      }
+        #      return text;
+        - lvgl.label.update:
+            id: header_wifi
+            text: !lambda |-
+              if (x <= -75) {
+                return "\U000F091F"; // wifi-strength-1
+              } else if (x > -75 && x <= -55) {
+                return "\U000F0922"; // wifi-strength-2
+              } else if (x > -55 && x <= -35) {
+                return "\U000F0925"; // wifi-strength-3
+              } else {
+                return "\U000F0928"; // wifi-strength-4
+              }
 
   - id: !extend api_uptime
     on_value:
@@ -2019,13 +2043,6 @@ sensor:
           - script.execute: update_debug_stats
 
   # Outside
-  #- !include
-  #  file: include/lvgl/sensor/ha_label.yaml
-  #  vars:
-  #    id: temp02_22
-  #    entity_id: sensor.temp02_22
-  #    label: [header_temp, outside_temperature]
-  #    format: "%.1f °F"
   - platform: homeassistant
     id: temp02_22
     entity_id: sensor.temp02_22
@@ -2134,3 +2151,24 @@ sensor:
       label: weather_wind_deg
       format: "%.0f °"
       attribute: wind_bearing
+  - !include
+    file: include/lvgl/sensor/ha_label.yaml
+    vars:
+      id: pm_2_5_01
+      entity_id: sensor.pm_2_5_01
+      label: inside_pm_25
+      format: "%.0f µg/m³"
+  - !include
+    file: include/lvgl/sensor/ha_label.yaml
+    vars:
+      id: airnow_pm2_5
+      entity_id: sensor.airnow_pm2_5
+      label: airnow_pm_25
+      format: "%.0f µg/m³"
+  - !include
+    file: include/lvgl/sensor/ha_label.yaml
+    vars:
+      id: pres03_280
+      entity_id: sensor.pres03_280
+      label: weather_pressure
+      format: "%.0f Hg"
