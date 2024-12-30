@@ -18,11 +18,11 @@ packages:
     vars:
       pin: GPIO33
 
-${type}:
-  # https://esphome.io/#supported-microcontrollers
-  framework:
-    sdkconfig_options:
-      CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
+#${type}:
+#  # https://esphome.io/#supported-microcontrollers
+#  framework:
+#    sdkconfig_options:
+#      CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
 
 i2c:
   # https://esphome.io/components/i2c
@@ -36,7 +36,7 @@ font:
   - file:
       type: gfonts
       family: "Red Hat Text"
-    id: redhat14
+    id: main_text
     size: 14
     #bpp: 4
     #glyphsets: [GF_Latin_Core]
@@ -47,8 +47,8 @@ font:
   - file:
       type: gfonts
       family: "Ubuntu Mono"
-    id: ubuntu14
-    size: 14
+    id: ubuntu_text
+    size: 16
     #bpp: 4
     #glyphsets: [GF_Latin_Core]
     #extras:
@@ -63,17 +63,17 @@ display:
     address: 0x3C
     lambda: |-
       if (!global_api_server->is_connected() ) {
-        it.printf(0, 0, id(redhat14), "Connecting to HA...");
+        it.printf(0, 0, id(main_text), "Connecting to HA...");
       } else {
-        it.printf(0, 0, id(redhat14), "IP:");
-        it.printf(128, 0, id(redhat14), TextAlign::RIGHT, "%s", id(wifi_info_ip).state.c_str());
+        it.printf(0, 0, id(main_text), "IP:");
+        it.printf(128, 0, id(main_text), TextAlign::RIGHT, "%s", id(wifi_info_ip).state.c_str());
       }
 
-      it.printf(0, 23, id(redhat14), "Status:");
-      it.printf(128, 23, id(redhat14), TextAlign::RIGHT, "%s", id(photo_switch).state ? "Active" : "PAUSED");
+      it.printf(0, 23, id(main_text), "Status:");
+      it.printf(128, 23, id(main_text), TextAlign::RIGHT, "%s", id(photo_switch).state ? "Active" : "PAUSED");
 
-      it.printf(0, 46, id(ubuntu14), "ADC:");
-      it.printf(128, 46, id(ubuntu14), TextAlign::RIGHT, "%.3f V", id(photoresistor).state);
+      it.printf(0, 46, id(ubuntu_text), "ADC:");
+      it.printf(128, 46, id(ubuntu_text), TextAlign::RIGHT, "%.3f V", id(photoresistor).state);
 
 button:
   # https://esphome.io/#button-components
@@ -112,8 +112,8 @@ sensor:
     # https://esphome.io/components/sensor/adc
     name: "Photoresistor ${box_num}"
     id: photoresistor
-    icon: mdi:lightning-bolt-circle
+    icon: mdi:flash-triangle-outline # flash
     pin: GPIO36
-    attenuation: 12db
+    attenuation: auto # 12db
     update_interval: 1s
     disabled_by_default: true
