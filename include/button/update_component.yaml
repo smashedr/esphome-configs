@@ -1,6 +1,6 @@
 platform: template
 name: "Update ${name} ${box_num}"
-id: update_component
+id: "${id}"
 icon: mdi:update
 on_press:
   - logger.log: "Update: ${name}: ${component}"
