@@ -24,6 +24,19 @@ packages:
 #    sdkconfig_options:
 #      CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
 
+esphome:
+  # https://esphome.io/components/esphome
+  on_boot:
+    - priority: -100
+      then:
+        - logger.log: "Boot -100"
+        - if:
+            condition:
+              - switch.is_off: photo_switch
+            then:
+              - logger.log: "Suspending: photoresistor"
+              - component.suspend: photoresistor
+
 i2c:
   # https://esphome.io/components/i2c
   sda: GPIO21 # green
@@ -114,6 +127,7 @@ sensor:
     id: photoresistor
     icon: mdi:flash-triangle-outline # flash
     pin: GPIO36
-    attenuation: auto # 12db
+    #attenuation: 12db
+    attenuation: auto
     update_interval: 1s
     disabled_by_default: true
