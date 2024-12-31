@@ -6,7 +6,7 @@ on_value:
       format: "${id}: on_value: x: %.0f"
       args: ["x"]
   - lvgl.label.update:
-      id: ${label}
+      id: "${label}"
       text:
         format: "${format}"
         args: ["x"]

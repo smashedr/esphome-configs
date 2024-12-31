@@ -307,8 +307,8 @@ font:
     glyphs: *glyphs
 
   - file: fonts/red_hat_text_mdi.ttf
-    id: main_text42
-    size: 42
+    id: main_text40
+    size: 40
     bpp: 4
     glyphsets: *glyphsets
     glyphs: *glyphs
@@ -668,7 +668,7 @@ lvgl:
                     - label:
                         align: CENTER
                         text: "This Is Your Life Now!"
-                        text_font: main_text42
+                        text_font: main_text40
               # ROW 2
               - obj:
                   width: 100%
@@ -1441,7 +1441,7 @@ lvgl:
               #flex_align_cross: START
               pad_column: 0
               pad_row: 0
-            text_font: main_text42
+            text_font: main_text40
             widgets:
               # COLUMN 1 - NOAA
               - obj:
@@ -1454,7 +1454,7 @@ lvgl:
                     #flex_align_main: START
                     #flex_align_cross: START
                     #pad_column: 0
-                    #pad_row: 0
+                    pad_row: 2
                   widgets:
                     - label:
                         #align: CENTER
@@ -1463,22 +1463,6 @@ lvgl:
                         text_align: CENTER
                         text: "NOAA"
                         id: weather_name
-                    # ROW 0
-                    - obj:
-                        width: 100%
-                        height: SIZE_CONTENT
-                        layout:
-                          type: FLEX
-                          flex_flow: ROW
-                          #flex_align_main: SPACE_EVENLY
-                          #flex_align_cross: START
-                          #flex_align_track: CENTER
-                        widgets:
-                          - label:
-                              text: "\U000F0F35"
-                          - label:
-                              text: "Loading..."
-                              id: weather_current
                     # ROW 1
                     - obj:
                         width: 100%
@@ -1535,6 +1519,7 @@ lvgl:
                               id: weather_wind_mph
                           - label:
                               text: "@"
+                              text_font: main_text26
                           - label:
                               text: "--"
                               id: weather_wind_deg
@@ -1560,6 +1545,22 @@ lvgl:
                     #      - label:
                     #          text: "°"
                     #          text_font: main_text26
+                    # ROW 5
+                    - obj:
+                        width: 100%
+                        height: SIZE_CONTENT
+                        layout:
+                          type: FLEX
+                          flex_flow: ROW
+                          #flex_align_main: SPACE_EVENLY
+                          #flex_align_cross: START
+                          #flex_align_track: CENTER
+                        widgets:
+                          - label:
+                              text: "\U000F0F35"
+                          - label:
+                              text: "Loading..."
+                              id: weather_current
               # COLUMN 2 - OUTSIDE
               - obj:
                   align: CENTER
@@ -1571,7 +1572,7 @@ lvgl:
                     #flex_align_main: START
                     #flex_align_cross: START
                     #pad_column: 0
-                    #pad_row: 0
+                    pad_row: 2
                   widgets:
                     - label:
                         #align: CENTER
@@ -1666,7 +1667,7 @@ lvgl:
                     #flex_align_main: START
                     #flex_align_cross: START
                     #pad_column: 0
-                    #pad_row: 0
+                    pad_row: 2
                   widgets:
                     - label:
                         #align: CENTER
@@ -2085,7 +2086,7 @@ text_sensor:
 
   # Weather
   - !include
-    file: include/lvgl/sensor/ha_label.yaml
+    file: include/lvgl/text/ha_label.yaml
     vars:
       id: nws_current
       entity_id: weather.ksea
@@ -2292,6 +2293,13 @@ sensor:
       label: weather_wind_deg
       format: "%.0f"
       attribute: wind_bearing
+  #- !include
+  #  file: include/lvgl/sensor/ha_label.yaml
+  #  vars:
+  #    id: nws_pressure
+  #    entity_id: "sensor.f6219_barometric_pressure"
+  #    label: weather_pressure
+  #    format: "%.2f"
   - !include
     file: include/lvgl/sensor/ha_label.yaml
     vars:
