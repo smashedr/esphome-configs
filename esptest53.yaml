@@ -126,9 +126,12 @@ sensor:
     name: "Photoresistor ${box_num}"
     accuracy_decimals: 3
     id: photoresistor
-    icon: mdi:flash-triangle-outline # flash
+    icon: mdi:flash # flash
     pin: GPIO36
     #attenuation: 12db
     attenuation: auto
-    update_interval: 1s
     disabled_by_default: true
+    update_interval: 24s
+    filters:
+      - median:
+          send_first_at: 5
