@@ -1,4 +1,4 @@
-# ld2420 - Bedroom
+# BENCH - idk
 
 substitutions:
   # https://esphome.io/components/substitutions
@@ -17,48 +17,97 @@ packages:
     file: include/status_led.yaml
     vars:
       pin: GPIO33
-  ld2420: !include
-    file: include/ld2420/ld2420.yaml
-    vars:
-      rx_pin: GPIO16
-      tx_pin: GPIO17
 
-${type}:
-  # https://esphome.io/#supported-microcontrollers
-  framework:
-    sdkconfig_options:
-      CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
+#${type}:
+#  # https://esphome.io/#supported-microcontrollers
+#  framework:
+#    sdkconfig_options:
+#      CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
 
 esphome:
   # https://esphome.io/components/esphome
   on_boot:
     - priority: -100
       then:
-        - !include {
-            file: include/esphome/night_light_boot.yaml,
-            vars: { light: main_led, switch: night_light_switch },
-          }
+        - logger.log: "Boot -100"
+        - if:
+            condition:
+              - switch.is_off: photo_switch
+            then:
+              - logger.log: "Suspending: photoresistor"
+              - component.suspend: photoresistor
+
+i2c:
+  # https://esphome.io/components/i2c
+  sda: GPIO21 # green
+  scl: GPIO22 # blue
+  scan: false
+  frequency: 400kHz
+
+font:
+  # https://esphome.io/components/font
+  - file:
+      type: gfonts
+      family: "Red Hat Text"
+    id: main_text
+    size: 14
+    #bpp: 4
+    #glyphsets: [GF_Latin_Core]
+    #extras:
+    #  - file: "fonts/materialdesignicons-webfont.ttf"
+    #    glyphs: &glyphs
+    #      - "\U000F1B1E" # flash-triangle-outline
+  - file:
+      type: gfonts
+      family: "Ubuntu Mono"
+    id: ubuntu_text
+    size: 18
+    #bpp: 4
+    #glyphsets: [GF_Latin_Core]
+    #extras:
+    #  - file: "fonts/materialdesignicons-webfont.ttf"
+    #    glyphs: *glyphs
+
+display:
+  # https://esphome.io/#display-components
+  - platform: ssd1306_i2c
+    id: main_display
+    model: "SSD1306 128x64"
+    address: 0x3C
+    lambda: |-
+      if (!global_api_server->is_connected() ) {
+        it.printf(0, 0, id(main_text), "Connecting to HA...");
+      } else {
+        it.printf(0, 0, id(main_text), "IP:");
+        it.printf(128, 0, id(main_text), TextAlign::RIGHT, "%s", id(wifi_info_ip).state.c_str());
+      }
+
+      it.printf(0, 23, id(main_text), "Status:");
+      it.printf(128, 23, id(main_text), TextAlign::RIGHT, "%s", id(photo_switch).state ? "Active" : "PAUSED");
+
+      it.printf(0, 46, id(ubuntu_text), "ADC:");
+      it.printf(128, 46, id(ubuntu_text), TextAlign::RIGHT, "%.3f V", id(photoresistor).state);
+
+button:
+  # https://esphome.io/#button-components
+  - !include
+    file: include/button/update_component.yaml
+    vars:
+      name: Photoresistor
+      component: photoresistor
+      id: photo_btn
 
 switch:
   # https://esphome.io/#switch-components
-  - !include {
-      file: include/switch/night_light.yaml,
-      vars: { light: main_led, binary: presence },
-    }
-
-  - platform: homeassistant
-    id: bedroom_light
-    entity_id: light.bedroom_light
+  - !include
+    file: include/switch/toggle_component.yaml
+    vars:
+      name: Photoresistor
+      component: photoresistor
+      id: photo_switch
 
 binary_sensor:
   # https://esphome.io/#binary-sensor-components
-  - id: !extend presence_sensor
-    has_target:
-      !include {
-        file: include/ld2420/has_target_night_light.yaml,
-        vars: { light: main_led, switch: bedroom_light },
-      }
-
   - platform: gpio
     name: "Touch 1 - ${box_num}"
     id: touch_1
@@ -68,4 +117,21 @@ binary_sensor:
       mode: INPUT_PULLUP
     on_press:
       then:
-        - switch.toggle: night_light_switch
+        - switch.toggle: photo_switch
+
+sensor:
+  # https://esphome.io/#sensor-components
+  - platform: adc
+    # https://esphome.io/components/sensor/adc
+    name: "Photoresistor ${box_num}"
+    accuracy_decimals: 3
+    id: photoresistor
+    icon: mdi:flash # flash
+    pin: GPIO36
+    #attenuation: 12db
+    attenuation: auto
+    disabled_by_default: true
+    update_interval: 24s
+    filters:
+      - median:
+          send_first_at: 5
