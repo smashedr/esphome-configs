@@ -8,6 +8,8 @@ substitutions:
   type: "esp32"
   board: "esp32-s3-devkitc-1"
   comment: "Touch Screen"
+  # Waveshare
+  nws_id: "f6219"
 
 packages:
   # https://esphome.io/components/packages.html
@@ -279,6 +281,10 @@ font:
       - "\U000F013B" # chemical-weapon
       - "\U000F029A" # gauge
       - "\U000F00B5" # blur
+      - "\U000F050E" # theme-light-dark
+      - "\U000F0594" # weather-night
+      - "\U000F0599" # weather-sunny
+      - "\U000F0F35" # weather-partly-snowy-rainy
       # Weather Unused
       - "\U000F0505" # temperature-fahrenheit
       - "\U000F0504" # temperature-celsius
@@ -301,8 +307,8 @@ font:
     glyphs: *glyphs
 
   - file: fonts/red_hat_text_mdi.ttf
-    id: main_text48
-    size: 48
+    id: main_text42
+    size: 42
     bpp: 4
     glyphsets: *glyphsets
     glyphs: *glyphs
@@ -539,12 +545,27 @@ lvgl:
               - lvgl.page.show: stats_page
               - lvgl.widget.hide: menu_overlay # TODO: Fix full screen menu
           widgets:
-            - label:
+            - obj:
                 align: TOP_LEFT
+                width: 33% #TODO: Determine why SIZE_CONTENT does not work...
+                height: 100%
                 pad_left: 10
-                text_align: LEFT
-                text: "--:-- --"
-                id: header_time
+                clickable: false
+                layout:
+                  type: FLEX
+                  flex_flow: ROW
+                  #flex_align_main: END
+                  #flex_align_cross: SPACE_EVENLY
+                  #pad_column: 0
+                  #pad_row: 0
+                widgets:
+                  - label:
+                      text: "\U000F050E" # theme-light-dark
+                      id: header_sun
+                  - label:
+                      align: TOP_LEFT
+                      text: "--:-- --"
+                      id: header_time
             - label:
                 align: CENTER
                 text_align: CENTER
@@ -647,7 +668,7 @@ lvgl:
                     - label:
                         align: CENTER
                         text: "This Is Your Life Now!"
-                        text_font: main_text48
+                        text_font: main_text42
               # ROW 2
               - obj:
                   width: 100%
@@ -1420,7 +1441,7 @@ lvgl:
               #flex_align_cross: START
               pad_column: 0
               pad_row: 0
-            text_font: main_text48
+            text_font: main_text42
             widgets:
               # COLUMN 1 - NOAA
               - obj:
@@ -1442,6 +1463,22 @@ lvgl:
                         text_align: CENTER
                         text: "NOAA"
                         id: weather_name
+                    # ROW 0
+                    - obj:
+                        width: 100%
+                        height: SIZE_CONTENT
+                        layout:
+                          type: FLEX
+                          flex_flow: ROW
+                          #flex_align_main: SPACE_EVENLY
+                          #flex_align_cross: START
+                          #flex_align_track: CENTER
+                        widgets:
+                          - label:
+                              text: "\U000F0F35"
+                          - label:
+                              text: "Loading..."
+                              id: weather_current
                     # ROW 1
                     - obj:
                         width: 100%
@@ -1497,27 +1534,32 @@ lvgl:
                               text: "--"
                               id: weather_wind_mph
                           - label:
-                              text: "mph"
-                              text_font: main_text26
-                    # ROW 4
-                    - obj:
-                        width: 100%
-                        height: SIZE_CONTENT
-                        layout:
-                          type: FLEX
-                          flex_flow: ROW
-                          #flex_align_main: SPACE_EVENLY
-                          #flex_align_cross: START
-                          #flex_align_track: CENTER
-                        widgets:
-                          - label:
-                              text: "\U000F018B"
+                              text: "@"
                           - label:
                               text: "--"
                               id: weather_wind_deg
                           - label:
                               text: "°"
                               text_font: main_text26
+                    # ROW 4
+                    #- obj:
+                    #    width: 100%
+                    #    height: SIZE_CONTENT
+                    #    layout:
+                    #      type: FLEX
+                    #      flex_flow: ROW
+                    #      #flex_align_main: SPACE_EVENLY
+                    #      #flex_align_cross: START
+                    #      #flex_align_track: CENTER
+                    #    widgets:
+                    #      - label:
+                    #          text: "\U000F018B"
+                    #      - label:
+                    #          text: "--"
+                    #          id: weather_wind_deg
+                    #      - label:
+                    #          text: "°"
+                    #          text_font: main_text26
               # COLUMN 2 - OUTSIDE
               - obj:
                   align: CENTER
@@ -2029,7 +2071,7 @@ text_sensor:
 
   - platform: homeassistant
     id: nws_friendly_name
-    entity_id: weather.f6219
+    entity_id: "weather.${nws_id}"
     attribute: friendly_name
     on_value:
       - logger.log:
@@ -2040,6 +2082,36 @@ text_sensor:
           text:
             format: "%s"
             args: ["x.c_str()"]
+
+  # Weather
+  - !include
+    file: include/lvgl/sensor/ha_label.yaml
+    vars:
+      id: nws_current
+      entity_id: weather.ksea
+      label: weather_current
+      format: "%s"
+
+  - platform: homeassistant
+    id: sun
+    entity_id: sun.sun
+    on_value:
+      - logger.log:
+          format: "sun.sun: on_value: x: %s"
+          args: ["x.c_str()"]
+      - if:
+          condition:
+            lambda: 'return x == "above_horizon";'
+          then:
+            - logger.log: "Setting Header Day: weather-sunny"
+            - lvgl.label.update:
+                id: header_sun
+                text: "\U000F0599" # weather-sunny
+          else:
+            - logger.log: "Setting Header Night: weather-night"
+            - lvgl.label.update:
+                id: header_sun
+                text: "\U000F0594" # weather-night
 
 sensor:
   # https://esphome.io/#sensor-components
@@ -2192,7 +2264,7 @@ sensor:
     file: include/lvgl/sensor/ha_label_attr.yaml
     vars:
       id: nws_temperature
-      entity_id: weather.f6219
+      entity_id: "weather.${nws_id}"
       label: weather_temperature
       format: "%.1f"
       attribute: temperature
@@ -2200,7 +2272,7 @@ sensor:
     file: include/lvgl/sensor/ha_label_attr.yaml
     vars:
       id: nws_humidity
-      entity_id: weather.f6219
+      entity_id: "weather.${nws_id}"
       label: weather_humidity
       format: "%.0f"
       attribute: humidity
@@ -2208,7 +2280,7 @@ sensor:
     file: include/lvgl/sensor/ha_label_attr.yaml
     vars:
       id: nws_wind_speed
-      entity_id: weather.f6219
+      entity_id: "weather.${nws_id}"
       label: weather_wind_mph
       format: "%.0f"
       attribute: wind_speed
@@ -2216,7 +2288,7 @@ sensor:
     file: include/lvgl/sensor/ha_label_attr.yaml
     vars:
       id: nws_wind_bearing
-      entity_id: weather.f6219
+      entity_id: "weather.${nws_id}"
       label: weather_wind_deg
       format: "%.0f"
       attribute: wind_bearing

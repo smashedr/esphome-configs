@@ -61,7 +61,7 @@ font:
       type: gfonts
       family: "Ubuntu Mono"
     id: ubuntu_text
-    size: 16
+    size: 18
     #bpp: 4
     #glyphsets: [GF_Latin_Core]
     #extras:
@@ -124,6 +124,7 @@ sensor:
   - platform: adc
     # https://esphome.io/components/sensor/adc
     name: "Photoresistor ${box_num}"
+    accuracy_decimals: 3
     id: photoresistor
     icon: mdi:flash-triangle-outline # flash
     pin: GPIO36
