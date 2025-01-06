@@ -3,7 +3,7 @@
 # ld2450: !include
 #   file: include/ld2450/ld2450.yaml
 #   vars:
-#     box_num: 01
+#     box_num: "01"
 #     rx_pin: GPIO16
 #     tx_pin: GPIO17
 
@@ -106,17 +106,22 @@ select:
   - platform: ld2450
     baud_rate:
       name: "Baud Rate ${box_num}"
+      disabled_by_default: true
     regions_type:
       name: "Regions Type ${box_num}"
+      disabled_by_default: true
 
+## This does not ger merged with packages due to its design
 #binary_sensor:
 #  - platform: ld2450
 #    has_target:
 #      name: "Presence ${box_num}"
 #    has_moving_target:
 #      name: "Moving Target ${box_num}"
+#      disabled_by_default: true
 #    has_still_target:
 #      name: "Still Target ${box_num}"
+#      disabled_by_default: true
 
 text_sensor:
   - platform: ld2450
@@ -124,6 +129,7 @@ text_sensor:
       name: "LD2450 Firmware ${box_num}"
     mac_address:
       name: "LD2450 MAC ${box_num}"
+      disabled_by_default: true
 
 sensor:
   - platform: ld2450

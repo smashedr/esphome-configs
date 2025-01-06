@@ -3,7 +3,7 @@
 # debug: !include
 #   file: include/debug.yaml
 #   vars:
-#     box_num: 01
+#     box_num: "01"
 
 substitutions:
   box_num: "01"

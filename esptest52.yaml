@@ -11,8 +11,8 @@ substitutions:
 
 packages:
   # https://esphome.io/components/packages.html
-  debug: !include { file: include/debug.yaml }
   common: !include { file: include/common.yaml }
+  debug: !include { file: include/debug.yaml }
   voice_assistant: !include { file: include/va/voice_assistant.yaml }
   micro_wake_word: !include
     file: include/va/micro_wake_word.yaml

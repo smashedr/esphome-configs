@@ -12,10 +12,38 @@ substitutions:
 packages:
   # https://esphome.io/components/packages.html
   common: !include { file: include/common.yaml }
-  status_led: !include
-    file: include/status_led.yaml
+  status_led: !include { file: include/status_led.yaml, vars: { pin: 27 } }
+
+esphome:
+  # https://esphome.io/components/esphome
+  on_boot:
+    - priority: 400
+      then:
+        - logger.log: "Boot 400"
+        - if:
+            condition:
+              - switch.is_off: photo_switch
+            then:
+              - logger.log: "Suspending: photoresistor"
+              - component.suspend: photoresistor
+
+button:
+  # https://esphome.io/#button-components
+  - !include
+    file: include/button/update_component.yaml
     vars:
-      pin: GPIO27
+      name: Photoresistor
+      component: photoresistor
+      id: photo_btn
+
+switch:
+  # https://esphome.io/#switch-components
+  - !include
+    file: include/switch/toggle_component.yaml
+    vars:
+      name: "Photoresistor"
+      component: photoresistor
+      id: photo_switch
 
 binary_sensor:
   # https://esphome.io/#binary-sensor-components
@@ -25,3 +53,4 @@ sensor:
   # https://esphome.io/#sensor-components
   - !include { file: include/sensor/dht22.yaml, vars: { pin: 33 } }
   - !include { file: include/sensor/absolute_humidity_dht22.yaml }
+  - !include { file: include/sensor/photoresistor.yaml, vars: { pin: 34 } }

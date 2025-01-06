@@ -27,7 +27,7 @@ voice_assistant:
   auto_gain: 31dBFS
   noise_suppression_level: 2
   volume_multiplier: 2.0
-  #conversation_timeout : 300s
+  conversation_timeout: 180s
   #use_wake_word: false
 
   on_idle:

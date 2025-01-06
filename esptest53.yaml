@@ -11,8 +11,8 @@ substitutions:
 
 packages:
   # https://esphome.io/components/packages.html
-  debug: !include { file: include/debug.yaml }
   common: !include { file: include/common.yaml }
+  debug: !include { file: include/debug.yaml }
   status_led: !include
     file: include/status_led.yaml
     vars:
@@ -27,9 +27,9 @@ packages:
 esphome:
   # https://esphome.io/components/esphome
   on_boot:
-    - priority: -100
+    - priority: 400
       then:
-        - logger.log: "Boot -100"
+        - logger.log: "Boot 400"
         - if:
             condition:
               - switch.is_off: photo_switch
@@ -37,10 +37,21 @@ esphome:
               - logger.log: "Suspending: photoresistor"
               - component.suspend: photoresistor
 
+web_server:
+  # https://esphome.io/components/web_server
+  version: 3
+  sorting_groups:
+    - id: sg_temps
+      name: "Temperature"
+      sorting_weight: -30
+
+one_wire:
+  # https://esphome.io/components/one_wire
+  - platform: gpio
+    pin: GPIO32
+
 i2c:
   # https://esphome.io/components/i2c
-  sda: GPIO21 # green
-  scl: GPIO22 # blue
   scan: false
   frequency: 400kHz
 
@@ -78,15 +89,37 @@ display:
       if (!global_api_server->is_connected() ) {
         it.printf(0, 0, id(main_text), "Connecting to HA...");
       } else {
-        it.printf(0, 0, id(main_text), "IP:");
-        it.printf(128, 0, id(main_text), TextAlign::RIGHT, "%s", id(wifi_info_ip).state.c_str());
+        if (id(photo_switch).state) {
+          it.printf(0, 0, id(ubuntu_text), "ADC:");
+        } else {
+          it.printf(0, 0, id(ubuntu_text), "OFF:");
+        }
+        it.printf(128, 0, id(ubuntu_text), TextAlign::RIGHT, "%.3f V", id(photoresistor).state);
+
+        it.printf(0, 23, id(main_text), "Temp 1:");
+        it.printf(128, 23, id(ubuntu_text), TextAlign::RIGHT, "%.1f C", id(temp1).state);
+
+        it.printf(0, 46, id(main_text), "Temp 2:");
+        it.printf(128, 46, id(ubuntu_text), TextAlign::RIGHT, "%.1f C", id(temp2).state);
       }
-
-      it.printf(0, 23, id(main_text), "Status:");
-      it.printf(128, 23, id(main_text), TextAlign::RIGHT, "%s", id(photo_switch).state ? "Active" : "PAUSED");
-
-      it.printf(0, 46, id(ubuntu_text), "ADC:");
-      it.printf(128, 46, id(ubuntu_text), TextAlign::RIGHT, "%.3f V", id(photoresistor).state);
+    #lambda: |-
+    #  if (!global_api_server->is_connected() ) {
+    #    it.printf(0, 0, id(main_text), "Connecting to HA...");
+    #  } else {
+    #    it.printf(0, 0, id(main_text), "IP:");
+    #    it.printf(128, 0, id(main_text), TextAlign::RIGHT, "%s", id(wifi_info_ip).state.c_str());
+    #  }
+    #
+    #  it.printf(0, 23, id(main_text), "Temp:");
+    #  it.printf(128, 23, id(ubuntu_text), TextAlign::RIGHT, "%.1f C", id(temp1).state);
+    #  //it.printf(128, 23, id(main_text), TextAlign::RIGHT, "%s", id(photo_switch).state ? "Active" : "PAUSED");
+    #
+    #  if (id(photo_switch).state) {
+    #    it.printf(0, 46, id(ubuntu_text), "ADC:");
+    #  } else {
+    #    it.printf(0, 46, id(ubuntu_text), "OFF:");
+    #  }
+    #  it.printf(128, 46, id(ubuntu_text), TextAlign::RIGHT, "%.3f V", id(photoresistor).state);
 
 button:
   # https://esphome.io/#button-components
@@ -102,36 +135,71 @@ switch:
   - !include
     file: include/switch/toggle_component.yaml
     vars:
-      name: Photoresistor
+      name: "Photoresistor"
       component: photoresistor
       id: photo_switch
+  - !include
+    file: include/switch/toggle_component.yaml
+    vars:
+      name: "Dallas 1"
+      component: temp1
+      id: temp1_switch
+      restore_mode: ALWAYS_ON
+  - !include
+    file: include/switch/toggle_component.yaml
+    vars:
+      name: "Dallas 2"
+      component: temp2
+      id: temp2_switch
+      restore_mode: ALWAYS_ON
 
-binary_sensor:
-  # https://esphome.io/#binary-sensor-components
-  - platform: gpio
-    name: "Touch 1 - ${box_num}"
-    id: touch_1
-    icon: mdi:gesture-tap-box
-    pin:
-      number: 26
-      mode: INPUT_PULLUP
-    on_press:
-      then:
-        - switch.toggle: photo_switch
+#binary_sensor:
+#  # https://esphome.io/#binary-sensor-components
+#  - platform: gpio
+#    name: "Touch 1 - ${box_num}"
+#    id: touch_1
+#    icon: mdi:gesture-tap-box
+#    pin:
+#      number: 26
+#      mode: INPUT_PULLUP
+#    on_press:
+#      then:
+#        - switch.toggle: photo_switch
 
 sensor:
   # https://esphome.io/#sensor-components
-  - platform: adc
-    # https://esphome.io/components/sensor/adc
-    name: "Photoresistor ${box_num}"
-    accuracy_decimals: 3
-    id: photoresistor
-    icon: mdi:flash # flash
-    pin: GPIO36
-    #attenuation: 12db
-    attenuation: auto
+  - !include { file: include/sensor/photoresistor.yaml, vars: { pin: 36 } }
+  #- !include { file: include/sensor/dallas_temp.yaml, vars: { id: temp1 } }
+  - platform: dallas_temp
+    name: "Temp${box_num}-1"
+    id: temp1
+    address: 0x80011453ddfcaa28
+    #update_interval: 30s
     disabled_by_default: true
-    update_interval: 24s
+    force_update: ${force_update}
     filters:
-      - median:
-          send_first_at: 5
+      - filter_out: 85
+      - clamp:
+          min_value: -55
+          max_value: 125
+          ignore_out_of_range: true
+    web_server:
+      sorting_group_id: sg_temps
+      sorting_weight: 10
+
+  - platform: dallas_temp
+    name: "Temp${box_num}-2"
+    id: temp2
+    address: 0xf8011453d4c3aa28
+    #update_interval: 30s
+    disabled_by_default: true
+    force_update: ${force_update}
+    filters:
+      - filter_out: 85
+      - clamp:
+          min_value: -55
+          max_value: 125
+          ignore_out_of_range: true
+    web_server:
+      sorting_group_id: sg_temps
+      sorting_weight: 11

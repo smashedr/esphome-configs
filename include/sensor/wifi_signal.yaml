@@ -7,9 +7,8 @@ force_update: ${force_update}
 icon: mdi:wifi-arrow-up-down
 device_class: signal_strength
 filters:
-  - lambda: |-
-      float MIN = -100.0;
-      float MAX = -25.0;
-      if (MIN <= x && x <= MAX) return x;
-      else return {};
+  - clamp:
+      min_value: -100
+      max_value: -25
+      ignore_out_of_range: true
   - median:

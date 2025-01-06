@@ -4,6 +4,7 @@ id: btn_identify
 icon: mdi:crosshairs-question
 entity_category: config
 device_class: identify
+disabled_by_default: true
 on_press:
   - logger.log: "Flashing Main LED For 20 Seconds..."
   - light.turn_on:

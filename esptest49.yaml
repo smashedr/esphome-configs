@@ -11,8 +11,8 @@ substitutions:
 
 packages:
   # https://esphome.io/components/packages.html
-  debug: !include { file: include/debug.yaml }
   common: !include { file: include/common.yaml }
+  debug: !include { file: include/debug.yaml }
   status_led: !include
     file: include/status_led.yaml
     vars:
@@ -24,6 +24,19 @@ esphome:
     - priority: 600
       then:
         - rtttl.play: "SMWTheme:d=4,o=6,b=100:16e,16e,32p,8e,16c,8e,8g,8p,8g5,8p"
+    # TODO: Fix alarm active state with a proper switch...
+    - priority: -100
+      then:
+        - if:
+            condition:
+              binary_sensor.is_on: alarm_active
+            then:
+              light.turn_on: red_led
+        - if:
+            condition:
+              binary_sensor.is_on: alarm_arm
+            then:
+              light.turn_on: red_led
     #- priority: -100
     #  then:
     #    - if:
@@ -40,20 +53,6 @@ esphome:
     #              then:
     #                - logger.log: "Turning On: main_led"
     #                - light.turn_on: main_led
-    #- priority: 200
-    #  then:
-    #    - switch.turn_off: buzzer
-    #    - delay: 30s
-    #    - if:
-    #        condition:
-    #          - binary_sensor.is_off: alarm_arm
-    #        then:
-    #          - light.turn_off: red_led
-    #    - if:
-    #        condition:
-    #          - binary_sensor.is_on: alarm_arm
-    #        then:
-    #          - light.turn_on: red_led
 
 api:
   # https://esphome.io/components/api
@@ -125,32 +124,21 @@ light:
 
 font:
   # https://esphome.io/components/font
-  #- file: "fonts/arial.ttf"
-  #  id: font1
-  #  size: 14
-  #- file: "fonts/arial.ttf"
-  #  id: font2
-  #  size: 16
   - file:
       type: gfonts
       family: "Red Hat Text"
-      #italic : false
-      #weight: 400
-    id: red_hat1
+    id: red_hat14
     size: 14
     #bpp: 1
-    glyphsets:
+    glyphsets: &glyphsets
       - GF_Latin_Core
   - file:
       type: gfonts
       family: "Red Hat Text"
-      #italic : false
-      #weight: 400
-    id: red_hat2
+    id: red_hat16
     size: 16
     #bpp: 1
-    glyphsets:
-      - GF_Latin_Core
+    glyphsets: *glyphsets
 
 display:
   # https://esphome.io/#display-components
@@ -162,41 +150,39 @@ display:
     #update_interval: 5s
     lambda: |-
       if (!global_api_server->is_connected() ) {
-        it.printf(0, 0, id(red_hat1), "Connecting to HA...");
+        it.printf(0, 0, id(red_hat14), "Connecting to HA...");
 
-        it.printf(0, 23, id(red_hat2), "IP:");
-        it.printf(128, 23, id(red_hat2), TextAlign::RIGHT, "%s",
-            static_cast<const char*>(id(wifi_info_ip).state.c_str()));
+        it.printf(0, 23, id(red_hat16), "IP:");
+        it.printf(128, 23, id(red_hat16), TextAlign::RIGHT, "%s", id(wifi_info_ip).state.c_str());
       } else {
-        it.printf(0, 0, id(red_hat1), "IP:");
-        it.printf(128, 0, id(red_hat1), TextAlign::RIGHT, "%s",
-            static_cast<const char*>(id(wifi_info_ip).state.c_str()));
+        it.printf(0, 0, id(red_hat14), "IP:");
+        it.printf(128, 0, id(red_hat14), TextAlign::RIGHT, "%s", id(wifi_info_ip).state.c_str());
         
-        it.printf(0, 23, id(red_hat2), "Doors:");
+        it.printf(0, 23, id(red_hat16), "Doors:");
         if ( id(door_sensor_1).state ) {
-          it.printf(128, 23, id(red_hat2), TextAlign::RIGHT, "FREEZER");
+          it.printf(128, 23, id(red_hat16), TextAlign::RIGHT, "FREEZER");
         } else if (id(door_sensor_2).state) {
-          it.printf(128, 23, id(red_hat2), TextAlign::RIGHT, "FRIDGE");
+          it.printf(128, 23, id(red_hat16), TextAlign::RIGHT, "FRIDGE");
         } else if (id(door_sensor_3).state) {
-          it.printf(128, 23, id(red_hat2), TextAlign::RIGHT, "FRONT");
+          it.printf(128, 23, id(red_hat16), TextAlign::RIGHT, "FRONT");
         } else {
-          it.printf(128, 23, id(red_hat2), TextAlign::RIGHT, "Closed");
+          it.printf(128, 23, id(red_hat16), TextAlign::RIGHT, "Closed");
         }
         
-        it.printf(0, 46, id(red_hat2), "Alarm:");
+        it.printf(0, 46, id(red_hat16), "Alarm:");
         if ( id(alarm_active).state ) {
-          it.printf(128, 46, id(red_hat2), TextAlign::RIGHT, "%s", "ACTIVE");
+          it.printf(128, 46, id(red_hat16), TextAlign::RIGHT, "%s", "ACTIVE");
         } else if (id(alarm_arm).state) {
-          it.printf(128, 46, id(red_hat2), TextAlign::RIGHT, "%s", "ARMED");
+          it.printf(128, 46, id(red_hat16), TextAlign::RIGHT, "%s", "ARMED");
         } else {
-          it.printf(128, 46, id(red_hat2), TextAlign::RIGHT, "%s", "Disarmed");
+          it.printf(128, 46, id(red_hat16), TextAlign::RIGHT, "%s", "Disarmed");
         }
       }
 
 i2c:
   # https://esphome.io/components/i2c
-  sda: GPIO21
-  scl: GPIO22
+  #sda: GPIO21
+  #scl: GPIO22
   scan: false
   frequency: 400kHz
 

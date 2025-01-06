@@ -3,7 +3,7 @@
 # ld2420: !include
 #   file: include/ld2420/ld2420.yaml
 #   vars:
-#     box_num: 01
+#     box_num: "01"
 #     rx_pin: GPIO16
 #     tx_pin: GPIO17
 

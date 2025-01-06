@@ -12,10 +12,7 @@ substitutions:
 packages:
   # https://esphome.io/components/packages.html
   common: !include { file: include/common.yaml }
-  status_led: !include
-    file: include/status_led.yaml
-    vars:
-      pin: GPIO27
+  status_led: !include { file: include/status_led.yaml, vars: { pin: 27 } }
 
 i2c:
   # https://esphome.io/components/i2c

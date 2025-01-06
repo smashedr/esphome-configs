@@ -8,10 +8,13 @@ max_gate_distance:
 
 gate_select:
   name: Select Gate to Set
+  disabled_by_default: true
 still_threshold:
   name: Set Still Threshold Value
+  disabled_by_default: true
 move_threshold:
   name: Set Move Threshold Value
+  disabled_by_default: true
 
 gate_move_sensitivity:
   name: Move Calibration Sensitivity Factor

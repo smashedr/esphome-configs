@@ -1,0 +1,13 @@
+# https://esphome.io/components/sensor/adc
+platform: adc
+name: "Photoresistor ${box_num}"
+accuracy_decimals: 3
+id: photoresistor
+icon: mdi:flash # flash
+pin: ${pin}
+attenuation: auto # 12db
+disabled_by_default: true
+update_interval: 24s # 120s after filters
+force_update: true
+filters:
+  - median:

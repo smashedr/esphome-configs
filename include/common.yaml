@@ -45,21 +45,43 @@ wifi:
   ap:
     ssid: "${box_name}${box_num}"
     password: !secret host_pass
+  on_connect:
+    - logger.log: "WiFi Connected..."
+  on_disconnect:
+    - logger.log: "WiFi Disconnected!"
 
 api:
   # https://esphome.io/components/api
   encryption:
     key: !secret enc_key
   on_client_connected:
-    - logger.log:
-        format: "Client Connected: %s (%s)"
-        args: ["client_info.c_str()", "client_address.c_str()"]
-        level: INFO
+    - if:
+        condition:
+          lambda: 'return (0 == client_info.find("Home Assistant"));'
+        then:
+          logger.log:
+            format: "API Connected: %s (%s)"
+            args: ["client_info.c_str()", "client_address.c_str()"]
+            level: INFO
+        else:
+          logger.log:
+            format: "Client Connected: %s (%s)"
+            args: ["client_info.c_str()", "client_address.c_str()"]
+            level: INFO
   on_client_disconnected:
-    - logger.log:
-        format: "Client Disconnected: %s (%s)"
-        args: ["client_info.c_str()", "client_address.c_str()"]
-        level: INFO
+    - if:
+        condition:
+          lambda: 'return (0 == client_info.find("Home Assistant"));'
+        then:
+          logger.log:
+            format: "API Disconnected: %s (%s)"
+            args: ["client_info.c_str()", "client_address.c_str()"]
+            level: INFO
+        else:
+          logger.log:
+            format: "Client Disconnected: %s (%s)"
+            args: ["client_info.c_str()", "client_address.c_str()"]
+            level: INFO
 
 captive_portal:
   # https://esphome.io/components/captive_portal
@@ -73,6 +95,10 @@ web_server:
     - id: sg_device
       name: "Device"
       sorting_weight: 1
+
+debug:
+  # https://esphome.io/components/debug
+  update_interval: 60min
 
 button:
   # https://esphome.io/#button-components
@@ -89,6 +115,12 @@ text_sensor:
   # https://esphome.io/#text-sensor-components
   - !include { file: text/version.yaml }
   - !include { file: text/wifi_info.yaml }
+
+  - platform: debug
+    reset_reason:
+      name: "Reset Reason ${box_num}"
+      id: common_reset_reason
+      disabled_by_default: true
 
 sensor:
   # https://esphome.io/#sensor-components

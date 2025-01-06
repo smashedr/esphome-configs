@@ -4,7 +4,7 @@
 #   file: include/status_led.yaml
 #   vars:
 #     pin: GPIO18 # REQUIRED
-#     box_num: 01
+#     box_num: "01"
 #     status_led: name_for_id
 
 substitutions:

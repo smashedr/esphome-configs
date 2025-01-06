@@ -2,6 +2,7 @@
 platform: factory_reset
 name: "Factory Reset ${box_num}"
 id: btn_factory_reset
+disabled_by_default: true
 web_server:
   sorting_group_id: sg_device
   sorting_weight: -26

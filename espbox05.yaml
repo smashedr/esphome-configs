@@ -21,9 +21,6 @@ packages:
     file: include/pmsx003/pmsx003.yaml
     vars:
       pms_num: "01"
-      #rx_pin: GPIO16
-      #tx_pin: GPIO17
-      #force_update: true
 
 light:
   # https://esphome.io/components/light/
@@ -54,13 +51,13 @@ sensor:
   - id: !extend pm_sensor
     pm_2_5:
       on_value_range:
-        - below: 150
+        - below: 149
           then:
             - light.turn_on: green_led
             - light.turn_off: yellow_led
             - light.turn_off: red_led
         - above: 150
-          below: 300
+          below: 299
           then:
             - light.turn_on: yellow_led
             - light.turn_off: green_led

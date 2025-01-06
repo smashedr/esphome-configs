@@ -4,7 +4,7 @@ id: esp32_internal_temperature
 update_interval: 5min
 force_update: ${force_update}
 icon: mdi:thermometer
-#device_class: temperature
 #unit_of_measurement: "°C"
+#device_class: temperature
 #web_server:
 #  sorting_weight: 3

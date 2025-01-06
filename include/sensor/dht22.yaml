@@ -9,11 +9,10 @@ temperature:
   id: "temp_${box_num}"
   force_update: ${force_update}
   filters:
-    - lambda: |-
-        float MIN = -39.0;
-        float MAX = 79.0;
-        if (MIN <= x && x <= MAX) return x;
-        else return {};
+    - clamp:
+        min_value: -39
+        max_value: 79
+        ignore_out_of_range: true
 humidity:
   name: "Humi${box_num}-22"
   id: "humi_${box_num}"

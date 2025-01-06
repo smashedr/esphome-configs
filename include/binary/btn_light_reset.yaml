@@ -2,6 +2,7 @@ platform: gpio
 name: "Physical Button ${box_num}"
 icon: mdi:radiobox-marked
 entity_category: diagnostic
+disabled_by_default: true
 pin:
   number: ${pin}
   mode: INPUT_PULLUP

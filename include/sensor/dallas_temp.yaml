@@ -1,6 +1,13 @@
+# https://esphome.io/components/sensor/dallas_temp
 platform: dallas_temp
 name: "Temp${box_num}-18"
-id: "temp_${box_num}"
-address: ${address}
+id: "${id}"
+#address: ${address}
 update_interval: "${update_interval}"
 force_update: ${force_update}
+filters:
+  - filter_out: 85
+  - clamp:
+      min_value: -55
+      max_value: 125
+      ignore_out_of_range: true
